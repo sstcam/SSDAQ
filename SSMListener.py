@@ -22,8 +22,8 @@ if (__name__ == "__main__"):
 	
 	format_str10 = ''
 	for i in range(10):
-		format_str10 += 'Q32d'+'Q32d'
-	format_str11 = format_str10 + 'Q32d'+'Q32d'
+		format_str10 += 'Q32H'+'Q32H'
+	format_str11 = format_str10 + 'Q32H'+'Q32H'
 	print(format_str10)
 	npackets = {}
 	npackets_tot = 0
@@ -41,7 +41,7 @@ if (__name__ == "__main__"):
 
 		# 	data_dict
 		for i in range(10):
-			print('Readout ',i, struct.unpack_from('Q32d'+'Q32d',data,i*66*8))
+			print('Readout ',i, struct.unpack_from('Q32H'+'Q32H',data,i*(64*2+2*8)))
 		# print(struct.unpack_from(format_str10,data,i*33*8))
 		npackets_tot +=1
 		if(npackets.has_key(address[0])):
