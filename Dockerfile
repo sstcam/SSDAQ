@@ -14,4 +14,4 @@ WORKDIR /app
 EXPOSE 2009
 
 # start app
-CMD [ "python", "./SSUDPTMSimulator.py","2009" ]
+CMD [ "python", "./SSUDPTMSimulator.py","2009" , "172.17.0.1" ]

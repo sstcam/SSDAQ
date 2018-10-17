@@ -2,10 +2,8 @@ import socket
 import os
 import numpy as np
 import time
-import datetime
-# t = datetime.utcnow()
-    # sleeptime = 60 - (t.second + t.microsecond/1000000.0)
-    # time.sleep(sleeptime)
+from datetime import datetime
+
 import struct
 
 class DataStream(bytearray):
@@ -43,15 +41,17 @@ class TMSimulator(object):
 		server_address = (self.host_ip, port)
 		npackets = 0
 		nreading = 0
-
+		
+		t = datetime.utcnow()
 		while(True):
+			timestamp = t.timestamp()	+ np.random.uniform(-2e-4,2e-4)
 			data_packet = DataStream()
 			for i in range(10):
 				prim, aux = self.simulate_data()
-				data_packet.append(nreading,'Q')
+				data_packet.append(int((timestamp+0.1)*1e7),'Q')
 				for ss_p in prim:
 					data_packet.append(ss_p,'H')
-				data_packet.append(nreading,'Q')
+				data_packet.append(int((timestamp+0.1)*1e7),'Q')
 				for ss_a in aux:
 					data_packet.append(ss_a,'H')
 				nreading += 1
@@ -61,7 +61,9 @@ class TMSimulator(object):
 				print("Sent %d packets"%(npackets))
 				print(len(data_packet))
 			npackets +=1
-			time.sleep(1)
+			t = datetime.utcnow()
+			sleeptime = 1.0 - (t.microsecond/1000000.0)
+			time.sleep(sleeptime)
 
 if (__name__ == "__main__"):
 	import sys
