@@ -9,7 +9,7 @@ class SSDataListener(Thread):
 	"""
 	Slow signal data listener. Recieves UDP packets
 	from TMs with slow signal data and puts it in a data queue
-	for the SSEeventBuilder.
+	for the SSEventBuilder.
 	"""
 	def __init__(self,port,data_queue):
 		Thread.__init__(self)
