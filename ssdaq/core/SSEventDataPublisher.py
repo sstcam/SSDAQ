@@ -12,7 +12,7 @@ class SSEventDataPublisher(Thread):
 		self.event_queue = event_queue
 		self.context = zmq.Context()
 		self.sock = self.context.socket(zmq.PUB)
-		self.sock.bind('tcp://*:'+str(port))
+		self.sock.bind('tcp://127.0.0.101:'+str(port))
 		self.running = False
 
 	def run(self):
@@ -22,3 +22,4 @@ class SSEventDataPublisher(Thread):
 			while(not self.event_queue.empty()):
 				event = self.event_queue.get()
 				self.sock.send(event.pack())
+

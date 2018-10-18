@@ -13,7 +13,9 @@ class SSEvent(object):
 	A class representing a slow signal event
 	"""
 
-	def __init__(self,timestamp):
+	def __init__(self,timestamp=0,event_number = 0,run_number = 0):
+		self.event_number =event_number
+		self.run_number = run_number
 		self.event_timestamp = timestamp
 		self.data = np.empty((32,64))
 		self.data[:] = np.nan
@@ -21,16 +23,20 @@ class SSEvent(object):
 	
 	def pack(self):
 		d_stream = DataStream()
+
+		d_stream.append(self.event_number,'Q')
+		d_stream.append(self.run_number,'Q')
 		d_stream.append(self.event_timestamp,'Q')
 		for v in self.data.ravel():
 				d_stream.append(v,'d')
 		for v in self.timestamps.ravel():
 				d_stream.append(v,'Q')
 		return d_stream
-	def unpack(byte_stream):
-		self.event_timestamp = struct.unpack_from('Q',byte_stream,0)[0]
-		self.data = np.asarray(struct.unpack_from('2048d',byte_stream,8)).reshape(32,64)
-		self.timestamps = np.asarray(struct.unpack_from('64Q',byte_stream,8+8*2048)).reshape(32,2)
+
+	def unpack(self,byte_stream):
+		self.event_number, self.run_number,self.event_timestamp = struct.unpack_from('3Q',byte_stream,0)
+		self.data = np.asarray(struct.unpack_from('2048d',byte_stream,8*3)).reshape(32,64)
+		self.timestamps = np.asarray(struct.unpack_from('64Q',byte_stream,8*3+8*2048)).reshape(32,2)
 
 
 READOUT_LENGTH = 64*2+2*8
@@ -53,12 +59,16 @@ class SSEventBuilder(Thread):
 		
 
 		self.running = False
-		self.event_tw = int(5e6)
+		self.event_tw = int(0.05*1e9)
+		self.nprocessed_packets = 0
+		self.nconstructed_events = 1
+		self.packet_counter = {}
+		self.event_counter = {}
 
 	def _build_event(self):
 		#updating latest timestamps for a potential event
 		for k,v in self.inter_data.items():
-			if(len(v)!=0):
+			if(len(v)>2):
 				self.next_time_stamps[k] = v[0][0]
 			else:
 				self.next_time_stamps[k] = 0
@@ -72,8 +82,12 @@ class SSEventBuilder(Thread):
 			m = ((self.next_time_stamps-earliest_ts) < self.event_tw) & ((self.next_time_stamps-earliest_ts)>=0)
 			
 			#construct event
-			event = SSEvent(int(np.mean(self.next_time_stamps[m])))
+			event = SSEvent(int(np.mean(self.next_time_stamps[m])),self.nconstructed_events,1)
 			for k in np.where(m)[0]:
+				if(k in self.event_counter):
+					self.event_counter[k] += 1
+				else:
+					self.event_counter[k] = 1
 
 				tmp_data = self.inter_data[k].pop(0)[1]
 				tmp_array = np.empty(64,dtype=np.uint64)
@@ -90,10 +104,12 @@ class SSEventBuilder(Thread):
 				
 
 			self.event_queue.put(event)
+			self.nconstructed_events += 1
 
 	def run(self):
 		self.running = True
 		self.setName('SSEventBuilder')
+		last_nevents = 0
 		while(self.running):
 			
 			while(not self.data_queue.empty()):
@@ -106,13 +122,23 @@ class SSEventBuilder(Thread):
 				module_nr = int(data[0][-2:])
 				print("Module number %d "%(module_nr))
 				# self.inter_data[module_nr].put()
+				self.nprocessed_packets += 1
 				for i in range(nreadouts):
 					unpacked_data = struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8))
 					self.inter_data[module_nr].append((unpacked_data[0],unpacked_data))
 					# print('Readout ',i, struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8)))
+				
+				if(module_nr in self.packet_counter):
+					self.packet_counter[module_nr] +=1
+				else:
+					self.packet_counter[module_nr] =1
 
 			self._build_event()
-
+			if(self.nprocessed_packets>last_nevents):
+				print("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
+				last_nevents = self.nprocessed_packets
+				print(self.packet_counter)
+				print(self.event_counter)
 			# print('Buffer lengths %d %d'%(self.data_queue.qsize(),self.event_queue.qsize()))
 
 

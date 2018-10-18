@@ -1,6 +1,6 @@
-from ssdaq.SSDataListener import SSDataListener
-from ssdaq.SSEventBuilder import SSEventBuilder
-from ssdaq.SSEventDataPublisher import SSEventDataPublisher
+from ssdaq.core.SSDataListener import SSDataListener
+from ssdaq.core.SSEventBuilder import SSEventBuilder
+from ssdaq.core.SSEventDataPublisher import SSEventDataPublisher
 
 import sys
 import time

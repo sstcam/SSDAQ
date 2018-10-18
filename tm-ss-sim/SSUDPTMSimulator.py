@@ -48,10 +48,10 @@ class TMSimulator(object):
 			data_packet = DataStream()
 			for i in range(10):
 				prim, aux = self.simulate_data()
-				data_packet.append(int((timestamp+0.1)*1e7),'Q')
+				data_packet.append(int((timestamp+0.1*i)*1e9),'Q')
 				for ss_p in prim:
 					data_packet.append(ss_p,'H')
-				data_packet.append(int((timestamp+0.1)*1e7),'Q')
+				data_packet.append(int((timestamp+0.1*i)*1e9),'Q')
 				for ss_a in aux:
 					data_packet.append(ss_a,'H')
 				nreading += 1
