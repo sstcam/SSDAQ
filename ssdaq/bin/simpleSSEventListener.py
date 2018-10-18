@@ -1,6 +1,4 @@
 from ssdaq.core import SSEventListener
-
-import zmq
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -13,7 +11,6 @@ parser.add_argument('-l', dest='listen_port', type=str,
                     help='port for incoming event data')
 
 args = parser.parse_args()
-
 
 ev_list = SSEventListener.SSEventListener(args.listen_port)
 ev_list.start()
