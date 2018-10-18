@@ -46,7 +46,7 @@ class SSEventBuilder(Thread):
 	slow signal events from data packets recieved from 
 	Target Modules.
 	"""
-	def __init__(self):
+	def __init__(self,verbose=False):
 		Thread.__init__(self)
 		self.data_queue = Queue()
 		self.event_queue = Queue()
@@ -65,7 +65,7 @@ class SSEventBuilder(Thread):
 		self.nconstructed_events = 1
 		self.packet_counter = {}
 		self.event_counter = {}
-
+		self.verbose = verbose
 	def _build_event(self):
 		#updating latest timestamps for a potential event
 		for k,v in self.inter_data.items():
@@ -79,7 +79,6 @@ class SSEventBuilder(Thread):
 		if((np.sum(self.next_ts>0)>0)  
 			&(np.max(self.inter_queue_lengths)>1)  
 			&(np.mean(self.inter_queue_lengths)>2) 
-			# (np.min(self.inter_queue_lengths)>1)
 			):
 
 			#find all data that is within the event tw of the
@@ -124,15 +123,16 @@ class SSEventBuilder(Thread):
 				if(len(data[1])%(READOUT_LENGTH) != 0):
 					print("Warning: Got unsuported packet size")
 				
-				print("Got data from %s"%(str(data[0])))
+				
 				module_nr = int(data[0][-2:])
-				print("Module number %d "%(module_nr))
-				# self.inter_data[module_nr].put()
+				if(self.verbose):
+					print("Got data from %s"%(str(data[0])))
+					print("Module number %d "%(module_nr))
+				
 				self.nprocessed_packets += 1
 				for i in range(nreadouts):
 					unpacked_data = struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8))
 					self.inter_data[module_nr].append((unpacked_data[0],unpacked_data))
-					# print('Readout ',i, struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8)))
 				
 				if(module_nr in self.packet_counter):
 					self.packet_counter[module_nr] +=1
@@ -140,12 +140,12 @@ class SSEventBuilder(Thread):
 					self.packet_counter[module_nr] =1
 
 			self._build_event()
-			if(self.nprocessed_packets>last_nevents):
+			if(self.nprocessed_packets>last_nevents and self.verbose):
 				print("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
 				last_nevents = self.nprocessed_packets
 				print(self.packet_counter)
 				print(self.event_counter)
-			# print('Buffer lengths %d %d'%(self.data_queue.qsize(),self.event_queue.qsize()))
+				# print('Buffer lengths %d %d'%(self.data_queue.qsize(),self.event_queue.qsize()))
 
 
 

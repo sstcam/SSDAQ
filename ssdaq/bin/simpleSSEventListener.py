@@ -1,9 +1,7 @@
 from ssdaq.core import SSEventBuilder 
-import struct
 import zmq
 import sys
 import numpy as np
-import matplotlib
 from matplotlib import pyplot as plt
 
 
@@ -30,7 +28,7 @@ while(True):
 	event_counter[m] += 1
 	m = event_counter>0
 	print(list(zip(np.where(m)[0],event_counter[m])))
-	if(n>1000):
+	if(n>2000):
 		break
 	n +=1
 plt.figure()
