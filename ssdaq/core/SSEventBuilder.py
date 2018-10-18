@@ -76,7 +76,7 @@ class SSEventBuilder(Thread):
         self.packet_counter = {}
         self.event_counter = {}
         self.verbose = verbose
-
+        self.pot_ev = True
     def _build_event(self):
         #updating latest timestamps for a potential event
         for k,v in self.inter_data.items():
@@ -122,7 +122,8 @@ class SSEventBuilder(Thread):
 
             self.event_queue.put(event)
             self.nconstructed_events += 1
-
+        else:
+            self.pot_ev = False
     def run(self):
         self.running = True
         self.setName('SSEventBuilder')
@@ -130,7 +131,8 @@ class SSEventBuilder(Thread):
         
         while(self.running):
             
-            while(not self.data_queue.empty()):
+            while(not self.data_queue.empty() or not self.pot_ev):
+                self.pot_ev = True
                 data = self.data_queue.get()
                 nreadouts = int(len(data[1])/(READOUT_LENGTH))
                 if(len(data[1])%(READOUT_LENGTH) != 0):
@@ -154,6 +156,7 @@ class SSEventBuilder(Thread):
                 self.nprocessed_packets += 1
 
             self._build_event()
+            
             if(self.nprocessed_packets>last_nevents and self.verbose):
                 print("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
                 last_nevents = self.nprocessed_packets
