@@ -5,6 +5,9 @@ import numpy as np
 import struct
 
 class DataStream(bytearray):
+	'''
+	Helper class to create an arbitrary byte stream
+	'''
     def append(self, v, fmt='>B'):
         self.extend(struct.pack(fmt, v))
 
@@ -14,14 +17,20 @@ class SSEvent(object):
 	"""
 
 	def __init__(self,timestamp=0,event_number = 0,run_number = 0):
-		self.event_number =event_number
+		
+		self.event_number = event_number
 		self.run_number = run_number
 		self.event_timestamp = timestamp
 		self.data = np.empty((32,64))
 		self.data[:] = np.nan
+		#store also the time stamps for the individual readings 
+		#two per TM (primary and aux)
 		self.timestamps = np.zeros((32,2),dtype=np.uint64)
 	
 	def pack(self):
+		'''
+		Convinience method to pack the event into a bytestream
+		'''
 		d_stream = DataStream()
 
 		d_stream.append(self.event_number,'Q')
@@ -34,6 +43,9 @@ class SSEvent(object):
 		return d_stream
 
 	def unpack(self,byte_stream):
+		'''
+		Unpack a bytestream into an event
+		'''
 		self.event_number, self.run_number,self.event_timestamp = struct.unpack_from('3Q',byte_stream,0)
 		self.data = np.asarray(struct.unpack_from('2048d',byte_stream,8*3)).reshape(32,64)
 		self.timestamps = np.asarray(struct.unpack_from('64Q',byte_stream,8*3+8*2048)).reshape(32,2)
@@ -58,7 +70,6 @@ class SSEventBuilder(Thread):
 		for i in range(32):
 			self.inter_data[i] = []
 		
-
 		self.running = False
 		self.event_tw = int(0.05*1e9)
 		self.nprocessed_packets = 0
@@ -66,6 +77,7 @@ class SSEventBuilder(Thread):
 		self.packet_counter = {}
 		self.event_counter = {}
 		self.verbose = verbose
+
 	def _build_event(self):
 		#updating latest timestamps for a potential event
 		for k,v in self.inter_data.items():
@@ -93,17 +105,18 @@ class SSEventBuilder(Thread):
 					self.event_counter[k] += 1
 				else:
 					self.event_counter[k] = 1
-
+				#put data into a temporary array of uint type
 				tmp_data = self.inter_data[k].pop(0)[1]
 				tmp_array = np.empty(64,dtype=np.uint64)
 				tmp_array[:32] = tmp_data[1:33]
 				tmp_array[32:] = tmp_data[34:]
+				
 				#converting counts to mV
 				m = tmp_array < 0x8000
 				tmp_array[m] += 0x8000
 				tmp_array[~m] = tmp_array[~m]&0x7FFF
 				event.data[k] = tmp_array* 0.03815*2.
-
+				#get the readout time stamps for the primary and aux
 				event.timestamps[k][0]=tmp_data[0]
 				event.timestamps[k][1]=tmp_data[33]
 				
@@ -115,6 +128,7 @@ class SSEventBuilder(Thread):
 		self.running = True
 		self.setName('SSEventBuilder')
 		last_nevents = 0
+		
 		while(self.running):
 			
 			while(not self.data_queue.empty()):
@@ -129,7 +143,6 @@ class SSEventBuilder(Thread):
 					print("Got data from %s"%(str(data[0])))
 					print("Module number %d "%(module_nr))
 				
-				self.nprocessed_packets += 1
 				for i in range(nreadouts):
 					unpacked_data = struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8))
 					self.inter_data[module_nr].append((unpacked_data[0],unpacked_data))
@@ -138,6 +151,8 @@ class SSEventBuilder(Thread):
 					self.packet_counter[module_nr] +=1
 				else:
 					self.packet_counter[module_nr] =1
+				
+				self.nprocessed_packets += 1
 
 			self._build_event()
 			if(self.nprocessed_packets>last_nevents and self.verbose):
