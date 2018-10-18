@@ -1,10 +1,8 @@
-# from ssdaq.core import SSEventBuilder 
 from ssdaq.core import SSEventListener
 
 import zmq
 import numpy as np
 from matplotlib import pyplot as plt
-
 
 import argparse
 
@@ -29,7 +27,6 @@ while(True):
 	
 	print("Event number %d run number %d"%(event.event_number,event.run_number))
 	m = event.timestamps[:,0]>0
-	# print(event.timestamps[m])
 	print(np.sum(m))
 	print(np.where(m)[0])
 	n_modules_per_event.append(np.sum(m))
