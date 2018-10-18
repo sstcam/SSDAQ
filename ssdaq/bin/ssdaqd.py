@@ -2,9 +2,7 @@ from ssdaq.core.SSDataListener import SSDataListener
 from ssdaq.core.SSEventBuilder import SSEventBuilder
 from ssdaq.core.SSEventDataPublisher import SSEventDataPublisher
 
-import sys
 import time
-
 import argparse
 
 parser = argparse.ArgumentParser(description='Start slow signal data acquisition.',formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -13,7 +11,7 @@ parser.add_argument('-l', dest='listen_port', type=str,
                     default='2009',
                     help='port for incoming data')
 
-parser.add_argument('-p', dest='publisher_port', type=str,
+parser.add_argument('-p', dest='publishing_port', type=str,
                     default='5555',
                     help='port for publishing data')
 

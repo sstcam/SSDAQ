@@ -1,16 +1,26 @@
 from ssdaq.core import SSEventBuilder 
 import zmq
-import sys
 import numpy as np
 from matplotlib import pyplot as plt
 
 
-port = sys.argv[1]
-print(port)
+import argparse
+
+parser = argparse.ArgumentParser(description='Start a simple event data listener.',formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument('-l', dest='listen_port', type=str,
+                    default='5555',
+                    help='port for incoming event data')
+
+args = parser.parse_args()
+
+
 context = zmq.Context()
 sock = context.socket(zmq.SUB)
 sock.setsockopt(zmq.SUBSCRIBE, b"")
-sock.connect("tcp://127.0.0.101:"+port)
+sock.connect("tcp://127.0.0.101:"+args.listen_port)
+
+
 event_counter = np.zeros(32)
 n_modules_per_event =[]
 n = 0
