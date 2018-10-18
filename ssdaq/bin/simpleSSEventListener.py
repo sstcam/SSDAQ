@@ -34,5 +34,5 @@ while(True):
 		break
 	n +=1
 plt.figure()
-plt.hist(n_modules_per_event, 4,  facecolor='g', alpha=0.75)
+plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
 plt.show()

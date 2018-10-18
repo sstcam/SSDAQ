@@ -52,7 +52,8 @@ class SSEventBuilder(Thread):
 		self.event_queue = Queue()
 
 		self.inter_data = {}
-		self.next_time_stamps = np.zeros(32,dtype = np.uint64)
+		self.inter_queue_lengths = np.zeros(32,dtype = np.uint64)
+		self.next_ts = np.zeros(32,dtype = np.uint64)
 		#assume we always have 32 modules
 		for i in range(32):
 			self.inter_data[i] = []
@@ -68,21 +69,26 @@ class SSEventBuilder(Thread):
 	def _build_event(self):
 		#updating latest timestamps for a potential event
 		for k,v in self.inter_data.items():
+			self.inter_queue_lengths[k] =  len(v)
 			if(len(v)>2):
-				self.next_time_stamps[k] = v[0][0]
+				self.next_ts[k] = v[0][0]
 			else:
-				self.next_time_stamps[k] = 0
-		
+				self.next_ts[k] = 0
+
 		#Data from one TM is enough for an event
-		if(np.sum(self.next_time_stamps>0)>0):
+		if((np.sum(self.next_ts>0)>0)  
+			&(np.max(self.inter_queue_lengths)>1)  
+			&(np.mean(self.inter_queue_lengths)>2) 
+			# (np.min(self.inter_queue_lengths)>1)
+			):
 
 			#find all data that is within the event tw of the
 			#earliest time stamp
-			earliest_ts = np.min(self.next_time_stamps[self.next_time_stamps>0])
-			m = ((self.next_time_stamps-earliest_ts) < self.event_tw) & ((self.next_time_stamps-earliest_ts)>=0)
+			earliest_ts = np.min(self.next_ts[self.next_ts>0])
+			m = ((self.next_ts-earliest_ts) < self.event_tw) & ((self.next_ts-earliest_ts)>=0)
 			
 			#construct event
-			event = SSEvent(int(np.mean(self.next_time_stamps[m])),self.nconstructed_events,1)
+			event = SSEvent(int(np.mean(self.next_ts[m])),self.nconstructed_events,1)
 			for k in np.where(m)[0]:
 				if(k in self.event_counter):
 					self.event_counter[k] += 1
