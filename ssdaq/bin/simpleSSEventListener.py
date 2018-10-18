@@ -1,4 +1,6 @@
-from ssdaq.core import SSEventBuilder 
+# from ssdaq.core import SSEventBuilder 
+from ssdaq.core import SSEventListener
+
 import zmq
 import numpy as np
 from matplotlib import pyplot as plt
@@ -15,19 +17,16 @@ parser.add_argument('-l', dest='listen_port', type=str,
 args = parser.parse_args()
 
 
-context = zmq.Context()
-sock = context.socket(zmq.SUB)
-sock.setsockopt(zmq.SUBSCRIBE, b"")
-sock.connect("tcp://127.0.0.101:"+args.listen_port)
-
+ev_list = SSEventListener.SSEventListener(args.listen_port)
+ev_list.start()
 
 event_counter = np.zeros(32)
 n_modules_per_event =[]
 n = 0
 while(True):
-	data = sock.recv()
-	event = SSEventBuilder.SSEvent()
-	event.unpack(data)
+
+	event = ev_list.event_buffer.get()
+	
 	print("Event number %d run number %d"%(event.event_number,event.run_number))
 	m = event.timestamps[:,0]>0
 	# print(event.timestamps[m])
