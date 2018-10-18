@@ -1,10 +1,5 @@
 from threading import Thread
-import os
-import numpy as np
-import struct
 import zmq
-
-from .SSEventBuilder import SSEvent
 
 class SSEventDataPublisher(Thread):
 	def __init__(self,port,event_queue):

@@ -1,8 +1,4 @@
 import socket
-import os
-import numpy as np
-import struct
-import threading
 from threading import Thread
 
 class SSDataListener(Thread):
