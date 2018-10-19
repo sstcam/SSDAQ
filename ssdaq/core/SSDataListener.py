@@ -12,8 +12,6 @@ class SSDataListener(Thread):
         self.port = int(port)
         self.data_queue = data_queue
         self.running = False
-        self.npackets_from = {}
-        self.npackets_tot = 0
 
     def run(self):
         self.running = True
