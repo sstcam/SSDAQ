@@ -124,6 +124,7 @@ class SSEventBuilder(Thread):
             self.nconstructed_events += 1
         else:
             self.pot_ev = False
+            
     def run(self):
         self.running = True
         self.setName('SSEventBuilder')
