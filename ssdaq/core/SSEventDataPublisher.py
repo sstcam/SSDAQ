@@ -14,7 +14,6 @@ class SSEventDataPublisher(Thread):
         self.running = True
         self.setName('SSEventDataPublisher')
         while(self.running):
-            while(not self.event_queue.empty()):
-                event = self.event_queue.get()
-                self.sock.send(event.pack())
+            event = self.event_queue.get()
+            self.sock.send(event.pack())
 

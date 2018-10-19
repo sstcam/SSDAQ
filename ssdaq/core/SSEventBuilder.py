@@ -3,13 +3,6 @@ from threading import Thread
 import numpy as np
 import struct
 
-class DataStream(bytearray):
-    '''
-    Helper class to create an arbitrary byte stream
-    '''
-    def append(self, v, fmt='>B'):
-        self.extend(struct.pack(fmt, v))
-
 class SSEvent(object):
     """
     A class representing a slow signal event
@@ -30,15 +23,13 @@ class SSEvent(object):
         '''
         Convinience method to pack the event into a bytestream
         '''
-        d_stream = DataStream()
+        d_stream = bytearray(struct.pack('3Q',
+                            self.event_number,
+                            self.run_number,
+                            self.event_timestamp))
 
-        d_stream.append(self.event_number,'Q')
-        d_stream.append(self.run_number,'Q')
-        d_stream.append(self.event_timestamp,'Q')
-        for v in self.data.ravel():
-                d_stream.append(v,'d')
-        for v in self.timestamps.ravel():
-                d_stream.append(v,'Q')
+        d_stream.extend(self.data.tobytes())
+        d_stream.extend(self.timestamps.tobytes())
         return d_stream
 
     def unpack(self,byte_stream):
@@ -129,7 +120,7 @@ class SSEventBuilder(Thread):
         self.running = True
         self.setName('SSEventBuilder')
         last_nevents = 0
-        
+        c = 0
         while(self.running):
             
             while(not self.data_queue.empty() or not self.pot_ev):
@@ -139,7 +130,7 @@ class SSEventBuilder(Thread):
                 if(len(data[1])%(READOUT_LENGTH) != 0):
                     print("Warning: Got unsuported packet size")
                 
-                #geting the module number from the last two digits of the ip
+                #getting the module number from the last two digits of the ip
                 ip = data[0]
                 module_nr = int(ip[-ip[::-1].find('.'):])%100
                 if(self.verbose):
@@ -158,7 +149,8 @@ class SSEventBuilder(Thread):
                 self.nprocessed_packets += 1
 
             self._build_event()
-            
+            c += 1
+            print(c)
             if(self.nprocessed_packets>last_nevents and self.verbose):
                 print("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
                 last_nevents = self.nprocessed_packets
