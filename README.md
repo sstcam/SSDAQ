@@ -16,6 +16,7 @@ The project is written assuming it will be run with python3.5 or above. Addition
 
 Some event receivers might have additional prerequesites not listed above. These dependencies include:
 
+* pytables
 * matplotlib
 * urwid
 * target_driver
