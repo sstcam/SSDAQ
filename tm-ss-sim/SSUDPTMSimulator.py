@@ -6,10 +6,6 @@ from datetime import datetime
 
 import struct
 
-class DataStream(bytearray):
-    def append(self, v, fmt='>B'):
-        self.extend(struct.pack(fmt, v))
-
 class TMSimulator(object):
     def __init__(self, port, ip):
         self.port = port
@@ -38,15 +34,12 @@ class TMSimulator(object):
         t = datetime.utcnow()
         while(True):
             timestamp = t.timestamp() + np.random.uniform(-2e-4,2e-4)
-            data_packet = DataStream()
             for i in range(10):
                 data = self.simulate_data()
-                data_packet.append(int((timestamp+0.1*i)*1e9),'Q')
-                for ss_d in data[:32]:
-                    data_packet.append(ss_d,'H')
-                data_packet.append(int((timestamp+0.1*i)*1e9),'Q')
-                for ss_d in data[32:]:
-                    data_packet.append(ss_d,'H')
+                data_packet = bytearray(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
+                data_packet.extend(struct.pack('32H',*data[:32]))
+                data_packet.extend(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
+                data_packet.extend(struct.pack('32H',*data[32:]))
                 nreading += 1
 
             sent = sock.sendto(data_packet, server_address)

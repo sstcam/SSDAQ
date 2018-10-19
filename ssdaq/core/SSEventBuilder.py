@@ -124,7 +124,7 @@ class SSEventBuilder(Thread):
             self.nconstructed_events += 1
         else:
             self.pot_ev = False
-            
+
     def run(self):
         self.running = True
         self.setName('SSEventBuilder')
@@ -139,8 +139,9 @@ class SSEventBuilder(Thread):
                 if(len(data[1])%(READOUT_LENGTH) != 0):
                     print("Warning: Got unsuported packet size")
                 
-                
-                module_nr = int(data[0][-2:])
+                #geting the module number from the last two digits of the ip
+                ip = data[0]
+                module_nr = int(ip[-ip[::-1].find('.'):])%100
                 if(self.verbose):
                     print("Got data from %s"%(str(data[0])))
                     print("Module number %d "%(module_nr))
