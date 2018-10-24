@@ -22,7 +22,7 @@ class TMSimulator(object):
         m = data_counts<0x8000
         data_counts[m] +=0x8000
         data_counts[~m]= data_counts[~m]&0x7FFF
-        return data_counts.copy()#,aux_counts.copy()
+        return data_counts.copy()
 
     def Run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -34,9 +34,10 @@ class TMSimulator(object):
         t = datetime.utcnow()
         while(True):
             timestamp = t.timestamp() + np.random.uniform(-2e-4,2e-4)
+            data_packet = bytearray()
             for i in range(10):
                 data = self.simulate_data()
-                data_packet = bytearray(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
+                data_packet.extend(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
                 data_packet.extend(struct.pack('32H',*data[:32]))
                 data_packet.extend(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
                 data_packet.extend(struct.pack('32H',*data[32:]))
