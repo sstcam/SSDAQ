@@ -37,8 +37,8 @@ class SSEvent(object):
         Unpack a bytestream into an event
         '''
         self.event_number, self.run_number,self.event_timestamp = struct.unpack_from('3Q',byte_stream,0)
-        self.data = np.asarray(struct.unpack_from('2048d',byte_stream,8*3)).reshape(32,64)
-        self.timestamps = np.asarray(struct.unpack_from('64Q',byte_stream,8*3+8*2048)).reshape(32,2)
+        self.data = np.frombuffer(byte_stream[8*3:8*(3+2048)],dtype=np.float64).reshape(32,64)
+        self.timestamps = np.frombuffer(byte_stream[8*(3+2048):8*(3+2048+64)],dtype=np.uint64).reshape(32,2)
 
 
 READOUT_LENGTH = 64*2+2*8
@@ -79,8 +79,8 @@ class SSEventBuilder(Thread):
 
         #Data from one TM is enough for an event
         if((np.sum(self.next_ts>0)>0)  
-            &(np.max(self.inter_queue_lengths)>1)  
-            &(np.mean(self.inter_queue_lengths)>2) 
+            &(np.max(self.inter_queue_lengths)>20)  
+            # &(np.mean(self.inter_queue_lengths)>2) 
             ):
 
             #find all data that is within the event tw of the
@@ -110,7 +110,7 @@ class SSEventBuilder(Thread):
                 event.timestamps[k][0]=tmp_data[0]
                 event.timestamps[k][1]=tmp_data[33]
                 
-
+            print('Built event')
             self.event_queue.put(event)
             self.nconstructed_events += 1
         else:
@@ -136,7 +136,7 @@ class SSEventBuilder(Thread):
                 if(self.verbose):
                     print("Got data from %s"%(str(data[0])))
                     print("Module number %d "%(module_nr))
-                
+
                 for i in range(nreadouts):
                     unpacked_data = struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8))
                     self.inter_data[module_nr].append((unpacked_data[0],unpacked_data))
@@ -150,13 +150,16 @@ class SSEventBuilder(Thread):
 
             self._build_event()
             c += 1
-            print(c)
+            print(c)    
             if(self.nprocessed_packets>last_nevents and self.verbose):
                 print("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
                 last_nevents = self.nprocessed_packets
                 print(self.packet_counter)
                 print(self.event_counter)
-                # print('Buffer lengths %d %d'%(self.data_queue.qsize(),self.event_queue.qsize()))
+                print('Buffer lengths %d %d %d %d'%(self.data_queue.qsize(),
+                                                    self.event_queue.qsize(),
+                                                    np.max(self.inter_queue_lengths),
+                                                    len(self.inter_data[1])))
 
 
 
