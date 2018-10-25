@@ -41,7 +41,7 @@ class SSEvent(object):
         self.timestamps = np.frombuffer(byte_stream[8*(3+2048):8*(3+2048+64)],dtype=np.uint64).reshape(32,2)
 
 
-READOUT_LENGTH = 64*2+2*8
+READOUT_LENGTH = 64*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 class SSEventBuilder(Thread):
     """ 
     Slow signal event builder. Constructs 
@@ -138,7 +138,7 @@ class SSEventBuilder(Thread):
                     print("Module number %d "%(module_nr))
 
                 for i in range(nreadouts):
-                    unpacked_data = struct.unpack_from('Q32H'+'Q32H',data[1],i*(64*2+2*8))
+                    unpacked_data = struct.unpack_from('>Q32HQ32H',data[1],i*(64*2+2*8))
                     self.inter_data[module_nr].append((unpacked_data[0],unpacked_data))
                 
                 if(module_nr in self.packet_counter):

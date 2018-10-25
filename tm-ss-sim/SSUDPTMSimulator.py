@@ -37,10 +37,10 @@ class TMSimulator(object):
             data_packet = bytearray()
             for i in range(10):
                 data = self.simulate_data()
-                data_packet.extend(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
-                data_packet.extend(struct.pack('32H',*data[:32]))
-                data_packet.extend(struct.pack('Q',int((timestamp+0.1*i)*1e9)))
-                data_packet.extend(struct.pack('32H',*data[32:]))
+                data_packet.extend(struct.pack('>Q',int((timestamp+0.1*i)*1e9)))
+                data_packet.extend(struct.pack('>32H',*data[:32]))
+                data_packet.extend(struct.pack('>Q',int((timestamp+0.1*i)*1e9)))
+                data_packet.extend(struct.pack('>32H',*data[32:]))
                 nreading += 1
 
             sent = sock.sendto(data_packet, server_address)
