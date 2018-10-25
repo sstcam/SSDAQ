@@ -2,17 +2,18 @@ from ssdaq.core import SSEventListener
 from threading import Thread
 import numpy as np
 import tables
-from tables import IsDescription,open_file,UInt64Col,Float64Col
+from tables import IsDescription,open_file,UInt64Col,Float64Col,Float32Col
 
 
 class SSEventTableDs(IsDescription):
     event_number = UInt64Col()
     runt_number = UInt64Col()
     ev_time = UInt64Col()
-    data = Float64Col((32,64))
+    data = Float32Col((32,64))
     time_stamps = UInt64Col((32,2))
 
 class EventFileWriter(Thread):
+    
     def __init__(self, filename):
         Thread.__init__(self)
         self.filename = filename
@@ -22,6 +23,7 @@ class EventFileWriter(Thread):
         self.table = self.file.create_table(self.group, 'readout', SSEventTableDs, "Slow signal readout")
         self.running = False
         self.event_counter = 0
+    
     def run(self):
         self.event_listener.start()
         self.running = True
@@ -30,7 +32,7 @@ class EventFileWriter(Thread):
             event = self.event_listener.GetEvent()
             ev_row['event_number'] = event.event_number
             ev_row['ev_time'] = event.event_timestamp
-            ev_row['data'] = event.data
+            ev_row['data'] = np.asarray(event.data,dtype=np.float32)
             ev_row['time_stamps'] = event.timestamps
             ev_row.append()
             self.table.flush()
