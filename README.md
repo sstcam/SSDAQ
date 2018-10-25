@@ -50,7 +50,7 @@ while(True):
     #do stuff with event
 ```
 
-The `try` statement around `event = ev_list.GetEvent()` makes it possible to exit the script gracefully by pressing `ctrl+C`. While handling the exception `CloseThread()` is called on the listener which sends a signal to the listener thread to finish and empties the event buffer.
+The `try` statement around `event = ev_list.GetEvent()` makes it possible to exit the script gracefully by pressing `ctrl+C`. While handling the exception `CloseThread()` is called on the listener which sends a signal to the listener thread to finish and empties the event buffer. The event object (`SSEvent`) retreived from the `SSEventListener` is defined in `ssdaq/core/SSEventBuilder.py`.
 
 ### Simulating slow signal data from TMs
 A python script that contains a simple simulation of the slow signal output from a TM is provided in this package in the folder `tm-ss-sim`.
