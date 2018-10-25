@@ -37,9 +37,9 @@ class EventFileWriter(Thread):
             ev_row.append()
             self.table.flush()
             self.event_counter +=1
-            print(self.event_counter)
         self.event_listener.CloseThread()
         self.file.close()
+        print('EventFileWriter has written %d events to file'%self.event_counter)
 
 
 
