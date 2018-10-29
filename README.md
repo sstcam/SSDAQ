@@ -18,13 +18,14 @@ Some event receivers might have additional prerequesites not listed above. These
 
 * pytables
 * matplotlib
+* docker
 * urwid
 * target_driver
 * target_io
 * target_calib
 
 ## Usage
-The main usage is to run the `ssdaqd.py` which listens for data, build events out of the recieved data and publishes the events on a tcp socket. The program has a few options which will be printed if provided the `-h` option. A typical use case would be:
+The main usage of this software package is to run the `ssdaqd.py` which listens for data, build events out of the recieved data and publishes the events on a tcp socket. The program has a few options which will be printed if provided the `-h` option. A typical use case would be:
 
 `python3 ssdaq/bin/ssdaqd.py -l LISTEN_PORT`
 
@@ -62,13 +63,25 @@ which sets the simulation to send the data to port 2009 on localhost. For now th
 
 
 #### Docker instructions to simulate multiple modules sending SS-data from the CHEC camera
-This is just a summary of how to setup and use docker to simulate multiple TMs. (More documentation soon)
+To simulate multiple TARGET modules sending slow signal data several docker containers have to be used asigned with a specific IP as the module is identified by the IP in the UDP header of the data packets it sends. Useful docker commands are listed below:  
 
 * build docker image with:
-	`sudo docker build -t ss-sim .`
+	`docker build -t ss-sim .`
 * setup your own docker network/bridge (Need to check command!)
 	`docker network create --driver=bridge --subnet=192.168.0.0/16 br0`
-* run container with TM sim
-	`sudo docker run --net my-net --ip 172.18.0.1xx ss-sim`
+* run container with TM sim:
+	`docker run --net my-net --ip 172.18.0.1xx ss-sim`
 the xx should be replaced by a number between 1 and 32 which corresponds to
 the module number in the CHEC-camera
+
+These commands might need to be prepended by sudo depending on how docker was installed on the machine. The network only needs to be created once while the `docker build` needs to be run everytime the simulation script to update the image.
+
+To further make the handling of the simulation easier a small script,`docker-command.py` , that interfaces docker is provided. Starting a 32 module simulation is done by
+
+`python docker-command.py -r -N 32`
+
+and can be stopped by
+
+`python docker-command.py -s`
+
+more help is of course given by using the help option (`-h` or `--help`).
