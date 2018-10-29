@@ -78,7 +78,7 @@ These commands might need to be prepended by sudo depending on how docker was in
 
 To further make the handling of the simulation easier a small script,`docker-command.py` , that interfaces docker is provided. Starting a 32 module simulation is done by
 
-`python docker-command.py -r -N 32`
+`python tm-ss-sim/docker-command.py -r -N 32`
 
 and can be stopped by
 
