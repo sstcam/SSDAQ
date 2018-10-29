@@ -82,6 +82,6 @@ To further make the handling of the simulation easier a small script,`docker-com
 
 and can be stopped by
 
-`python docker-command.py -s`
+`python tm-ss-sim/docker-command.py -s`
 
 more help is of course given by using the help option (`-h` or `--help`).
