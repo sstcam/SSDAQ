@@ -76,7 +76,6 @@ if(args.stop):
     else:
         print('No container file found')
         print('Not stopping any simulations')
-# build_coomand = 
 
 
 
