@@ -32,9 +32,11 @@ parser.add_argument('-r', '--run', action='store_true',
 parser.add_argument('-s', '--stop', action='store_true',
                     help='Stop running containers with TM simulation')
 
-args = parser.parse_args()
-
 path = os.path.dirname(os.path.abspath(__file__))
+#Changing working directory to script location.
+os.chdir(path)
+
+args = parser.parse_args()
 
 
 if(args.print_args):
@@ -69,7 +71,7 @@ if(args.stop):
         tms_to_stop = open('started_tms.txt','r').readlines()
         for tm in tms_to_stop:
             cmd_list = ['docker','rm','-f',tm[:-1]]
-            print(cmd_list)
+            print(' '.join(cmd_list))
             call(cmd_list)
         os.remove('started_tms.txt')
         print('Removed %d container(s)'%len(tms_to_stop))
