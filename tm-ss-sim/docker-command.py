@@ -70,7 +70,7 @@ if(args.run):
             '-e',
             "COM_PORT=%d"%com_port,
             '-e',
-            "TM_ID=TM:%d"%i,  
+            "TM_ID=%d"%i,  
             'ss-sim']
 
         print(' '.join(cmd_list))
