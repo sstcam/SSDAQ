@@ -6,6 +6,11 @@ parser = argparse.ArgumentParser(description='A simple interface to docker to bu
                                             'with docker containers.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+# subparsers = parser.add_subparsers(dest='subp')
+
+# run_p = subparsers.add_parser('run')
+# run_p.add_argument("name")
+
 parser.add_argument('-b', dest='build', action='store_true',
                     help='build docker image')
 
@@ -49,28 +54,39 @@ if(args.build):
 
 if(args.run):
     started_modules = []
+    com_port = 3000
     for i in range(int(args.n_modules)):
         sim_name = 'TM%d'%i
-        started_modules.append(sim_name)
+        ip = '%s1%02d'%(args.ip,i+1)        
         cmd_list = ["docker", 
             "run",
             '--name', '%s'%(sim_name),
             '--net', '%s'%(args.network_name),
-            '--ip','%s1%02d'%(args.ip,i+1),
+            '--ip',ip,
             '-d',
-            '--rm',   
+            '--rm',
+            '-e',
+            "MY_IP=%s"%(ip),
+            '-e',
+            "COM_PORT=%d"%com_port,
+            '-e',
+            "TM_ID=TM:%d"%i,  
             'ss-sim']
+
         print(' '.join(cmd_list))
         call(cmd_list)
-        f = open('started_tms.txt','w')
-        f.writelines([n+'\n' for n in started_modules])
+        started_modules.append("%s %s:%s"%(sim_name,ip,com_port))
+        com_port +=1
+
+    f = open('started_tms.txt','w')
+    f.writelines([n+'\n' for n in started_modules])
     print('Started %d container(s)'%(i+1))
 
 if(args.stop):
     if(os.path.isfile('started_tms.txt')):
         tms_to_stop = open('started_tms.txt','r').readlines()
         for tm in tms_to_stop:
-            cmd_list = ['docker','rm','-f',tm[:-1]]
+            cmd_list = ['docker','rm','-f',tm.split()[0]]
             print(' '.join(cmd_list))
             call(cmd_list)
         os.remove('started_tms.txt')
