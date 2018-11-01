@@ -115,6 +115,9 @@ class TMSimulator(object):
             self.send_ss_data.clear()
 
         return self.msg.encode('OK','send_ss_data set to: %s'%self.sending_ss_data)
+    
+    def cmd_is_sending_ss_data(self, arg):
+        return self.msg.encode('OK',self.sending_ss_data)
 
     def cmd_change_rate(self,arg):
         # self.logger.debug('arg %s'%arg)
@@ -124,7 +127,11 @@ class TMSimulator(object):
         else:
             return self.msg.encode('Error','Wrong number of arguments')
 
+    def cmd_get_rate(self,arg):
+        return self.msg.encode('OK',1.0/self.dt)
 
+    def cmd_get_npackets_sent(self,arg):
+        return self.msg.encode('OK',self.npackets)
 
     def run(self):
         for c in self.corrs:
@@ -220,8 +227,7 @@ if (__name__ == "__main__"):
                         help='IP address of the host. For local host it is 127.0.0.1')
     parser.add_argument('-m','--my-ip',dest='my_ip', type = str,default='127.0.0.1' ,
                         help='IP address of the TM. For local host it is 127.0.0.1')
-    parser.add_argument('-t','--tm-id',dest='tm_id', type = int,default=1 ,
-                        help='Target module id')
+    parser.add_argument('-t','--tm-id',dest='tm_id', type = int,default=1, help='Target module id')
 
     args = parser.parse_args()
                  

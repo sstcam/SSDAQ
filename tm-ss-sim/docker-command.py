@@ -41,6 +41,10 @@ path = os.path.dirname(os.path.abspath(__file__))
 #Changing working directory to script location.
 os.chdir(path)
 
+if(os.getuid()>0):
+    print("Need to be root to execute docker commands")
+
+    exit()
 args = parser.parse_args()
 
 
@@ -54,7 +58,11 @@ if(args.build):
 
 if(args.run):
     started_modules = []
-    com_port = 3000
+    com_port = 30001
+    if(os.path.isfile('started_tms.txt')):
+        print('Alrady started TM simulations')
+        print('Stop them first to start more')
+        exit()
     for i in range(int(args.n_modules)):
         sim_name = 'TM%d'%i
         ip = '%s1%02d'%(args.ip,i+1)        
@@ -76,7 +84,7 @@ if(args.run):
         print(' '.join(cmd_list))
         call(cmd_list)
         started_modules.append("%s %s:%s"%(sim_name,ip,com_port))
-        com_port +=1
+        # com_port +=1
 
     f = open('started_tms.txt','w')
     f.writelines([n+'\n' for n in started_modules])
