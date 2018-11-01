@@ -54,25 +54,38 @@ if(not args.cmd ==None):
 def pretty_cam_print(data_dict,size=4,type='s'):
     size+=1
     ms = ''
+    fms = ''
     for i in range(6):
         ms += '|%%-%d%s|'%(size,type)
+        fms += '|%s|'%(' '*size)
+
     tbs = ' '*(size+2)
+    ftbs = ' '*(size+2)
     for i in range(4):
         tbs += '|%%-%d%s|'%(size,type)
+        ftbs += '|%s|'%(' '*size)
     tbs += ' '*size
+    
+    print(ftbs)
     print(tbs%(tuple([data_dict[i].center(size,' ') for i in range(0,4)])))
+    print(ftbs);print(fms)
     print(ms%(tuple([data_dict[i].center(size,' ') for i in range(4,10)])))
+    print(fms);print(fms)
     print(ms%(tuple([data_dict[i].center(size,' ') for i in range(10,16)])))
+    print(fms);print(fms)
     print(ms%(tuple([data_dict[i].center(size,' ') for i in range(16,22)])))
+    print(fms);print(fms)
     print(ms%(tuple([data_dict[i].center(size,' ') for i in range(22,28)])))
+    print(fms);print(ftbs)
     print(tbs%(tuple([data_dict[i].center(size,' ') for i in range(28,32)])))
+    print(ftbs)
 
 if(not args.status == None):
     tms_running = open('started_tms.txt','r').readlines()
     connections = {}
     tm_dict = {}
     for i in range(32):
-        tm_dict[i] = 'TM-%02d OFF'%(i+1)
+        tm_dict[i] = 'OFF'#'TM-%02d OFF'%(i+1)
 
     for tm in tms_running:
         tm = tm.split()
@@ -83,6 +96,6 @@ if(not args.status == None):
         if(args.verbose):
             print(reply)
         if(reply['status'] == 'OK'):
-            tm_dict[int(tm[0][2:])] ='TM-%02d ON'%(int(tm[0][2:])+1)
+            tm_dict[int(tm[0][2:])] ='ON'#'TM-%02d ON'%(int(tm[0][2:])+1)
 
     pretty_cam_print(tm_dict,size=9)    
