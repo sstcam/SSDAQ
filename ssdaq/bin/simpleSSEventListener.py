@@ -45,6 +45,7 @@ while(True):
         break
 
     print("Event number %d run number %d"%(event.event_number,event.run_number))
+    print("Timestamp %d"%event.event_timestamp)
     m = event.timestamps[:,0]>0
     print(np.sum(m))
     print(np.where(m)[0])
@@ -53,6 +54,8 @@ while(True):
     event_counter[m] += 1
     m = event_counter>0
     print(list(zip(np.where(m)[0],event_counter[m])))
+    print(event.data[27,:])
+    print(event.data[28,:])
     if(n>2000):
         break
     n +=1
