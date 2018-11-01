@@ -133,6 +133,9 @@ class SSEventBuilder(Thread):
                 #getting the module number from the last two digits of the ip
                 ip = data[0]
                 module_nr = int(ip[-ip[::-1].find('.'):])%100-1
+                #ensure that the module number is in the allowed range
+                #(mostly important for local simulations)
+                module_nr = module_nr%32 
                 if(self.verbose):
                     print("Got data from %s"%(str(data[0])))
                     print("Module number %d "%(module_nr))
