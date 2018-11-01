@@ -29,7 +29,10 @@ else:
 if(not args.cmd ==None):
     print(' '.join(args.cmd))
     com_sock.send((' '.join(args.cmd)).encode('ascii'))
-    reply = com_sock.recv()
-    print(pickle.loads(reply))
+    reply = pickle.loads(com_sock.recv())
+    print('Received reply from: %s@%s'%(reply['name'],reply['ip']))
+    print('Status: %s'%reply['status'])
+    print(reply['msg'])    
+    
     
 
