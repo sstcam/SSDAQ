@@ -48,7 +48,7 @@ class SSEventBuilder(Thread):
     slow signal events from data packets recieved from 
     Target Modules.
     """
-    def __init__(self,verbose=False):
+    def __init__(self, verbose=False, relaxed_ip_range=False):
         Thread.__init__(self)
         self.data_queue = Queue()
         self.event_queue = Queue()
@@ -68,6 +68,7 @@ class SSEventBuilder(Thread):
         self.event_counter = {}
         self.verbose = verbose
         self.pot_ev = True
+        self.relaxed_ip_range = relaxed_ip_range
     def _build_event(self):
         #updating latest timestamps for a potential event
         for k,v in self.inter_data.items():
@@ -133,9 +134,16 @@ class SSEventBuilder(Thread):
                 #getting the module number from the last two digits of the ip
                 ip = data[0]
                 module_nr = int(ip[-ip[::-1].find('.'):])%100-1
-                #ensure that the module number is in the allowed range
-                #(mostly important for local simulations)
-                module_nr = module_nr%32 
+                if(module_nr>31 and self.relaxed_ip_range):
+                    #ensure that the module number is in the allowed range
+                    #(mostly important for local simulations)
+                    module_nr = module_nr%32
+                elif(module_nr>31):
+                    print('Error: got packets from ip out of range:')
+                    print('   %s'%ip)
+                    print('This can be surpressed if relaxed_ip_range=True')
+                    raise RuntimeError
+                    
                 if(self.verbose):
                     print("Got data from %s"%(str(data[0])))
                     print("Module number %d "%(module_nr))
