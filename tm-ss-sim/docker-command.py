@@ -6,11 +6,6 @@ parser = argparse.ArgumentParser(description='A simple interface to docker to bu
                                             'with docker containers.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-# subparsers = parser.add_subparsers(dest='subp')
-
-# run_p = subparsers.add_parser('run')
-# run_p.add_argument("name")
-
 parser.add_argument('-b', dest='build', action='store_true',
                     help='build docker image')
 
