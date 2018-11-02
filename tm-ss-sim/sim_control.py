@@ -67,9 +67,9 @@ class StatusQuery(object):
                 query = self._query()
                 for k, v in query.items():
                     if(v == None):
-                        query[k] = 'OFF'
+                        query[k] = msg.colr('rf','OFF')
                     else:
-                        query[k] = 'ON'
+                        query[k] = msg.colr('gf','ON')
 
                 pretty_cam_print(query,size=8,tm_numbers=args.tm_numbering)
                 n_updates -= 1
@@ -83,7 +83,7 @@ class StatusQuery(object):
                     if(v == None):
                         query[k] = "--"
                     else:
-                        query[k] = "{}".format(v)
+                        query[k] = tof("{}".format(v))
                 n_updates -= 1       
                 pretty_cam_print(query,size=8,tm_numbers=args.tm_numbering)
                 if(n_updates>0):
