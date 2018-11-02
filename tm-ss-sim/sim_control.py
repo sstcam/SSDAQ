@@ -22,6 +22,7 @@ class SimControl(object):
         args = parse_args(self.parser, self.commands)
         if(args.verbose):
             print(args)
+        
         for k,v in vars(args).items():
             if(v != None and k in self.subprograms):
                 self.subprograms[k].run(v,args)
@@ -40,10 +41,11 @@ class StatusQuery(object):
                                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                                     help='Print state of the simulation',
                                                     description='Some description')
-        self.status_parser.add_argument('query',nargs='?',choices=list(self.queries_map.keys()),help=' kasldlaskdm ')        
-        self.status_parser.add_argument('-n','--n-updates', type=int, default = 0, help = 'helo')
-        self.status_parser.add_argument('-u','--update-freq', type=float, default = 1.0,help = 'helo')
-        self.status_parser.add_argument('-t','--tm-numbering',action='store_true',help = 'balh')
+        self.status_parser.add_argument('query',nargs='?',choices=list(self.queries_map.keys()),
+                                        help='Status or setting to query. If no query is given, running modules are shown')        
+        self.status_parser.add_argument('-n','--n-updates', type=int, default = 1, help = 'Number of subsequent updates')
+        self.status_parser.add_argument('-u','--update-freq', type=float, default = 1.0,help = 'Time between updates in seconds.')
+        self.status_parser.add_argument('-t','--tm-numbering',action='store_true',help = 'Turns on TM enumeration when printing status')
         return self.name        
     
     def run(self, args, sup_args):
@@ -60,9 +62,8 @@ class StatusQuery(object):
 
         if(sup_args.verbose):
             print('Changed working directory to %s'%path)
-        n_updates = args.n_updates+1
+        n_updates = args.n_updates
         if(args.query == None):
-            
             while(n_updates>0):
                 query = self._query()
                 for k, v in query.items():
@@ -170,8 +171,54 @@ class DirectCommand(object):
         print('Status: %s'%reply['status'])
         print(reply['msg'])
 
+class DockerCommand(object):
+    def __init__(self, name = 'docker'):
+        self.name = name
 
-subprg_list = [StatusQuery(),DirectCommand()]
+    def init_parser(self, cmd_parser):
+        self.parser = cmd_parser.add_parser(self.name,formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
+                                 help='Interface to build, start and stop docker containers with TM simulators')
+        self.parser.add_argument('docker-command',nargs='+',help='Docker command',choices=['run','build','stop'])
+
+        self.parser.add_argument('-n', '--network-name',dest='network_name', type=str,
+                    default='my-net',
+                    help='docker network/bridge name')
+
+        self.parser.add_argument('-i', '--ip', type=str,
+                    default='172.18.0.',
+                    help='network ip for the tm modules')
+        return self.name
+    def run(self, args, sup_args):
+        self.sargs = sup_args
+        self.args = args
+        print('DockerCommand')
+        print(args)
+        path = os.path.dirname(os.path.abspath(__file__))
+        #Changing working directory to script location.
+        os.chdir(path)
+
+        if(os.getuid()>0):
+            print("Need to be root to execute docker commands")
+            exit()
+
+        if(self.args == 'build'):
+            call_list =["/usr/bin/docker", "build", "-t", "ss-sim", '.'] 
+            call(call_list)
+            
+        if(self.args == 'stop'):
+            if(os.path.isfile('started_tms.txt')):
+                tms_to_stop = open('started_tms.txt','r').readlines()
+                for tm in tms_to_stop:
+                    cmd_list = ['docker','rm','-f',tm.split()[0]]
+                    print(' '.join(cmd_list))
+                    call(cmd_list)
+                os.remove('started_tms.txt')
+                print('Removed %d container(s)'%len(tms_to_stop))
+            else:
+                print('No container file found')
+                print('Not stopping any simulations')
+
+subprg_list = [StatusQuery(),DirectCommand(),DockerCommand()]
 sim_ctrl = SimControl(subprg_list)
 sim_ctrl.run()
 

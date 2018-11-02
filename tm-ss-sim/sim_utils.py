@@ -23,7 +23,7 @@ def parse_args(parser, commands):
         parser.parse_args(argv, namespace=n)
     return args
 
-from pyparsing import *
+from pyparsing import alphas, oneOf, delimitedList,nums, Literal, Word, Combine, Optional, Suppress
 
 ESC = Literal('\x1b')
 integer = Word(nums)
@@ -53,26 +53,31 @@ def pretty_cam_print(data_dict,size=4,type='s',tm_numbers=False):
     for i in range(4):
         tbs += '|%%-%d%s|'%(size*0,type)
         ftbs += '|%s|'%(' '*size)
-    tbs += ' '*size
+    
     for k,v in data_dict.items():
         data_dict[k] = v.center(len(v)-len(nonAnsiString(v))+size,' ')
+    enum_tm = {}
+    for i in range(32):
+        s = msg.colr('fv','TM-%02d'%(1+i))
+        enum_tm[i] = s.center(len(s)-len(nonAnsiString(s))+size,' ')
+    
     print(ftbs)
-    if(tm_numbers): print(tbs%(tuple([('TM-%02d'%(1+i)).center(size,' ') for i in range(0,4)])))
+    if(tm_numbers): print(tbs%(tuple([enum_tm[i] for i in range(0,4)])))
     print(tbs%(tuple([data_dict[i] for i in range(0,4)])))
     print(ftbs);print(fms)
-    if(tm_numbers): print(ms%(tuple([('TM-%02d'%(1+i)).center(size,' ') for i in range(4,10)])))
+    if(tm_numbers): print(ms%(tuple([enum_tm[i] for i in range(4,10)])))
     print(ms%(tuple([data_dict[i] for i in range(4,10)])))
     print(fms);print(fms)
-    if(tm_numbers): print(ms%(tuple([('TM-%02d'%(1+i)).center(size,' ') for i in range(10,16)])))
+    if(tm_numbers): print(ms%(tuple([enum_tm[i] for i in range(10,16)])))
     print(ms%(tuple([data_dict[i] for i in range(10,16)])))
     print(fms);print(fms)
-    if(tm_numbers): print(ms%(tuple([('TM-%02d'%(1+i)).center(size,' ') for i in range(16,22)])))
+    if(tm_numbers): print(ms%(tuple([enum_tm[i] for i in range(16,22)])))
     print(ms%(tuple([data_dict[i] for i in range(16,22)])))
     print(fms);print(fms)
-    if(tm_numbers): print(ms%(tuple([('TM-%02d'%(1+i)).center(size,' ') for i in range(22,28)])))
+    if(tm_numbers): print(ms%(tuple([enum_tm[i] for i in range(22,28)])))
     print(ms%(tuple([data_dict[i] for i in range(22,28)])))
     print(fms);print(ftbs)
-    if(tm_numbers): print(tbs%(tuple([('TM-%02d'%(1+i)).center(size,' ') for i in range(28,32)])))
+    if(tm_numbers): print(tbs%(tuple([enum_tm[i] for i in range(28,32)])))
     print(tbs%(tuple([data_dict[i] for i in range(28,32)])))
     print(ftbs)
 
