@@ -138,7 +138,7 @@ class SSEventBuilder(Thread):
                 if(len(data[1])%(READOUT_LENGTH) != 0):
                     self.log.warn("Warning: Got unsuported packet size, skipping packet")
                     continue
-                    
+
                 #getting the module number from the last two digits of the ip
                 ip = data[0]
                 module_nr = int(ip[-ip[::-1].find('.'):])%100-1
@@ -146,10 +146,11 @@ class SSEventBuilder(Thread):
                     #ensure that the module number is in the allowed range
                     #(mostly important for local simulations)
                     module_nr = module_nr%32
+                    self.log.debug('Got data from ip %s which is outsie the allowed range'%ip)
                 elif(module_nr>31):
                     self.log.error('Error: got packets from ip out of range:')
                     self.log.error('   %s'%ip)
-                    self.log.error('This can be surpressed if relaxed_ip_range=True')
+                    self.log.error('This can be supressed if relaxed_ip_range=True')
                     raise RuntimeError
                     
                 self.log.debug("Got data from %s assigned to module %d"%(str(data[0]),module_nr+1))
