@@ -3,7 +3,7 @@ from ssdaq.event_receivers import EventFileWriter
 import argparse
 
 
-parser = argparse.ArgumentParser(description='Start a simple event data listener.',
+parser = argparse.ArgumentParser(description='Start a simple event data writer.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('-l', dest='listen_port', type=str,
