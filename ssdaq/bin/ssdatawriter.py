@@ -2,9 +2,6 @@ from ssdaq.event_receivers import EventFileWriter
 
 import argparse
 
-# import signal
-# import sys
-
 
 parser = argparse.ArgumentParser(description='Start a simple event data listener.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)

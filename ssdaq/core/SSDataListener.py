@@ -1,5 +1,6 @@
 import socket
 from threading import Thread
+import logging
 
 class SSDataListener(Thread):
     """
@@ -12,10 +13,14 @@ class SSDataListener(Thread):
         self.port = int(port)
         self.data_queue = data_queue
         self.running = False
+        self.log = logging.getLogger('ssdaq.SSDataListener')
+        self.log.info('Initialized data listener to listen on port: %d'%self.port)
 
     def run(self):
+        
         self.running = True
         self.setName('SSDataListener')
+        self.log.info('Starting data listener thread')
         # Create a TCP/IP socket
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as data_socket:
             # Bind the socket to the port
