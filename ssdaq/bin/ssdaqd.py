@@ -20,8 +20,8 @@ parser.add_argument('-V','--verbose',nargs='?',const='DEBUG',default='INFO', des
                     help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
 parser.add_argument('-r','--relaxed-ip', action='store_true',
-                    help='The event builder relaxes allowed ip range by mapping ip with 2'
-                    ' last digits of ip address > 32  to valid TM numbers. Note that several'
+                    help='The event builder relaxes the allowed ip range by mapping ip addesses with 2'
+                    ' last digits of the address being >32 to valid TM numbers. Note that several'
                     ' ip addresses will map to the same TM. Use this option with cause.')
 
 from ssdaq import sslogger
