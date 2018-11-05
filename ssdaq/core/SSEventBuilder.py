@@ -11,9 +11,7 @@ class SSEvent(object):
     """
 
     def __init__(self,timestamp=0,event_number = 0,run_number = 0):
-        
-
-        
+                
         self.event_number = event_number
         self.run_number = run_number
         self.event_timestamp = timestamp
@@ -139,7 +137,8 @@ class SSEventBuilder(Thread):
                 data = self.data_queue.get()
                 nreadouts = int(len(data[1])/(READOUT_LENGTH))
                 if(len(data[1])%(READOUT_LENGTH) != 0):
-                    self.log.warn("Warning: Got unsuported packet size")
+                    self.log.warn("Warning: Got unsuported packet size, skipping packet")
+                    continue
                     
                 #getting the module number from the last two digits of the ip
                 ip = data[0]
