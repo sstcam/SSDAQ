@@ -129,7 +129,6 @@ class SSEventBuilder(Thread):
         self.running = True
         self.setName('SSEventBuilder')
         last_nevents = 0
-        c = 0
         while(self.running):
             
             while(not self.data_queue.empty() or not self.pot_ev):
