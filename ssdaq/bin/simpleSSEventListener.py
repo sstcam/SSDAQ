@@ -54,6 +54,8 @@ while(True):
     event_counter[m] += 1
     m = event_counter>0
     print(list(zip(np.where(m)[0],event_counter[m])))
+    print(event.data[27,:])
+    print(event.data[28,:])
     if(n>2000):
         break
     n +=1
