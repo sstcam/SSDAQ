@@ -3,7 +3,7 @@ from threading import Thread
 import numpy as np
 import tables
 from tables import IsDescription,open_file,UInt64Col,Float64Col,Float32Col
-
+import logging
 
 class SSEventTableDs(IsDescription):
     event_number = UInt64Col()
@@ -13,18 +13,25 @@ class SSEventTableDs(IsDescription):
     time_stamps = UInt64Col((32,2))
 
 class EventFileWriter(Thread):
-    
+    """
+    An event data file writer for slow signal data.
+
+    This class uses a instance of an SSEventListener to receive events and
+    implements a HDF5 table writer that writes the events to disk.
+    """
     def __init__(self, filename):
         Thread.__init__(self)
         self.filename = filename
-        self.event_listener = SSEventListener.SSEventListener()
+        self.log = logging.getLogger('ssdaq.EventFileWriter')
+        self.event_listener = SSEventListener.SSEventListener(logger=self.log.getChild('EventListener'))
         self.file = open_file(filename, mode="w", title="CHEC-S Slow signal monitor data")
         self.group = self.file.create_group("/", 'SlowSignal', 'Slow signal data')
         self.table = self.file.create_table(self.group, 'readout', SSEventTableDs, "Slow signal readout")
         self.running = False
         self.event_counter = 0
-    
+        self.log.info('Initialized, will write events to file: %s'%self.filename)
     def run(self):
+        self.log.info('Starting writer thread')
         self.event_listener.start()
         self.running = True
         ev_row = self.table.row  
@@ -37,9 +44,11 @@ class EventFileWriter(Thread):
             ev_row.append()
             self.table.flush()
             self.event_counter +=1
+        self.log.info('Stopping listener thread')
         self.event_listener.CloseThread()
+        self.log.info('Closing file %s'%self.filename)
         self.file.close()
-        print('EventFileWriter has written %d events to file'%self.event_counter)
+        self.log.info('EventFileWriter has written %d events to file %s'%(self.event_counter,self.filename))
 
 
 

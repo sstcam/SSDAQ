@@ -3,10 +3,11 @@ from ssdaq.core import SSEventBuilder
 from threading import Thread
 import zmq
 from queue import Queue
+import logging
 
 class SSEventListener(Thread):
     id_counter = 0
-    def __init__(self, port = '5555'):
+    def __init__(self, port = '5555',logger=None):
         Thread.__init__(self)
         
         self.context = zmq.Context()
@@ -20,11 +21,17 @@ class SSEventListener(Thread):
         self.inproc_sock_name = "SSEventListener%d"%(self.id_counter) 
         self.close_sock = self.context.socket(zmq.PAIR)
         self.close_sock.bind("inproc://"+self.inproc_sock_name)
-
+        if(logger == None):
+            self.log=logging.getLogger('ssdaq.SSEventListener')
+        else:
+            self.log=logger
     def CloseThread(self):
+
         if(self.running):
+            self.log.debug('Sending close message to listener thread')
             self.close_sock.send(b"close")
-        # #Empty the buffer after closing the recv thread
+        self.log.debug('Emptying event buffer')
+        #Empty the buffer after closing the recv thread
         while(not self._event_buffer.empty()):
             self._event_buffer.get()
             self._event_buffer.task_done()
@@ -36,11 +43,12 @@ class SSEventListener(Thread):
         return event
 
     def run(self):
-        print('Starting listener')
+        self.log.info('Starting listener')
         recv_close = self.context.socket(zmq.PAIR)
-        recv_close.connect("inproc://"+self.inproc_sock_name)
+        con_str = "inproc://"+self.inproc_sock_name
+        recv_close.connect(con_str)
         self.running = True
-
+        self.log.info('Connecting to %s'%con_str)
         poller = zmq.Poller()
         poller.register(self.sock,zmq.POLLIN)
         poller.register(recv_close,zmq.POLLIN)
@@ -55,6 +63,6 @@ class SSEventListener(Thread):
                 event.unpack(data)
                 self._event_buffer.put(event)
             else:
-                print('Stopping')
+                self.log.info('Stopping')
                 break
         self.running = False

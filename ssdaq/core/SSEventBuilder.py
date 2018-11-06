@@ -2,6 +2,8 @@ from queue import Queue
 from threading import Thread
 import numpy as np
 import struct
+import logging
+
 
 class SSEvent(object):
     """
@@ -9,7 +11,7 @@ class SSEvent(object):
     """
 
     def __init__(self,timestamp=0,event_number = 0,run_number = 0):
-        
+                
         self.event_number = event_number
         self.run_number = run_number
         self.event_timestamp = timestamp
@@ -48,8 +50,11 @@ class SSEventBuilder(Thread):
     slow signal events from data packets recieved from 
     Target Modules.
     """
-    def __init__(self, verbose=False, relaxed_ip_range=False):
+    def __init__(self, verbose=False, relaxed_ip_range=False, run_number = 1):
         Thread.__init__(self)
+        
+        self.log = logging.getLogger('ssdaq.SSEventBuilder')
+
         self.data_queue = Queue()
         self.event_queue = Queue()
 
@@ -61,14 +66,14 @@ class SSEventBuilder(Thread):
             self.inter_data[i] = []
         
         self.running = False
-        self.event_tw = int(0.05*1e9)
+        self.event_tw = int(0.1*1e9)
         self.nprocessed_packets = 0
         self.nconstructed_events = 1
         self.packet_counter = {}
         self.event_counter = {}
-        self.verbose = verbose
         self.pot_ev = True
         self.relaxed_ip_range = relaxed_ip_range
+        self.run_number = run_number
     def _build_event(self):
         #updating latest timestamps for a potential event
         for k,v in self.inter_data.items():
@@ -77,10 +82,15 @@ class SSEventBuilder(Thread):
                 self.next_ts[k] = v[0][0]
             else:
                 self.next_ts[k] = 0
-
+        self.log.debug('Next timestamps')
+        self.log.debug(self.next_ts)
+        ms = self.next_ts>0
+        if(np.sum(ms)>0):
+            self.log.debug((self.next_ts[ms]-float(np.min(self.next_ts[ms])))*1e-9)
+        self.log.debug(self.inter_queue_lengths)
         #Data from one TM is enough for an event
         if((np.sum(self.next_ts>0)>0)  
-            &(np.max(self.inter_queue_lengths)>20)  
+            &(np.max(self.inter_queue_lengths)>40)  
             # &(np.mean(self.inter_queue_lengths)>2) 
             ):
 
@@ -90,7 +100,7 @@ class SSEventBuilder(Thread):
             m = ((self.next_ts-earliest_ts) < self.event_tw) & ((self.next_ts-earliest_ts)>=0)
             
             #construct event
-            event = SSEvent(int(np.mean(self.next_ts[m])),self.nconstructed_events,1)
+            event = SSEvent(int(np.mean(self.next_ts[m])),self.nconstructed_events,self.run_number)
             for k in np.where(m)[0]:
                 if(k in self.event_counter):
                     self.event_counter[k] += 1
@@ -111,17 +121,19 @@ class SSEventBuilder(Thread):
                 event.timestamps[k][0]=tmp_data[0]
                 event.timestamps[k][1]=tmp_data[33]
                 
-            print('Built event')
+            if(self.nconstructed_events%100==0):
+                self.log.info('Built event %d'%self.nconstructed_events)
+            self.log.debug('Built event %d'%self.nconstructed_events)
             self.event_queue.put(event)
             self.nconstructed_events += 1
         else:
             self.pot_ev = False
 
     def run(self):
+        self.log.info('Starting event builder thread')
         self.running = True
         self.setName('SSEventBuilder')
         last_nevents = 0
-        c = 0
         while(self.running):
             
             while(not self.data_queue.empty() or not self.pot_ev):
@@ -129,8 +141,9 @@ class SSEventBuilder(Thread):
                 data = self.data_queue.get()
                 nreadouts = int(len(data[1])/(READOUT_LENGTH))
                 if(len(data[1])%(READOUT_LENGTH) != 0):
-                    print("Warning: Got unsuported packet size")
-                
+                    self.log.warn("Warning: Got unsuported packet size, skipping packet")
+                    continue
+
                 #getting the module number from the last two digits of the ip
                 ip = data[0]
                 module_nr = int(ip[-ip[::-1].find('.'):])%100-1
@@ -138,18 +151,17 @@ class SSEventBuilder(Thread):
                     #ensure that the module number is in the allowed range
                     #(mostly important for local simulations)
                     module_nr = module_nr%32
+                    self.log.debug('Got data from ip %s which is outsie the allowed range'%ip)
                 elif(module_nr>31):
-                    print('Error: got packets from ip out of range:')
-                    print('   %s'%ip)
-                    print('This can be surpressed if relaxed_ip_range=True')
+                    self.log.error('Error: got packets from ip out of range:')
+                    self.log.error('   %s'%ip)
+                    self.log.error('This can be supressed if relaxed_ip_range=True')
                     raise RuntimeError
                     
-                if(self.verbose):
-                    print("Got data from %s"%(str(data[0])))
-                    print("Module number %d "%(module_nr))
+                self.log.debug("Got data from %s assigned to module %d"%(str(data[0]),module_nr+1))
 
                 for i in range(nreadouts):
-                    unpacked_data = struct.unpack_from('>Q32HQ32H',data[1],i*(64*2+2*8))
+                    unpacked_data = struct.unpack_from('>Q32HQ32H',data[1],i*(READOUT_LENGTH))
                     self.inter_data[module_nr].append((unpacked_data[0],unpacked_data))
                 
                 if(module_nr in self.packet_counter):
@@ -160,14 +172,12 @@ class SSEventBuilder(Thread):
                 self.nprocessed_packets += 1
 
             self._build_event()
-            c += 1
-            print(c)    
-            if(self.nprocessed_packets>last_nevents and self.verbose):
-                print("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
+            if(self.nprocessed_packets>last_nevents):
+                self.log.debug("Processed packets %d, Constructed events: %d"%(self.nprocessed_packets,self.nconstructed_events))
                 last_nevents = self.nprocessed_packets
-                print(self.packet_counter)
-                print(self.event_counter)
-                print('Buffer lengths %d %d %d %d'%(self.data_queue.qsize(),
+                self.log.debug(self.packet_counter)
+                self.log.debug(self.event_counter)
+                self.log.debug('Buffer lengths %d %d %d %d'%(self.data_queue.qsize(),
                                                     self.event_queue.qsize(),
                                                     np.max(self.inter_queue_lengths),
                                                     len(self.inter_data[1])))

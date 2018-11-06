@@ -2,11 +2,8 @@ from ssdaq.event_receivers import EventFileWriter
 
 import argparse
 
-# import signal
-# import sys
 
-
-parser = argparse.ArgumentParser(description='Start a simple event data listener.',
+parser = argparse.ArgumentParser(description='Start a simple event data writer.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('-l', dest='listen_port', type=str,
@@ -26,7 +23,7 @@ data_writer.start()
 
 running = True
 while(running):
-    ans = input('To stop type `yes`:')
+    ans = input('To stop type `yes`: \n')
     if(ans == 'yes'):
         data_writer.running = False
         running = False
