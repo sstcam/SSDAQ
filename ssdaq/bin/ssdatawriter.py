@@ -23,7 +23,7 @@ data_writer.start()
 
 running = True
 while(running):
-    ans = input('To stop type `yes`:')
+    ans = input('To stop type `yes`: \n')
     if(ans == 'yes'):
         data_writer.running = False
         running = False

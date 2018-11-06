@@ -45,6 +45,7 @@ while(True):
         break
 
     print("Event number %d run number %d"%(event.event_number,event.run_number))
+    print("Timestamp %d ns"%(event.event_timestamp))
     m = event.timestamps[:,0]>0
     print(np.sum(m))
     print(np.where(m)[0])

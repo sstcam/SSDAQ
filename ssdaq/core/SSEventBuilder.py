@@ -66,7 +66,7 @@ class SSEventBuilder(Thread):
             self.inter_data[i] = []
         
         self.running = False
-        self.event_tw = int(0.05*1e9)
+        self.event_tw = int(0.1*1e9)
         self.nprocessed_packets = 0
         self.nconstructed_events = 1
         self.packet_counter = {}
@@ -82,10 +82,15 @@ class SSEventBuilder(Thread):
                 self.next_ts[k] = v[0][0]
             else:
                 self.next_ts[k] = 0
-
+        self.log.debug('Next timestamps')
+        self.log.debug(self.next_ts)
+        ms = self.next_ts>0
+        if(np.sum(ms)>0):
+            self.log.debug((self.next_ts[ms]-float(np.min(self.next_ts[ms])))*1e-9)
+        self.log.debug(self.inter_queue_lengths)
         #Data from one TM is enough for an event
         if((np.sum(self.next_ts>0)>0)  
-            &(np.max(self.inter_queue_lengths)>20)  
+            &(np.max(self.inter_queue_lengths)>40)  
             # &(np.mean(self.inter_queue_lengths)>2) 
             ):
 
