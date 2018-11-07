@@ -10,7 +10,7 @@ class SSEvent(object):
     A class representing a slow signal event
     """
 
-    def __init__(self,timestamp=0,event_number = 0,run_number = 0):
+    def __init__(self, timestamp=0, event_number = 0, run_number = 0):
                 
         self.event_number = event_number
         self.run_number = run_number
@@ -74,6 +74,7 @@ class SSEventBuilder(Thread):
         self.pot_ev = True
         self.relaxed_ip_range = relaxed_ip_range
         self.run_number = run_number
+
     def _build_event(self):
         #updating latest timestamps for a potential event
         for k,v in self.inter_data.items():
@@ -146,7 +147,7 @@ class SSEventBuilder(Thread):
 
                 #getting the module number from the last two digits of the ip
                 ip = data[0]
-                module_nr = int(ip[-ip[::-1].find('.'):])%100-1
+                module_nr = int(ip[-ip[::-1].find('.'):])%100
                 if(module_nr>31 and self.relaxed_ip_range):
                     #ensure that the module number is in the allowed range
                     #(mostly important for local simulations)
@@ -158,7 +159,7 @@ class SSEventBuilder(Thread):
                     self.log.error('This can be supressed if relaxed_ip_range=True')
                     raise RuntimeError
                     
-                self.log.debug("Got data from %s assigned to module %d"%(str(data[0]),module_nr+1))
+                self.log.debug("Got data from %s assigned to module %d"%(str(data[0]),module_nr))
 
                 for i in range(nreadouts):
                     unpacked_data = struct.unpack_from('>Q32HQ32H',data[1],i*(READOUT_LENGTH))

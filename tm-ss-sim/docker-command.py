@@ -60,7 +60,7 @@ if(args.run):
         exit()
     for i in range(int(args.n_modules)):
         sim_name = 'TM%d'%i
-        ip = '%s1%02d'%(args.ip,i+1)        
+        ip = '%s1%02d'%(args.ip,i)        
         cmd_list = ["docker", 
             "run",
             '--name', '%s'%(sim_name),

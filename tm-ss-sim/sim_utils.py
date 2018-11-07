@@ -58,7 +58,7 @@ def pretty_cam_print(data_dict,size=4,type='s',tm_numbers=False):
         data_dict[k] = v.center(len(v)-len(nonAnsiString(v))+size,' ')
     enum_tm = {}
     for i in range(32):
-        s = msg.colr('fv','TM-%02d'%(1+i))
+        s = msg.colr('fv','TM-%02d'%(i))
         enum_tm[i] = s.center(len(s)-len(nonAnsiString(s))+size,' ')
     
     print(ftbs)

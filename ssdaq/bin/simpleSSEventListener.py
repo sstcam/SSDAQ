@@ -36,6 +36,7 @@ n_modules_per_event =[]
 n = 0
 signal.alarm(0)
 ctrc_count = 0
+print('Press `ctrl-C` to stop')
 while(True):
     try:
         event = ev_list.GetEvent()
@@ -43,7 +44,8 @@ while(True):
         print("\nClosing listener")
         ev_list.CloseThread()
         break
-
+    if(n>0):
+        print('\033[7   A ')    
     print("Event number %d run number %d"%(event.event_number,event.run_number))
     print("Timestamp %d ns"%(event.event_timestamp))
     m = event.timestamps[:,0]>0
@@ -54,10 +56,10 @@ while(True):
     event_counter[m] += 1
     m = event_counter>0
     print(list(zip(np.where(m)[0],event_counter[m])))
-    print(event.data[27,:])
-    print(event.data[28,:])
-    if(n>2000):
-        break
+    # print(event.data[3,:].__)
+
+        # if(n>2000):
+        #     break
     n +=1
 plt.figure()
 plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
