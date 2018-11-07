@@ -1,5 +1,6 @@
 from queue import Queue
 from threading import Thread
+import threading
 import numpy as np
 import struct
 import logging
@@ -131,6 +132,17 @@ class SSEventBuilder(Thread):
             self.pot_ev = False
 
     def run(self):
+        self.exc = None
+        try:
+            # Possibly throws an exception
+            self.run_builder()
+        except:
+            import sys
+            self.exc = sys.exc_info()
+            # Save details of the exception thrown but don't rethrow,
+            # just complete the function
+
+    def run_builder(self):
         self.log.info('Starting event builder thread')
         self.running = True
         self.setName('SSEventBuilder')
@@ -184,8 +196,12 @@ class SSEventBuilder(Thread):
                                                     len(self.inter_data[1])))
 
 
-
-
+    def join(self):
+        threading.Thread.join(self)
+        if self.exc:
+          msg = "Thread '%s' threw an exception: %s" % (self.getName(), self.exc[1])
+          new_exc = Exception(msg)
+          raise new_exc.with_traceback(self.exc[2])
 
 
 
