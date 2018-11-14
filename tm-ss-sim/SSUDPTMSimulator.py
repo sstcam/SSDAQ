@@ -109,6 +109,7 @@ class TMSimulator(object):
             self.sending_ss_data = False
         else:
             return self.msg.encode('Error','Argument `%s` not recognized as boolean')
+        
         if(self.sending_ss_data):
             self.send_ss_data.set()
         else:

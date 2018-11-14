@@ -1,4 +1,8 @@
-from ssdaq.core import SSEventListener
+import sys
+import os
+from os.path import dirname as dn
+sys.path = [dn(dn(dn(os.path.realpath(__file__))))] + sys.path
+from ssdaq import SSEventListener
 import numpy as np
 from matplotlib import pyplot as plt
 import argparse
@@ -16,7 +20,7 @@ parser.add_argument('-l', dest='listen_port', type=str,
 
 args = parser.parse_args()
 
-ev_list = SSEventListener.SSEventListener(args.listen_port)
+ev_list = SSEventListener(args.listen_port)
 ev_list.start()
 
 # def signal_handler(sig, frame):

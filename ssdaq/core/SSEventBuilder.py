@@ -53,8 +53,8 @@ class SSEventBuilder(Thread):
     """
     def __init__(self, verbose=False, relaxed_ip_range=False, run_number = 1):
         Thread.__init__(self)
-        
-        self.log = logging.getLogger('ssdaq.SSEventBuilder')
+        from ssdaq import sslogger
+        self.log = sslogger.getChild('SSEventBuilder')
 
         self.data_queue = Queue()
         self.event_queue = Queue()

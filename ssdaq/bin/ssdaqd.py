@@ -1,6 +1,8 @@
-from ssdaq.core.SSDataListener import SSDataListener
-from ssdaq.core.SSEventBuilder import SSEventBuilder
-from ssdaq.core.SSEventDataPublisher import SSEventDataPublisher
+import sys
+import os
+from os.path import dirname as dn
+sys.path = [dn(dn(dn(os.path.realpath(__file__))))] + sys.path
+from ssdaq import SSDataListener,SSEventBuilder, SSEventDataPublisher
 
 import time
 import argparse
@@ -25,9 +27,6 @@ parser.add_argument('-r','--relaxed-ip', action='store_true',
                     ' ip addresses will map to the same TM. Use this option with cause.')
 
 from ssdaq import sslogger
-
-
-
 import logging;
 args = parser.parse_args()
 eval("sslogger.setLevel(logging.%s)"%args.verbose)

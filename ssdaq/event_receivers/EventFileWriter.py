@@ -20,9 +20,10 @@ class EventFileWriter(Thread):
     implements a HDF5 table writer that writes the events to disk.
     """
     def __init__(self, filename):
+        from ssdaq import sslogger
         Thread.__init__(self)
         self.filename = filename
-        self.log = logging.getLogger('ssdaq.EventFileWriter')
+        self.log = sslogger.getChild('EventFileWriter')
         self.event_listener = SSEventListener.SSEventListener(logger=self.log.getChild('EventListener'))
         self.file = open_file(filename, mode="w", title="CHEC-S Slow signal monitor data")
         self.group = self.file.create_group("/", 'SlowSignal', 'Slow signal data')
@@ -30,6 +31,7 @@ class EventFileWriter(Thread):
         self.running = False
         self.event_counter = 0
         self.log.info('Initialized, will write events to file: %s'%self.filename)
+    
     def run(self):
         self.log.info('Starting writer thread')
         self.event_listener.start()
