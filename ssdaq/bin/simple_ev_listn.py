@@ -11,13 +11,15 @@ import signal
 import sys
 
 def main():
-    
+
     parser = argparse.ArgumentParser(description='Start a simple event data listener.',
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-l', dest='listen_port', type=str,
                         default='5555',
                         help='port for incoming event data')
+
+    parser.add_argument('-t',dest='tm_numb',type=int,default=0,help='Set target module number for which SS data is printed out')
 
     args = parser.parse_args()
 
@@ -49,8 +51,8 @@ def main():
             print("\nClosing listener")
             ev_list.CloseThread()
             break
-        if(n>0):
-            print('\033[7   A ')    
+        # if(n>0):
+        #     print('\033[7   A ')    
         print("Event number %d run number %d"%(event.event_number,event.run_number))
         print("Timestamp %d ns"%(event.event_timestamp))
         m = event.timestamps[:,0]>0
@@ -61,10 +63,7 @@ def main():
         event_counter[m] += 1
         m = event_counter>0
         print(list(zip(np.where(m)[0],event_counter[m])))
-        # print(event.data[3,:].__)
-
-            # if(n>2000):
-            #     break
+        print(event.data[args.tm_numb])
         n +=1
     plt.figure()
     plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
