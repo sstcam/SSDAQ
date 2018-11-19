@@ -14,7 +14,7 @@ LABEL description="Docker file for TM simulation."
 ADD SSUDPTMSimulator.py /app/
 WORKDIR /app
 
-# expose port
+# expose ports
 EXPOSE 2009/udp
 EXPOSE 30001
 
