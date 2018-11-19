@@ -6,6 +6,16 @@ This project contains a set of modules and scripts to receive slow signal data v
 
 
 ## Installation
+For a normal install run 
+
+`python setup.py install`
+
+If you are developing it is recommendended to do
+
+`pip install -e .`
+
+instead and adding the `--user` option if not installing in a conda env. This lets changes made to the project automatically propagate to the isntall without the need to reinstall. 
+
 #### Prerequisites
 
 The project is written assuming it will be run with python3.5 or above. Additional dependencies to run the base part of the projects are listed here: 
