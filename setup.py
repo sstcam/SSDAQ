@@ -28,7 +28,8 @@ setup(name="SSDAQ",
                     [
                         'ssdaq = ssdaq.bin.ssdaqd:main',
                         'ssdatawriter = ssdaq.bin.ssdatawriter:main',
-                        'ss-example-listener = ssdaq.bin.simple_ev_listn:main'
+                        'ss-example-listener = ssdaq.bin.simple_ev_listn:main',
+                        'control-ssdaq=ssdaq.bin.ssdaq_control:main'
                     ]
                     }
       )
