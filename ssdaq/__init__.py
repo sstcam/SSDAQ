@@ -1,11 +1,9 @@
 import logging as _logging
 
-from .core.SSEventBuilder import SSEventBuilder
-from .core.SSEventBuilder import SSEvent
-from .core.SSEventDataPublisher import SSEventDataPublisher
-from .core.SSDataListener import SSDataListener
-from .core.SSEventListener import SSEventListener
 
+from .core.SSEventBuilder import SSEvent
+from .core.SSEventListener import SSEventListener
+from .core.ss_event_builder import SSEventBuilder, ZMQEventPublisher
 
 #This is the root logger for the core modules
 sslogger = _logging.getLogger(__name__)

@@ -3,26 +3,25 @@
 import sys
 import os
 def main():
-    # from os.path import dirname as dn
-
-    # sys.path = [dn(dn(dn(os.path.realpath(__file__))))] + sys.path
-    from ssdaq import SSDataListener,SSEventBuilder, SSEventDataPublisher
-
+    from ssdaq import SSEventBuilder, ZMQEventPublisher
     import time
     import argparse
 
     parser = argparse.ArgumentParser(description='Start slow signal data acquisition.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-l', dest='listen_port', type=str,
-                        default='2009',
+    parser.add_argument('-l', dest='listen_port', type=int,
+                        default=2009,
                         help='port for incoming data')
 
-    parser.add_argument('-p', dest='publishing_port', type=str,
-                        default='5555',
+    parser.add_argument('-p', dest='publishing_port', type=int,
+                        default=5555,
                         help='port for publishing data')
 
-    parser.add_argument('-V','--verbose',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
+    parser.add_argument('-i',dest='publishing_interface',type=str,
+                        default='127.0.0.101',help='The publishing destination')
+
+    parser.add_argument('-V','--verbosity',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
     parser.add_argument('-r','--relaxed-ip', action='store_true',
@@ -35,15 +34,10 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    eb = SSEventBuilder(args.verbose,args.relaxed_ip)
-    dl = SSDataListener(args.listen_port,eb.data_queue)
-    ep = SSEventDataPublisher(args.publishing_port,eb.event_queue)
-
-    dl.start()
-    time.sleep(1)
-    eb.start()
-    time.sleep(1)
-    ep.start()
+    ep = ZMQEventPublisher(port=args.publishing_port,ip=args.publishing_interface)
+    eb = SSEventBuilder(relaxed_ip_range=args.relaxed_ip,listen_addr=('0.0.0.0',args.listen_port),publishers = [ep])
+    
+    eb.run()
 
 
 if __name__ == "__main__":

@@ -58,9 +58,12 @@ class PartialEvent:
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
 
-
+from ssdaq import SSEvent
 class SSEventBuilder:
-    def __init__(self, relaxed_ip_range=False, event_tw = int(0.0001*1e9), listen_addr=('0.0.0.0', 2009), publishers = []):
+    def __init__(self, relaxed_ip_range=False, 
+                       event_tw = int(0.0001*1e9), 
+                       listen_addr=('0.0.0.0', 2009), 
+                       publishers = []):
         from ssdaq import sslogger
         self.log = sslogger.getChild('SSEventBuilder')
         self.relaxed_ip_range = relaxed_ip_range
@@ -68,11 +71,13 @@ class SSEventBuilder:
         # self.building_events = 
         # self.publishing_events = 
 
-        self.listen_addr = listen_addr
+        
 
         #settings 
         self.event_tw = event_tw
-
+        self.listen_addr = listen_addr
+        self.buffer_len = 10000
+        
         #counters
         self.nprocessed_packets = 0
         self.nconstructed_events = 1
@@ -83,12 +88,16 @@ class SSEventBuilder:
         self.corrs = [self.builder()]
     
         #buffers
-        self.buffer_len = 10000
+
         self.inter_buff = []
         self.partial_ev_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
         
         self.publishers = publishers 
-    
+        #Giving the event loop to the publishers     
+        for p in self.publishers:
+            p.give_loop(self.loop)
+
+
     def run(self):
         self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
         listen = self.loop.create_datagram_endpoint(
@@ -217,7 +226,6 @@ class SSEventBuilder:
                     pub.publish(event)
     
     def build_event(self,pe):
-        from SSEventBuilder import SSEvent
         #construct event
         event = SSEvent(int(pe.timestamp),self.nconstructed_events,0)
         for i,tmp_data in enumerate(pe.data):
@@ -245,14 +253,18 @@ class SSEventBuilder:
 
 
 class ZMQEventPublisher():
-    def __init__(self,port,ip,loop = None):
+    def __init__(self,port,ip):
         import zmq
+        import logging
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.PUB)
         con_str = 'tcp://%s:'%ip+str(port)
         self.sock.bind(con_str)
         self.log = logging.getLogger('ssdaq.SSEventDataPublisher')
         self.log.info('Initialized event publisher on: %s'%con_str)
+    def give_loop(self,loop):
+        self.loop = loop
+
     def publish(self,event):
         self.sock.send(event.pack())
 

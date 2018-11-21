@@ -50,7 +50,7 @@ class TMSimulator(object):
         self.npackets_c = 0
         self.data = np.random.uniform(0,400,64)
         self.sending_ss_data = True
-        self.dt = .04
+        self.dt = 1.0
         self.t_past = datetime.utcnow()        
         self.t1 = datetime.utcnow()
         self.send_ss_datae = asyncio.Event()
@@ -200,8 +200,9 @@ class TMSimulator(object):
             t2 = datetime.utcnow()
             sleeptime = -(t2-self.t1).microseconds/1000000.0 + self.dt#*self.dt/actual_dt
             subs = self.t1.timestamp() - int(self.t1.timestamp())
-            if(subs > cloc_cycles[counter] and (subs - cloc_cycles[counter])<sleeptime):
-                sleeptime = subs - cloc_cycles[counter]
+            # print(subs)
+            # if(subs > cloc_cycles[counter] and (subs - cloc_cycles[counter])<sleeptime):
+            #     sleeptime = subs - cloc_cycles[counter]
             if(sleeptime<0 ):
                 sleeptime = 0
             await asyncio.sleep(sleeptime)
