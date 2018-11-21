@@ -1,4 +1,4 @@
-from ssdaq.core import SSEventListener
+from ssdaq import SSEventListener
 from threading import Thread
 import numpy as np
 import tables

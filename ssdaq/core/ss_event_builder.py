@@ -2,6 +2,7 @@ import asyncio
 import socket
 import struct
 import numpy as np
+
 READOUT_LENGTH = 64*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 
 class SlowSignalDataProtocol(asyncio.Protocol):
@@ -44,6 +45,43 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         if(self._buffer.qsize()>1000):
             self.log.warning('Front buffer length %d'%(self._buffer.qsize()))
 
+class SSEvent(object):
+    """
+    A class representing a slow signal event
+    """
+
+    def __init__(self, timestamp=0, event_number = 0, run_number = 0):
+                
+        self.event_number = event_number
+        self.run_number = run_number
+        self.event_timestamp = timestamp
+        self.data = np.empty((32,64))
+        self.data[:] = np.nan
+        #store also the time stamps for the individual readings 
+        #two per TM (primary and aux)
+        self.timestamps = np.zeros((32,2),dtype=np.uint64)
+    
+    def pack(self):
+        '''
+        Convinience method to pack the event into a bytestream
+        '''
+        d_stream = bytearray(struct.pack('3Q',
+                            self.event_number,
+                            self.run_number,
+                            self.event_timestamp))
+
+        d_stream.extend(self.data.tobytes())
+        d_stream.extend(self.timestamps.tobytes())
+        return d_stream
+
+    def unpack(self,byte_stream):
+        '''
+        Unpack a bytestream into an event
+        '''
+        self.event_number, self.run_number,self.event_timestamp = struct.unpack_from('3Q',byte_stream,0)
+        self.data = np.frombuffer(byte_stream[8*3:8*(3+2048)],dtype=np.float64).reshape(32,64)
+        self.timestamps = np.frombuffer(byte_stream[8*(3+2048):8*(3+2048+64)],dtype=np.uint64).reshape(32,2)
+
 class PartialEvent:
     int_counter = 0
     def __init__(self,tm_num,data):
@@ -58,13 +96,20 @@ class PartialEvent:
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
 
-from ssdaq import SSEvent
 class SSEventBuilder:
+    """ 
+    Slow signal event builder. Constructs 
+    slow signal events from data packets recieved from 
+    Target Modules.
+    """
     def __init__(self, relaxed_ip_range=False, 
                        event_tw = int(0.0001*1e9), 
                        listen_addr=('0.0.0.0', 2009), 
                        publishers = []):
         from ssdaq import sslogger
+        import zmq
+        import zmq.asyncio
+        import inspect
         self.log = sslogger.getChild('SSEventBuilder')
         self.relaxed_ip_range = relaxed_ip_range
         # self.listening = 
@@ -85,7 +130,7 @@ class SSEventBuilder:
         self.event_counter = {}
 
         self.loop = asyncio.get_event_loop()
-        self.corrs = [self.builder()]
+        self.corrs = [self.builder(),self.handle_commands()]
     
         #buffers
 
@@ -97,6 +142,18 @@ class SSEventBuilder:
         for p in self.publishers:
             p.give_loop(self.loop)
 
+        #setting up communications socket
+        self.context = zmq.asyncio.Context()    
+        self.com_sock = self.context.socket(zmq.REP)
+        self.com_sock.bind("ipc:///tmp/ssdaq-control")
+
+        #Introspecting to find all methods that
+        #handle commands
+        method_list = inspect.getmembers(self, predicate=inspect.ismethod)
+        self.cmds = {}
+        for method in method_list:
+            if(method[0][:4] == 'cmd_'):
+                self.cmds[method[0][4:]] = method[1]
 
     def run(self):
         self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
@@ -104,6 +161,7 @@ class SSEventBuilder:
         lambda :SlowSignalDataProtocol(self.loop,self.log), local_addr=self.listen_addr)
         transport, protocol = self.loop.run_until_complete(listen)
         self.ss_data_protocol = protocol
+        self.log.info('Number of publishers registered %d'%len(self.publishers))
         for c in self.corrs:
             self.loop.create_task(c)
 
@@ -112,6 +170,24 @@ class SSEventBuilder:
         except:
             pass
         self.loop.close()
+
+
+    async def handle_commands(self):
+        '''
+        This is the server part of the simulation that handles 
+        incomming commands to control the simulation
+        '''
+        while(True):
+            cmd = await self.com_sock.recv()
+            # self.logger.info('Handling incoming command %s'%cmd.decode('ascii'))
+            cmd = cmd.decode('ascii').split(' ')
+            if(cmd[0] in self.cmds.keys()):
+                reply = self.cmds[cmd[0]](cmd[1:])
+            else:
+                reply = self.msg.encode("Error","No command `%s` found."%(cmd[0]))
+                # self.logger.info('Incomming command `%s` not recognized')
+            self.com_sock.send(reply)
+
 
     async def builder2(self):
         import collections
@@ -251,16 +327,18 @@ class SSEventBuilder:
         self.nconstructed_events += 1
         return event    
 
-
 class ZMQEventPublisher():
-    def __init__(self,port,ip):
+    def __init__(self,port,ip,logger=None):
         import zmq
         import logging
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.PUB)
         con_str = 'tcp://%s:'%ip+str(port)
         self.sock.bind(con_str)
-        self.log = logging.getLogger('ssdaq.SSEventDataPublisher')
+        if(logger==None):
+            self.log = logging.getLogger('ssdaq.ZMQEventPublisher')
+        else:
+            self.log = logger.getChild('ZMQEventPublisher')
         self.log.info('Initialized event publisher on: %s'%con_str)
     def give_loop(self,loop):
         self.loop = loop
@@ -268,7 +346,7 @@ class ZMQEventPublisher():
     def publish(self,event):
         self.sock.send(event.pack())
 
-if __name__ == "__main__":
+if(__name__ == "__main__"):
     from ssdaq import sslogger
     import logging
     import os

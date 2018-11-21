@@ -1,4 +1,4 @@
-from ssdaq.core import SSEventBuilder 
+from ssdaq import SSEvent
 
 from threading import Thread
 import zmq
@@ -25,6 +25,7 @@ class SSEventListener(Thread):
             self.log=logging.getLogger('ssdaq.SSEventListener')
         else:
             self.log=logger
+
     def CloseThread(self):
 
         if(self.running):
@@ -59,7 +60,7 @@ class SSEventListener(Thread):
             
             if(self.sock in socks):
                 data = self.sock.recv()
-                event = SSEventBuilder.SSEvent()
+                event = SSEvent()
                 event.unpack(data)
                 self._event_buffer.put(event)
             else:

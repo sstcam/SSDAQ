@@ -1,7 +1,5 @@
 import sys
 import os
-# from os.path import dirname as dn
-# sys.path = [dn(dn(dn(os.path.realpath(__file__))))] + sys.path
 from ssdaq.event_receivers import EventFileWriter
 
 def main():
@@ -22,7 +20,7 @@ def main():
     args = parser.parse_args()
 
 
-    data_writer = EventFileWriter.EventFileWriter(args.filename)
+    data_writer = EventFileWriter(args.filename)
 
     data_writer.start()
 
