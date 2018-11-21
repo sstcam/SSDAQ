@@ -10,26 +10,6 @@ import zmq
 import zmq.asyncio
 from queue import Queue
 import inspect
-# from colorlog import ColoredFormatter
-
-# formatter = ColoredFormatter(
-#     "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
-#     datefmt=None,
-#     reset=True,
-#     log_colors={
-#         'DEBUG':    'cyan',
-#         'INFO':     'green',
-#         'WARNING':  'yellow',
-#         'ERROR':    'red',
-#         'CRITICAL': 'red,bg_white',
-#     },
-#     secondary_log_colors={},
-#     style='%'
-# )
-# import colorlog
-
-# handler = colorlog.StreamHandler()
-# handler.setFormatter(formatter)
 
 class TMMessage(object):
     def __init__(self,name=None,ip=None):
@@ -52,13 +32,10 @@ class TMSimulator(object):
                  host_ip = '127.0.0.1', 
                  my_ip='127.0.0.1',
                  tm_id=1):
-        self.corrs = [self.handle_commands(),self.send_ss_data()]
+        self.corrs = [self.handle_commands(),self.send_ss_data(),self.sync()]
         self.loop = asyncio.get_event_loop()
         self.futures = []
 
-        # self.logger = colorlog.getLogger('TMSimulator')
-        # self.logger.addHandler(handler)
-        # self.logger.setLevel(10)
         self.send_port = send_port
         self.host_ip = host_ip 
         self.my_ip = my_ip
@@ -73,12 +50,13 @@ class TMSimulator(object):
         self.npackets_c = 0
         self.data = np.random.uniform(0,400,64)
         self.sending_ss_data = True
-        self.dt = 1.0
+        self.dt = .04
         self.t_past = datetime.utcnow()        
         self.t1 = datetime.utcnow()
-        self.send_ss_data = asyncio.Event()
-        self.send_ss_data.set()#by default the simulation should be running
-
+        self.send_ss_datae = asyncio.Event()
+        self.send_ss_datae.set()#by default the simulation should be running
+        self.sync_ss_data = asyncio.Event()
+        self.sync_ss_data.set()
         self.server_port = server_port
         self.context = zmq.asyncio.Context()    
         self.com_sock = self.context.socket(zmq.REP)
@@ -111,9 +89,9 @@ class TMSimulator(object):
             return self.msg.encode('Error','Argument `%s` not recognized as boolean')
         
         if(self.sending_ss_data):
-            self.send_ss_data.set()
+            self.send_ss_datae.set()
         else:
-            self.send_ss_data.clear()
+            self.send_ss_datae.clear()
 
         return self.msg.encode('OK','send_ss_data set to: %s'%self.sending_ss_data)
     
@@ -143,8 +121,6 @@ class TMSimulator(object):
             pass
         self.loop.close()
 
-    
-
     async def handle_commands(self):
         '''
         This is the server part of the simulation that handles 
@@ -161,44 +137,75 @@ class TMSimulator(object):
                 # self.logger.info('Incomming command `%s` not recognized')
             self.com_sock.send(reply)
 
+    async def sync(self):
+        while(True):
+            
+            t = datetime.utcnow()
+            sleeptime = (1.0 - t.microsecond/1000000.0)
+            await asyncio.sleep(sleeptime)
+            self.sync_ss_data.set()
 
     async def send_ss_data(self):
-        
+        packets_per_sec = int(1/self.dt)
+        cloc_cycles = np.linspace(0,1-self.dt,packets_per_sec)
+        print(cloc_cycles)
+        counter = 0
+        self.t1 = datetime.utcnow()
+        master_tmstmp=int(self.t1.timestamp())+1
+        t = datetime.utcnow()
+        sleeptime = (1.0 - t.microsecond/1000000.0)
+        time.sleep(sleeptime)
         while(True):
-
-            await self.send_ss_data.wait()
+            await self.send_ss_datae.wait()
+            if(counter==packets_per_sec):
+                counter = 0
+                master_tmstmp =int(self.t1.timestamp())#+1#int(self.t1.timestamp())
+            #     t = datetime.utcnow()
+            #     sleeptime = (1.0 - t.microsecond/1000000.0)
+            #     if(sleeptime<self.dt*5):
+            #         await asyncio.sleep(sleeptime)
+            #     # self.sync_ss_data.clear()
+            #     # await self.sync_ss_data.wait()
             
-            timestamp = self.t1.timestamp() + np.random.uniform(-2e-4,2e-4)
+            self.t1 = datetime.utcnow()
+            timestamp = self.t1.timestamp()
+            if(counter==0):
+                timestamp_packet =  int(self.t1.timestamp()+self.dt) + cloc_cycles[counter] # + np.random.uniform(-2e-5,2e-5)
+            else:
+                timestamp_packet =  int(self.t1.timestamp()) + cloc_cycles[counter]
             data_packet = bytearray()
             for i in range(10):
                 data = self._simulate_data()
-                data_packet.extend(struct.pack('>Q',int((timestamp+0.1*self.dt*i)*1e9)))
+                data_packet.extend(struct.pack('>Q',int((timestamp_packet+0.1*self.dt*i)*1e9)))
                 data_packet.extend(struct.pack('>32H',*data[:32]))
-                data_packet.extend(struct.pack('>Q',int((timestamp+0.1*self.dt*i)*1e9)))
+                data_packet.extend(struct.pack('>Q',int((self.t1.timestamp()+0.1*self.dt*i)*1e9)))
                 data_packet.extend(struct.pack('>32H',*data[32:]))
                 self.nreading += 1
 
             sent = self.udp_sock.sendto(data_packet, self.host_address)
             self.npackets_c +=1
-            if(self.npackets%10==0):
+            if(self.npackets%1==0):
                 t_now = datetime.utcnow()
                 dtt = t_now-self.t_past
                 self.t_past = t_now
-
-                # self.logger.info("Sent %d packets"%(self.npackets))
-                # self.logger.info("Rate %g Hz"%(self.npackets_c/float(dtt.seconds+dtt.microseconds/1000000.0)))
-                # print(len(data_packet))
+                print(self.npackets,timestamp,timestamp_packet,dtt)
+                rate = self.npackets_c/float(dtt.seconds+dtt.microseconds/1000000.0)
+                actual_dt=1/rate
+                print('Rate %g'%(rate))
                 self.npackets_c =0
+                if(self.npackets==0):
+                    actual_dt = self.dt
             self.npackets +=1
 
             t2 = datetime.utcnow()
-            sleeptime = -(t2-self.t1).microseconds/1000000.0 + self.dt   
-            if(sleeptime<0):
+            sleeptime = -(t2-self.t1).microseconds/1000000.0 + self.dt#*self.dt/actual_dt
+            subs = self.t1.timestamp() - int(self.t1.timestamp())
+            if(subs > cloc_cycles[counter] and (subs - cloc_cycles[counter])<sleeptime):
+                sleeptime = subs - cloc_cycles[counter]
+            if(sleeptime<0 ):
                 sleeptime = 0
             await asyncio.sleep(sleeptime)
-            self.t1 = datetime.utcnow()
-
-        t = datetime.utcnow()
+            counter += 1   
     
     def _simulate_data(self):
         #simulate next step
