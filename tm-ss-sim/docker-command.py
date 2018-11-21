@@ -36,12 +36,12 @@ path = os.path.dirname(os.path.abspath(__file__))
 #Changing working directory to script location.
 os.chdir(path)
 
+
+args = parser.parse_args()
 if(os.getuid()>0):
     print("Need to be root to execute docker commands")
 
     exit()
-args = parser.parse_args()
-
 
 if(args.print_args):
     for key,value in vars(args).iteritems():
