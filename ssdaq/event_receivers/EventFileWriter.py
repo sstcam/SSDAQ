@@ -7,10 +7,10 @@ import logging
 
 class SSEventTableDs(IsDescription):
     event_number = UInt64Col()
-    runt_number = UInt64Col()
-    ev_time = UInt64Col()
-    data = Float32Col((32,64))
-    time_stamps = UInt64Col((32,2))
+    runt_number  = UInt64Col()
+    ev_time      = UInt64Col()
+    data         = Float32Col((32,64))
+    time_stamps  = UInt64Col((32,2))
 
 class EventFileWriter(Thread):
     """

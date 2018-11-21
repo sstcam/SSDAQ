@@ -55,6 +55,7 @@ def main():
         #     print('\033[7   A ')    
         print("Event number %d run number %d"%(event.event_number,event.run_number))
         print("Timestamp %d ns"%(event.event_timestamp))
+        print("Timestamp %f s"%(event.event_timestamp*1e-9))
         m = event.timestamps[:,0]>0
         print(np.sum(m))
         print(np.where(m)[0])
@@ -62,9 +63,12 @@ def main():
         print((event.timestamps[m][0,0]*1e-9-event.timestamps[m][:,0]*1e-9))
         event_counter[m] += 1
         m = event_counter>0
-        print(list(zip(np.where(m)[0],event_counter[m])))
-        print(event.data[args.tm_numb])
+
+        # print(list(zip(np.where(m)[0],event_counter[m])))
+        # print(event.data[args.tm_numb])
         n +=1
+        if(n>2000):
+            break
     plt.figure()
     plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
     plt.show()
