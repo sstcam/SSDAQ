@@ -20,7 +20,7 @@ def main():
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('command',  type=str,
-                        choices=['start','stop','restart','pause'],
+                        choices=['start','stop','restart','pause','reset_event_counter'],
                         help='port for incoming data')
 
     parser.add_argument('CONFIG', nargs='?', type=str,
@@ -38,8 +38,13 @@ def main():
         event_builder.start(args.daemonize)
     elif(args.command=='stop'):
         event_builder.stop()
-
-
+    elif(args.command=='reset_event_counter'):
+        import zmq
+        ctx = zmq.Context()  
+        sock = ctx.socket(zmq.REQ)  
+        sock.connect('ipc:///tmp/ssdaq-control')    
+        sock.send(b'reset_ev_count 1')
+        print(sock.recv())
 
 if __name__ == "__main__":
     main()

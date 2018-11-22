@@ -125,7 +125,8 @@ class SSEventBuilder:
         
         #counters
         self.nprocessed_packets = 0
-        self.nconstructed_events = 1
+        self.nconstructed_events = 0
+        self.event_count = 1
         self.packet_counter = {}
         self.event_counter = {}
 
@@ -171,6 +172,10 @@ class SSEventBuilder:
             pass
         self.loop.close()
 
+    def cmd_reset_ev_count(self,arg):
+        self.log.info('Event count has ben reset')
+        self.event_count = 1
+        return b'Event count reset'
 
     async def handle_commands(self):
         '''
@@ -179,13 +184,13 @@ class SSEventBuilder:
         '''
         while(True):
             cmd = await self.com_sock.recv()
-            # self.logger.info('Handling incoming command %s'%cmd.decode('ascii'))
+            self.log.info('Handling incoming command %s'%cmd.decode('ascii'))
             cmd = cmd.decode('ascii').split(' ')
             if(cmd[0] in self.cmds.keys()):
                 reply = self.cmds[cmd[0]](cmd[1:])
             else:
-                reply = self.msg.encode("Error","No command `%s` found."%(cmd[0]))
-                # self.logger.info('Incomming command `%s` not recognized')
+                reply = b"Error, No command `%s` found."%(cmd[0])
+                self.log.info('Incomming command `%s` not recognized')
             self.com_sock.send(reply)
 
 
@@ -303,7 +308,7 @@ class SSEventBuilder:
     
     def build_event(self,pe):
         #construct event
-        event = SSEvent(int(pe.timestamp),self.nconstructed_events,0)
+        event = SSEvent(int(pe.timestamp),self.event_count,0)
         for i,tmp_data in enumerate(pe.data):
             if(tmp_data == None):
                 continue
@@ -325,6 +330,7 @@ class SSEventBuilder:
             event.timestamps[i][0]=tmp_data[0]
             event.timestamps[i][1]=tmp_data[33]
         self.nconstructed_events += 1
+        self.event_count += 1
         return event    
 
 class ZMQEventPublisher():

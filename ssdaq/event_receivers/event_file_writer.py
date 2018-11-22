@@ -54,17 +54,17 @@ class EventFileWriter(Thread):
     def _close_file(self):
         import os
         from ssdaq.utils.file_size import convert_size
+        self.table.flush()
         self.log.info('Closing file %s'%self.filename)
         self.file.close()
         self.log.info('EventFileWriter has written %d events in %s bytes to file %s'%(self.file_event_counter,
                                                                                       convert_size(os.stat(self.filename).st_size),
                                                                                       self.filename))
-
     def run(self):
         self.log.info('Starting writer thread')
         self.event_listener.start()
         self.running = True
-        ev_row = self.table.row  
+        ev_row = self.table.row
         while(self.running):
             event = self.event_listener.GetEvent()
             #Start a new file if we get 
@@ -73,6 +73,7 @@ class EventFileWriter(Thread):
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()
+                ev_row = self.table.row  
             ev_row['event_number'] = event.event_number
             ev_row['ev_time'] = event.event_timestamp
             ev_row['data'] = np.asarray(event.data,dtype=np.float32)
