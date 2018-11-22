@@ -6,11 +6,11 @@ import numpy as np
 READOUT_LENGTH = 64*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 
 class SlowSignalDataProtocol(asyncio.Protocol):
-    def __init__(self,loop,log):
+    def __init__(self,loop,log,relaxed_ip_range):
         self._buffer = asyncio.Queue()
         self.loop = loop
         self.log = log.getChild('SlowSignalDataProtocol')
-
+        self.relaxed_ip_range = relaxed_ip_range
     def connection_made(self, transport):
         self.log.info('Connected to port')
         self.transport = transport
@@ -159,7 +159,9 @@ class SSEventBuilder:
     def run(self):
         self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
         listen = self.loop.create_datagram_endpoint(
-        lambda :SlowSignalDataProtocol(self.loop,self.log), local_addr=self.listen_addr)
+        lambda :SlowSignalDataProtocol(self.loop,self.log,self.relaxed_ip_range), 
+        local_addr=self.listen_addr)
+        
         transport, protocol = self.loop.run_until_complete(listen)
         self.ss_data_protocol = protocol
         self.log.info('Number of publishers registered %d'%len(self.publishers))
