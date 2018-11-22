@@ -20,7 +20,7 @@ def main():
     args = parser.parse_args()
 
 
-    data_writer = EventFileWriter(args.filename)
+    data_writer = EventFileWriter(args.filename,file_enumerator='date')
 
     data_writer.start()
 

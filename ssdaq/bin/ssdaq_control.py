@@ -13,6 +13,7 @@ class EventBuilderDaemonWrapper(daemon.Daemon):
             eb = SSEventBuilder(publishers = [ep], **self.kwargs['SSEventBuilder'])
             eb.run()
 
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Start slow signal data acquisition.',
