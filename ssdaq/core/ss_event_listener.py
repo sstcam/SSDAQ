@@ -65,5 +65,7 @@ class SSEventListener(Thread):
                 self._event_buffer.put(event)
             else:
                 self.log.info('Stopping')
+                event = SSEvent()
+                self._event_buffer.put(None)
                 break
         self.running = False

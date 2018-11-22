@@ -67,6 +67,8 @@ class EventFileWriter(Thread):
         ev_row = self.table.row
         while(self.running):
             event = self.event_listener.GetEvent()
+            if(event == None):
+                continue
             #Start a new file if we get 
             #an event with event number 1
             if(event.event_number==1):
