@@ -7,13 +7,13 @@ import logging
 
 class SSEventListener(Thread):
     id_counter = 0
-    def __init__(self, port = '5555',logger=None):
+    def __init__(self,ip = '127.0.0.101', port = '5555',protocol='tcp',logger=None):
         Thread.__init__(self)
         
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.SUB)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
-        self.sock.connect("tcp://127.0.0.101:"+port)
+        self.sock.connect("%s://%s:%d"%(protocol,ip,port))
         self.running = False
         self._event_buffer = Queue()
         SSEventListener.id_counter += 1

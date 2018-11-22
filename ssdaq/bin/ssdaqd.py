@@ -35,7 +35,7 @@ def main():
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
     ep = ZMQEventPublisher(port=args.publishing_port,ip=args.publishing_interface)
-    eb = SSEventBuilder(relaxed_ip_range=args.relaxed_ip,listen_addr=('0.0.0.0',args.listen_port),publishers = [ep])
+    eb = SSEventBuilder(relaxed_ip_range=args.relaxed_ip, listen_ip = '0.0.0.0', listen_port = args.listen_port, publishers = [ep])
     
     eb.run()
 

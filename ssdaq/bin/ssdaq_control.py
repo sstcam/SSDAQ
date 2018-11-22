@@ -18,12 +18,15 @@ class EventFileWriterDaemonWrapper(daemon.Daemon):
         #Deamonizing the server
         daemon.Daemon.__init__(self, '/tmp/ssdaq_writer_daemon.pid',stdout='/tmp/ssdaq_writer.log',stderr='/tmp/ssdaq_writer.log')
         self.kwargs = kwargs
+        self.set_taskset = True
     def run(self):
         from ssdaq.event_receivers import EventFileWriter
         import signal
         import sys
-        
-        
+        from subprocess import call
+        if(self.set_taskset):
+            #forces the process to one particular CPU core
+            call(["taskset","-cp", "0","%s"%(str(os.getpid()))])
         data_writer = EventFileWriter(**self.kwargs)
         def signal_handler_fact(data_writer):
 
@@ -39,6 +42,8 @@ class EventFileWriterDaemonWrapper(daemon.Daemon):
 
 def main():
     import argparse
+    import yaml
+    from pkg_resources import resource_stream,resource_string, resource_listdir
     parser = argparse.ArgumentParser(description='Start slow signal data acquisition.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -52,11 +57,12 @@ def main():
     parser.add_argument('-d','--daemonize',action='store_true')
     args = parser.parse_args()
     
-    kwargs = {'ZMQEventPublisher':{'port':5555,'ip':'127.0.0.101'},
-              'SSEventBuilder':{'relaxed_ip_range':False,'listen_addr':('0.0.0.0',2009)}}
+    config = yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml'))
     
-    event_builder = EventBuilderDaemonWrapper(**kwargs)
-    event_writer = EventFileWriterDaemonWrapper(**{'file_prefix':'/home/sflis/testing_still','file_enumerator':'date'})
+    event_builder = EventBuilderDaemonWrapper(**config["EventBuilder"])
+    event_writer = EventFileWriterDaemonWrapper(**config["EventFileWriter"])
+    
+
     if(args.command=='starteb'):
         print('Starting event builder...')
         event_builder.start(args.daemonize)

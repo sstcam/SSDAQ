@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 import sys
-install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib']
+install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml']
 
 setup(name="SSDAQ",
       version="0.4.0",

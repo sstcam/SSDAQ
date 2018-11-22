@@ -103,8 +103,10 @@ class SSEventBuilder:
     Target Modules.
     """
     def __init__(self, relaxed_ip_range=False, 
-                       event_tw = int(0.0001*1e9), 
-                       listen_addr=('0.0.0.0', 2009), 
+                       event_tw = 0.0001*1e9, 
+                       listen_ip = '0.0.0.0',
+                       listen_port = 2009,
+                       buffer_length = 1000, 
                        publishers = []):
         from ssdaq import sslogger
         import zmq
@@ -119,9 +121,9 @@ class SSEventBuilder:
         
 
         #settings 
-        self.event_tw = event_tw
-        self.listen_addr = listen_addr
-        self.buffer_len = 10000
+        self.event_tw = int(event_tw)
+        self.listen_addr = (listen_ip, listen_port)
+        self.buffer_len = buffer_length
         
         #counters
         self.nprocessed_packets = 0

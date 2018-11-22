@@ -19,7 +19,7 @@ class EventFileWriter(Thread):
     This class uses a instance of an SSEventListener to receive events and
     implements a HDF5 table writer that writes the events to disk.
     """
-    def __init__(self, file_prefix, folder='',file_enumerator=None):
+    def __init__(self, file_prefix, folder='',file_enumerator=None,**kwargs):
         from ssdaq import sslogger
         import logging
         Thread.__init__(self)
@@ -27,7 +27,7 @@ class EventFileWriter(Thread):
         self.folder = folder
         self.file_prefix = file_prefix
         self.log = sslogger.getChild('EventFileWriter')
-        self.event_listener = SSEventListener(logger=self.log.getChild('EventListener'))
+        self.event_listener = SSEventListener(logger=self.log.getChild('EventListener'),**kwargs)
         self.running = False
         self.event_counter = 0
         self.file_event_counter = 0
