@@ -1,5 +1,5 @@
 EventFileWriter:
-  file_enumerator: date #or `order` which enumerates with numbers starting from 00001
+  file_enumerator: date #enumerates with timestamp (yr-mo-dy.H.M) or `order` which enumerates with numbers starting from 00001 
   file_prefix: SlowSignalData
   folder: ~/
   ip: 127.0.0.101
