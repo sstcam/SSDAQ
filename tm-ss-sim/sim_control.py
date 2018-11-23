@@ -95,7 +95,7 @@ class StatusQuery(object):
         tm_dict = {}
         for i in range(32):
             tm_dict[i] = None 
-        tms_running = open('started_tms.txt','r').readlines()
+        tms_running = open('.started_tms.txt','r').readlines()
         connections = {}
         for tm in tms_running:
             tm = tm.split()

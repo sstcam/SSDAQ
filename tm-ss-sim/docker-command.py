@@ -36,12 +36,12 @@ path = os.path.dirname(os.path.abspath(__file__))
 #Changing working directory to script location.
 os.chdir(path)
 
+
+args = parser.parse_args()
 if(os.getuid()>0):
     print("Need to be root to execute docker commands")
 
     exit()
-args = parser.parse_args()
-
 
 if(args.print_args):
     for key,value in vars(args).iteritems():
@@ -54,7 +54,7 @@ if(args.build):
 if(args.run):
     started_modules = []
     com_port = 30001
-    if(os.path.isfile('started_tms.txt')):
+    if(os.path.isfile('.started_tms.txt')):
         print('Alrady started TM simulations')
         print('Stop them first to start more')
         exit()
@@ -81,18 +81,18 @@ if(args.run):
         started_modules.append("%s %s:%s"%(sim_name,ip,com_port))
         # com_port +=1
 
-    f = open('started_tms.txt','w')
+    f = open('.started_tms.txt','w')
     f.writelines([n+'\n' for n in started_modules])
     print('Started %d container(s)'%(i+1))
 
 if(args.stop):
-    if(os.path.isfile('started_tms.txt')):
-        tms_to_stop = open('started_tms.txt','r').readlines()
+    if(os.path.isfile('.started_tms.txt')):
+        tms_to_stop = open('.started_tms.txt','r').readlines()
         for tm in tms_to_stop:
             cmd_list = ['docker','rm','-f',tm.split()[0]]
             print(' '.join(cmd_list))
             call(cmd_list)
-        os.remove('started_tms.txt')
+        os.remove('.started_tms.txt')
         print('Removed %d container(s)'%len(tms_to_stop))
     else:
         print('No container file found')
