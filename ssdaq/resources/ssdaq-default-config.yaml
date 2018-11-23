@@ -1,0 +1,28 @@
+EventFileWriter:
+  file_enumerator: date #enumerates with timestamp (yr-mo-dy.H.M) or `order` which enumerates with numbers starting from 00001 
+  file_prefix: SlowSignalData
+  folder: ~/
+  ip: 127.0.0.101
+  port: 5555
+
+EventFileWriterDaemon:
+  #redirection of output (should be /dev/null when logging is fully configurable)
+  stdout: '/tmp/ssdaq.log'
+  stderr: '/tmp/ssdaq.log'
+
+EventBuilderDaemon:
+  #redirection of output (should be /dev/null when logging is fully configurable)
+  stdout: '/tmp/ssdaq.log'
+  stderr: '/tmp/ssdaq.log'
+  set_taskset: true #Using task set to force kernel not to swap cores
+  core_id: 0 #which cpu core to use with taskset
+EventBuilder:
+  SSEventBuilder:
+    listen_ip: 0.0.0.0
+    listen_port: 2009
+    relaxed_ip_range: false
+    buffer_length: 1000
+    event_tw: !!float 1.e5 #nano seconds
+  ZMQEventPublisher:
+    ip: 127.0.0.101
+    port: 5555

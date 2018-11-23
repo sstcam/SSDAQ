@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 import sys
-install_requires = ["zmq","numpy",'tables','pyparsing']
+install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml']
 
 setup(name="SSDAQ",
       version="0.4.1",
@@ -28,7 +28,8 @@ setup(name="SSDAQ",
                     [
                         'ssdaq = ssdaq.bin.ssdaqd:main',
                         'ssdatawriter = ssdaq.bin.ssdatawriter:main',
-                        'ss-example-listener = ssdaq.bin.simple_ev_listn:main'
+                        'ss-example-listener = ssdaq.bin.simple_ev_listn:main',
+                        'control-ssdaq=ssdaq.bin.ssdaq_control:main'
                     ]
                     }
       )
