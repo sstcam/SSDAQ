@@ -3,30 +3,33 @@ from ssdaq.utils import daemon
 
 
 class EventBuilderDaemonWrapper(daemon.Daemon):
-    def __init__(self,**kwargs):
+    def __init__(self,stdout = '/dev/null', stderr = '/dev/null', set_taskset = False, core_id = 0,**kwargs):
         #Deamonizing the server
-        daemon.Daemon.__init__(self, '/tmp/ssdaq_daemon.pid',stdout='/tmp/ssdaq.log',stderr='/tmp/ssdaq.log')
+        daemon.Daemon.__init__(self, '/tmp/ssdaq_daemon.pid', stdout=stdout, stderr=stderr)
         self.kwargs = kwargs
+        self.set_taskset = set_taskset
+        self.core_id = str(core_id)
+        
     def run(self):
-
+            from subprocess import call
+            import os
+            if(self.set_taskset):
+                #forces the process to one particular CPU core
+                call(["taskset","-cp", self.core_id,"%s"%(str(os.getpid()))])
             ep = ZMQEventPublisher(**self.kwargs['ZMQEventPublisher'])
             eb = SSEventBuilder(publishers = [ep], **self.kwargs['SSEventBuilder'])
             eb.run()
 
 class EventFileWriterDaemonWrapper(daemon.Daemon):
-    def __init__(self,**kwargs):
+    def __init__(self,stdout = '/dev/null', stderr = '/dev/null', **kwargs):
         #Deamonizing the server
-        daemon.Daemon.__init__(self, '/tmp/ssdaq_writer_daemon.pid',stdout='/tmp/ssdaq_writer.log',stderr='/tmp/ssdaq_writer.log')
+        daemon.Daemon.__init__(self, '/tmp/ssdaq_writer_daemon.pid', stdout=stdout, stderr=stderr)
         self.kwargs = kwargs
-        self.set_taskset = True
     def run(self):
         from ssdaq.event_receivers import EventFileWriter
         import signal
         import sys
-        from subprocess import call
-        if(self.set_taskset):
-            #forces the process to one particular CPU core
-            call(["taskset","-cp", "0","%s"%(str(os.getpid()))])
+
         data_writer = EventFileWriter(**self.kwargs)
         def signal_handler_fact(data_writer):
 
@@ -59,8 +62,8 @@ def main():
     
     config = yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml'))
     
-    event_builder = EventBuilderDaemonWrapper(**config["EventBuilder"])
-    event_writer = EventFileWriterDaemonWrapper(**config["EventFileWriter"])
+    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["EventBuilder"])
+    event_writer = EventFileWriterDaemonWrapper(**config['EventFileWriterDaemon'],**config["EventFileWriter"])
     
 
     if(args.command=='starteb'):

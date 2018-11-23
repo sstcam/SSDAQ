@@ -4,6 +4,18 @@ EventFileWriter:
   folder: ~/
   ip: 127.0.0.101
   port: 5555
+
+EventFileWriterDaemon:
+  #redirection of output (should be /dev/null when logging is fully configurable)
+  stdout: '/tmp/ssdaq.log'
+  stderr: '/tmp/ssdaq.log'
+
+EventBuilderDaemon:
+  #redirection of output (should be /dev/null when logging is fully configurable)
+  stdout: '/tmp/ssdaq.log'
+  stderr: '/tmp/ssdaq.log'
+  set_taskset: true #Using task set to force kernel not to swap cores
+  core_id: 0 #which cpu core to use with taskset
 EventBuilder:
   SSEventBuilder:
     listen_ip: 0.0.0.0
