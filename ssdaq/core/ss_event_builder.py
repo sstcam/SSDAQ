@@ -198,57 +198,6 @@ class SSEventBuilder:
             self.com_sock.send(reply)
 
 
-    async def builder2(self):
-        import collections
-        self.log.info('Starting event build loop')
-        for i in range(32):
-            self.inter_buff.append(collections.deque(maxlen=self.buffer_len))
-
-        while(True):
-            b_sizes = []
-            for ib in self.inter_buff:
-                b_sizes.append(len(ib))
-            if(max(b_sizes)<150 and self.ss_data_protocol._buffer.qsize()>2):
-                while(self.ss_data_protocol._buffer.qsize()>1):
-                    packet = await self.ss_data_protocol._buffer.get()        
-                    self.inter_buff[packet[0]].append(packet[2])
-            elif(max(b_sizes)<150 and self.ss_data_protocol._buffer.qsize()==0):
-                packet = await self.ss_data_protocol._buffer.get()        
-                self.inter_buff[packet[0]].append(packet[2])
-            else:
-                packet = await self.ss_data_protocol._buffer.get()        
-                self.inter_buff[packet[0]].append(packet[2])
-            b_sizes = []
-            for ib in self.inter_buff:
-               b_sizes.append(len(ib))
-            if(max(b_sizes)<150):
-                continue
-
-            timestamps = []#[(-1,-1)]*32
-            for i,ib in enumerate(self.inter_buff):
-                if(len(ib)>0):  
-                    timestamps.append((i,ib[0][0]))
-            timestamps = sorted(timestamps,key=lambda x: x[1])
-
-            t0 = timestamps[0][1]
-            pqkt = self.inter_buff[timestamps[0][0]].popleft()
-            pe = PartialEvent(timestamps[0][0],pqkt)
-            for t in timestamps[1:]:
-                if(t[0]==-1):
-                    continue
-                if(t[1]-t0>=self.event_tw):
-                    break
-                pqkt = self.inter_buff[t[0]].popleft()
-                pe.add_part(t[0],pqkt)
-
-            event = self.build_event(pe)               
-            if(self.nconstructed_events%100==0):
-                self.log.info('Built event %d'%self.nconstructed_events)
-                self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
-            self.log.debug('Built event %d'%self.nconstructed_events)
-            for pub in self.publishers:
-                pub.publish(event)
-
     async def builder(self):
         self.log.info('Starting event build loop')
         packet = await self.ss_data_protocol._buffer.get()
@@ -338,7 +287,7 @@ class SSEventBuilder:
         return event    
 
 class ZMQEventPublisher():
-    def __init__(self,port,ip,logger=None):
+    def __init__(self,protocolt,ip,logger=None):
         import zmq
         import logging
         self.context = zmq.Context()
