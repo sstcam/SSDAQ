@@ -4,7 +4,7 @@ import sys
 install_requires = ["zmq","numpy",'tables']
 
 setup(name="SSDAQ",
-      version="0.4.0",
+      version="0.4.1",
       description="A framework to handle slow signal data from the CHEC-S camera",
       author="Samuel Flis",
       author_email="samuel.flis@desy.de",
