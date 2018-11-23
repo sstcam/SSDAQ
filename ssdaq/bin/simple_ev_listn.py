@@ -4,7 +4,7 @@ import os
 # sys.path = [dn(dn(dn(os.path.realpath(__file__))))] + sys.path
 from ssdaq import SSEventListener
 import numpy as np
-from matplotlib import pyplot as plt
+
 import argparse
 
 import signal
@@ -69,6 +69,12 @@ def main():
         n +=1
         if(n>2000):
             break
+    
+    try:
+        from matplotlib import pyplot as plt
+    except:
+        return
+    
     plt.figure()
     plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
     plt.show()
