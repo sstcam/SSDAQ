@@ -1,5 +1,4 @@
 import asyncio
-import socket
 import struct
 import numpy as np
 
@@ -287,7 +286,7 @@ class SSEventBuilder:
         return event    
 
 class ZMQEventPublisher():
-    def __init__(self,protocolt,ip,logger=None):
+    def __init__(self,ip,port,logger=None):
         import zmq
         import logging
         self.context = zmq.Context()
