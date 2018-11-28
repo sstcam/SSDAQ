@@ -35,8 +35,8 @@ before_install:
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
 - pip install pytest
-
-
+- ls
+- pwd
 
 install:
 - python setup.py 
