@@ -1,4 +1,5 @@
-# SSDAQ
+# SSDAQ 
+![Test Status Travis-CI](https://travis-ci.org/sflis/SSDAQ.svg?branch=master)
 
 Slow signal data acquisition and distribution for CHEC-S TARGET-C modules. 
 
