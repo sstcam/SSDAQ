@@ -16,11 +16,11 @@ os:
     - linux
     # - osx   # currently osx python projects are not supported in Travis
 
-# env:
-#   global:
+env:
+  global:
 #     - TARGET_SOFTWARE=$HOME/Software/target_software
 #     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/Software/TargetDriver/install/lib:$HOME/Software/TargetIO/install/lib:$HOME/Software/TargetCalib/install/lib
-#     - MINICONDA_URL=https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    - MINICONDA_URL=https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 #     - TARGETCALIBPATH=$HOME/Software/TargetCalib/install
 
 before_install:
