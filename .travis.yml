@@ -32,7 +32,7 @@ before_install:
 - conda update -q conda
 - conda info -a
 
-- conda create --name ssdaq-evn python=$TRAVIS_PYTHON_VERSION pip numpy
+- conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
 - pip install pytest
 
