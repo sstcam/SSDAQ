@@ -37,7 +37,7 @@ before_install:
 - pip install pytest
 
 install:
-- python setup.py install
+- pip install .
 
 script:
 # - cd $TRAVIS_BUILD_DIR
