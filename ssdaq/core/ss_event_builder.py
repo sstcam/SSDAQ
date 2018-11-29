@@ -311,7 +311,7 @@ if(__name__ == "__main__"):
     from subprocess import call
     call(["taskset","-cp", "0,4","%s"%(str(os.getpid()))])
     sslogger.setLevel(logging.INFO)
-    zmq_pub = ZMQEventPublisher(5555,'127.0.0.101') 
+    zmq_pub = ZMQEventPublisher('127.0.0.101',5555) 
     ev_builder = SSEventBuilder(publishers= [zmq_pub])
     ev_builder.run()
 

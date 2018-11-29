@@ -20,9 +20,15 @@ def main():
                         help='port for incoming event data')
 
     parser.add_argument('-t',dest='tm_numb',type=int,default=0,help='Set target module number for which SS data is printed out')
+    parser.add_argument('-V','--verbosity',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
+                        help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
     args = parser.parse_args()
-
+    from ssdaq import sslogger
+    import logging;
+    args = parser.parse_args()
+    eval("sslogger.setLevel(logging.%s)"%args.verbose)
+    
     ev_list = SSEventListener(args.listen_port)
     ev_list.start()
 
