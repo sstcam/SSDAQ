@@ -62,7 +62,7 @@ def main():
     
     config = yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml'))
     if(args.CONFIG):
-        config = yaml.load(args.CONFIG)
+        config = yaml.load(open(args.CONFIG,'r'))
         
     event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["EventBuilder"])
     event_writer = EventFileWriterDaemonWrapper(**config['EventFileWriterDaemon'],**config["EventFileWriter"])
