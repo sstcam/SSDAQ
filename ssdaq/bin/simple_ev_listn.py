@@ -23,6 +23,7 @@ def main():
     parser.add_argument('-V','--verbosity',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
+    parser.add_argument('-n',dest = 'n_events',type=int,default=None,help ='the number of events to listen to before exiting (if not set there is no limit')
     args = parser.parse_args()
     from ssdaq import sslogger
     import logging;
@@ -74,7 +75,7 @@ def main():
         if(args.tm_numb):
             print(event.data[args.tm_numb])
         n +=1
-        if(n>2000):
+        if(args.n_events != None and n>=args.n_events):
             break
     
     try:
