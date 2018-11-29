@@ -7,7 +7,7 @@ import logging
 
 class SSEventListener(Thread):
     id_counter = 0
-    def __init__(self,ip = '127.0.0.101', port = '5555',protocol='tcp',logger=None):
+    def __init__(self,ip = '127.0.0.101', port = 5555 ,protocol='tcp',logger=None):
         Thread.__init__(self)
         
         self.context = zmq.Context()

@@ -15,8 +15,8 @@ def main():
     parser = argparse.ArgumentParser(description='Start a simple event data listener.',
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-l', dest='listen_port', type=str,
-                        default='5555',
+    parser.add_argument('-l', dest='listen_port', type=int,
+                        default=5555,
                         help='port for incoming event data')
 
     parser.add_argument('-t',dest='tm_numb',type=int,default=0,help='Set target module number for which SS data is printed out')
