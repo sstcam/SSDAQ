@@ -9,11 +9,17 @@ class SSEventListener(Thread):
     id_counter = 0
     def __init__(self,ip = '127.0.0.101', port = 5555 ,protocol='tcp',logger=None):
         Thread.__init__(self)
-        
+        if(logger == None):
+            self.log=logging.getLogger('ssdaq.SSEventListener')
+        else:
+            self.log=logger
+
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.SUB)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
-        self.sock.connect("%s://%s:%d"%(protocol,ip,port))
+        con_str = "%s://%s:%d"%(protocol,ip,port)
+        self.sock.connect(con_str)
+        self.log.info('Connected to : %s'%con_str)
         self.running = False
         self._event_buffer = Queue()
         SSEventListener.id_counter += 1
@@ -21,10 +27,7 @@ class SSEventListener(Thread):
         self.inproc_sock_name = "SSEventListener%d"%(self.id_counter) 
         self.close_sock = self.context.socket(zmq.PAIR)
         self.close_sock.bind("inproc://"+self.inproc_sock_name)
-        if(logger == None):
-            self.log=logging.getLogger('ssdaq.SSEventListener')
-        else:
-            self.log=logger
+        
 
     def CloseThread(self):
 

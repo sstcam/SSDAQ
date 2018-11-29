@@ -19,7 +19,7 @@ def main():
                         default=5555,
                         help='port for incoming event data')
 
-    parser.add_argument('-t',dest='tm_numb',type=int,default=0,help='Set target module number for which SS data is printed out')
+    parser.add_argument('-t',dest='tm_numb',nargs = '?',type=int,help='Set target module number for which SS data is printed out')
     parser.add_argument('-V','--verbosity',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
@@ -28,8 +28,8 @@ def main():
     import logging;
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
-    
-    ev_list = SSEventListener(args.listen_port)
+
+    ev_list = SSEventListener(port = args.listen_port)
     ev_list.start()
 
     # def signal_handler(sig, frame):
@@ -71,7 +71,8 @@ def main():
         m = event_counter>0
 
         # print(list(zip(np.where(m)[0],event_counter[m])))
-        # print(event.data[args.tm_numb])
+        if(args.tm_numb):
+            print(event.data[args.tm_numb])
         n +=1
         if(n>2000):
             break
