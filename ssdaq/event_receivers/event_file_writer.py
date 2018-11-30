@@ -60,6 +60,11 @@ class EventFileWriter(Thread):
         self.log.info('EventFileWriter has written %d events in %s bytes to file %s'%(self.file_event_counter,
                                                                                       convert_size(os.stat(self.filename).st_size),
                                                                                       self.filename))
+    def close(self):
+        self.running = False
+        self..event_listener.CloseThread()
+        self.join()
+        
     def run(self):
         self.log.info('Starting writer thread')
         self.event_listener.start()
