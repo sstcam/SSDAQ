@@ -110,6 +110,9 @@ class SSEventBuilder:
         from ssdaq import sslogger
         import zmq
         import zmq.asyncio
+        from distutils.version import LooseVersion
+        if(LooseVersion('17')>LooseVersion(zmq.__version__)):
+            zmq.asyncio.install()
         import inspect
         self.log = sslogger.getChild('SSEventBuilder')
         self.relaxed_ip_range = relaxed_ip_range
