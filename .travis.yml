@@ -34,7 +34,7 @@ before_install:
 
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
-- pip install pytest
+#- pip install pytest
 - pip install pytest-cov
 - pip install python-coveralls
 - echo `which pip`
