@@ -62,9 +62,9 @@ class EventFileWriter(Thread):
                                                                                       self.filename))
     def close(self):
         self.running = False
-        self..event_listener.CloseThread()
+        self.event_listener.CloseThread()
         self.join()
-        
+
     def run(self):
         self.log.info('Starting writer thread')
         self.event_listener.start()

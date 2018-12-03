@@ -28,11 +28,8 @@ def main():
     while(running):
         ans = input('To stop type `yes`: \n')
         if(ans == 'yes'):
-            data_writer.event_listener.CloseThread()
-            data_writer.running = False
             running = False
-
-    data_writer.join()
+    data_writer.close()
 
 if __name__ == "__main__":
     main()
