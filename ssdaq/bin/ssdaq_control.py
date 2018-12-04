@@ -3,16 +3,20 @@ from ssdaq.utils import daemon
 
 
 class EventBuilderDaemonWrapper(daemon.Daemon):
-    def __init__(self,stdout = '/dev/null', stderr = '/dev/null', set_taskset = False, core_id = 0,**kwargs):
+    def __init__(self,stdout = '/dev/null', stderr = '/dev/null', set_taskset = False, core_id = 0,log_level='INFO',**kwargs):
         #Deamonizing the server
         daemon.Daemon.__init__(self, '/tmp/ssdaq_daemon.pid', stdout=stdout, stderr=stderr)
         self.kwargs = kwargs
         self.set_taskset = set_taskset
         self.core_id = str(core_id)
-        
+        import logging;
+        eval("sslogger.setLevel(logging.%s)"%log_level)
     def run(self):
             from subprocess import call
             import os
+            from ssdaq import sslogger
+            
+
             if(self.set_taskset):
                 #forces the process to one particular CPU core
                 call(["taskset","-cp", self.core_id,"%s"%(str(os.getpid()))])
@@ -34,9 +38,7 @@ class EventFileWriterDaemonWrapper(daemon.Daemon):
         def signal_handler_fact(data_writer):
 
             def signal_handler(sig, frame):
-                data_writer.running = False
-                data_writer.event_listener.CloseThread()
-                data_writer.join()
+                data_writer.close()
             return signal_handler
         signal.signal(signal.SIGHUP, signal_handler_fact(data_writer))
 

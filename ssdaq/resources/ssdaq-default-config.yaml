@@ -7,8 +7,8 @@ EventFileWriter:
 
 EventFileWriterDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)
-  stdout: '/tmp/ssdaq.log'
-  stderr: '/tmp/ssdaq.log'
+  stdout: '/tmp/ssdaq_writer.log'
+  stderr: '/tmp/ssdaq_writer.log'
 
 EventBuilderDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)

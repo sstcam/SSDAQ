@@ -76,7 +76,7 @@ class EventFileWriter(Thread):
                 continue
             #Start a new file if we get 
             #an event with event number 1
-            if(event.event_number==1):
+            if(event.event_number==1 and self.event_counter>0):
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()
