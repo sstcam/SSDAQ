@@ -52,7 +52,7 @@ def main():
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('command',  type=str,
-                        choices=['starteb','startew','stop','restart','pause','reset_event_counter'],
+                        choices=['starteb','startew','stopall','stopeb','stopew','reset_event_counter'],#
                         help='port for incoming data')
 
     parser.add_argument('CONFIG', nargs='?', type=str,
@@ -75,10 +75,26 @@ def main():
     elif(args.command=='startew'):
         print('Starting event writer...')
         event_writer.start(args.daemonize)
-    elif(args.command=='stop'):
+    elif(args.command=='stopall'):
         import os
         import signal
         event_builder.stop()
+        try:
+            ewpid = event_writer.getpid()
+        except:
+            return
+        if(ewpid != None):
+           os.kill(ewpid,signal.SIGHUP)
+           import time
+           time.sleep(2)
+           event_writer.stop()
+    elif(args.command=='stopeb'):
+        import os
+        import signal
+        event_builder.stop()
+    elif(args.command=='stopew'):
+        import os
+        import signal
         try:
             ewpid = event_writer.getpid()
         except:

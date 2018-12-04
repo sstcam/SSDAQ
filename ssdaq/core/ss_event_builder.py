@@ -305,7 +305,7 @@ class SSEventBuilder:
         return event    
 
 class ZMQEventPublisher():
-    def __init__(self,ip,port,logger=None):
+    def __init__(self,ip,port,name=None,logger=None):
         import zmq
         import logging
         self.context = zmq.Context()

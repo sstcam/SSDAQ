@@ -23,6 +23,7 @@ EventBuilder:
     relaxed_ip_range: false
     buffer_length: 1000
     event_tw: !!float 1.e5 #nano seconds
+    buffer_time: !!float 4e9
   ZMQEventPublisher:
     ip: 127.0.0.101
     port: 5555
