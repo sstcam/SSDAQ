@@ -313,6 +313,8 @@ class ZMQEventPublisher():
         con_str = 'tcp://%s:'%ip+str(port)
         if(bind):
             self.sock.bind(con_str)
+        else:
+            self.sock.connect(con_str)
         if(logger==None):
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:
