@@ -10,13 +10,12 @@ class EventBuilderDaemonWrapper(daemon.Daemon):
         self.set_taskset = set_taskset
         self.core_id = str(core_id)
         import logging;
+        from ssdaq import sslogger
         eval("sslogger.setLevel(logging.%s)"%log_level)
     def run(self):
             from subprocess import call
             import os
-            from ssdaq import sslogger
             
-
             if(self.set_taskset):
                 #forces the process to one particular CPU core
                 call(["taskset","-cp", self.core_id,"%s"%(str(os.getpid()))])
