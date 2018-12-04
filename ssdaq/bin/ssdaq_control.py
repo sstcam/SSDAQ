@@ -19,8 +19,14 @@ class EventBuilderDaemonWrapper(daemon.Daemon):
             if(self.set_taskset):
                 #forces the process to one particular CPU core
                 call(["taskset","-cp", self.core_id,"%s"%(str(os.getpid()))])
-            ep = ZMQEventPublisher(**self.kwargs['ZMQEventPublisher'])
-            eb = SSEventBuilder(publishers = [ep], **self.kwargs['SSEventBuilder'])
+            eps = []
+            i = 1
+            for eptype,epconf in self.kwargs['EventPublishers'].items():
+                if('name' not in epconf):
+                    epconf['name'] = eptype#'ZMQEventPublisher%d'%i
+                eps.append(ZMQEventPublisher(**epconf))
+                i+=1           
+            eb = SSEventBuilder(publishers = eps, **self.kwargs['SSEventBuilder'])
             eb.run()
 
 class EventFileWriterDaemonWrapper(daemon.Daemon):

@@ -305,7 +305,7 @@ class SSEventBuilder:
         return event    
 
 class ZMQEventPublisher():
-    def __init__(self,ip,port,name=None,logger=None):
+    def __init__(self,ip,port,name='ZMQEventPublisher',logger=None):
         import zmq
         import logging
         self.context = zmq.Context()
@@ -313,9 +313,9 @@ class ZMQEventPublisher():
         con_str = 'tcp://%s:'%ip+str(port)
         self.sock.bind(con_str)
         if(logger==None):
-            self.log = logging.getLogger('ssdaq.ZMQEventPublisher')
+            self.log = logging.getLogger('ssdaq.%s'%name)
         else:
-            self.log = logger.getChild('ZMQEventPublisher')
+            self.log = logger.getChild(name)
         self.log.info('Initialized event publisher on: %s'%con_str)
     def give_loop(self,loop):
         self.loop = loop

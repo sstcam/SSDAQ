@@ -18,19 +18,22 @@ def main():
     parser.add_argument('-l', dest='listen_port', type=int,
                         default=5555,
                         help='port for incoming event data')
-
+    parser.add_argument('-i', dest='ip_addr', type=str,
+                        default='127.0.0.101',
+                        help='The ip/interface which the listener should listen too')
     parser.add_argument('-t',dest='tm_numb',nargs = '?',type=int,help='Set target module number for which SS data is printed out')
     parser.add_argument('-V','--verbosity',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
     parser.add_argument('-n',dest = 'n_events',type=int,default=None,help ='the number of events to listen to before exiting (if not set there is no limit')
+    
     args = parser.parse_args()
     from ssdaq import sslogger
     import logging;
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    ev_list = SSEventListener(port = args.listen_port)
+    ev_list = SSEventListener(port = args.listen_port,args.ip_addr)
     ev_list.start()
 
     # def signal_handler(sig, frame):

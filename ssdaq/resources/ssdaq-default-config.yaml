@@ -24,6 +24,10 @@ EventBuilder:
     buffer_length: 1000
     event_tw: !!float 1.e5 #nano seconds
     buffer_time: !!float 4e9
-  ZMQEventPublisher:
-    ip: 127.0.0.101
-    port: 5555
+  EventPublishers:
+    ZMQEventPublisherLocal:
+      ip: 127.0.0.101
+      port: 5555
+    ZMQEventPublisherGlobal:
+      ip: 0.0.0.0
+      port: 9999
