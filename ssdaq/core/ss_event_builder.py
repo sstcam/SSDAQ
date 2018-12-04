@@ -202,6 +202,15 @@ class SSEventBuilder:
 
 
     async def builder(self):
+        n_packets = 0
+        self.log.info('Empty socket buffer before starting event building'):
+        try:
+            while(True):
+                await asyncio.wait_for(self.ss_data_protocol._buffer.get(), timeout=.1)
+                n_packets +=1
+        except:
+            pass
+        self.log.info('Thrown away %d packets in buffer before start'%n_packets)
         self.log.info('Starting event build loop')
         packet = await self.ss_data_protocol._buffer.get()
         self.partial_ev_buff.append(PartialEvent(packet[0], packet[2]))
