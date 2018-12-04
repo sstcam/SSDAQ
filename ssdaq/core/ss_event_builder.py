@@ -253,8 +253,8 @@ class SSEventBuilder:
                     # for d in self.partial_ev_buff:
                         # print(d.timestamp*1e-9,d.timestamp,d.event_number, d.tm_parts)
                     self.log.info('Built event %d'%self.nconstructed_events)
-                    self.log.info('Newest event timestamp %f'%self.partial_ev_buff[-1].timestamp*1e-9)
-                    self.log.info('Next event timestamp %f'%self.partial_ev_buff[0].timestamp*1e-9)
+                    self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                    self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
                     self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
                     self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
                     self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
