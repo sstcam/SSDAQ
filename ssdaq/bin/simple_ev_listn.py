@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    ev_list = SSEventListener(port = args.listen_port,args.ip_addr)
+    ev_list = SSEventListener(port = args.listen_port,ip = args.ip_addr)
     ev_list.start()
 
     # def signal_handler(sig, frame):
