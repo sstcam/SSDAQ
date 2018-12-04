@@ -18,7 +18,10 @@ class SSEventListener(Thread):
         self.sock = self.context.socket(zmq.SUB)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
         con_str = "%s://%s:%d"%(protocol,ip,port)
-        self.sock.connect(con_str)
+        if(ip == '0.0.0.0'):
+            self.sock.bind(con_str)
+        else:
+            self.sock.connect(con_str)
         self.log.info('Connected to : %s'%con_str)
         self.running = False
         self._event_buffer = Queue()

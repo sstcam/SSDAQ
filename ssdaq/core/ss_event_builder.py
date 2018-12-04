@@ -305,13 +305,14 @@ class SSEventBuilder:
         return event    
 
 class ZMQEventPublisher():
-    def __init__(self,ip,port,name='ZMQEventPublisher',logger=None):
+    def __init__(self,ip,port,name='ZMQEventPublisher',logger=None, bind=True):
         import zmq
         import logging
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.PUB)
         con_str = 'tcp://%s:'%ip+str(port)
-        self.sock.bind(con_str)
+        if(bind):
+            self.sock.bind(con_str)
         if(logger==None):
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:

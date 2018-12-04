@@ -29,5 +29,6 @@ EventBuilder:
       ip: 127.0.0.101
       port: 5555
     ZMQEventPublisherGlobal:
-      ip: 0.0.0.0
+      ip: 141.34.69.105 
       port: 9999
+      bind: false
