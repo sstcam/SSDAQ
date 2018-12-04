@@ -105,7 +105,8 @@ class SSEventBuilder:
                        event_tw = 0.0001*1e9, 
                        listen_ip = '0.0.0.0',
                        listen_port = 2009,
-                       buffer_length = 1000, 
+                       buffer_length = 1000,
+                       buffer_time = 10*1e9,
                        publishers = []):
         from ssdaq import sslogger
         import zmq
@@ -126,7 +127,7 @@ class SSEventBuilder:
         self.event_tw = int(event_tw)
         self.listen_addr = (listen_ip, listen_port)
         self.buffer_len = buffer_length
-        
+        self.buffer_time = buffer_time
         #counters
         self.nprocessed_packets = 0
         self.nconstructed_events = 0
@@ -245,8 +246,8 @@ class SSEventBuilder:
                         self.log.warning('No partial event found for packet with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
                         self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
                         self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
-            if(self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp>(2*1e9)):
-
+            if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
+                self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp,self.partial_ev_buff[-1].timestamp))
                 event = self.build_event(self.partial_ev_buff.popleft())               
                 if(self.nconstructed_events%10==0):
                     # for d in self.partial_ev_buff:
