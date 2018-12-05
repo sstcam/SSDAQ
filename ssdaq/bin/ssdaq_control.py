@@ -102,7 +102,7 @@ def eb(ctx,daemon,config):
 @click.option('--output-folder','-o',default=None,help='Set output folder (over-rides the loaded configuration)')
 @click.pass_context
 def ew(ctx,filename_prefix,output_folder,daemon,config):
-    '''Start an event writer'''
+    '''Start an event writer an optional custom CONFIG file'''
     print('Starting event writer...')
     if(daemon):
         print('Run as deamon')
@@ -121,7 +121,7 @@ def ew(ctx,filename_prefix,output_folder,daemon,config):
 @click.group()
 @click.pass_context
 def stop(ctx):
-    '''Stop a running eventbuilder or writer'''
+    '''Stop a running event builder or writer'''
     pass
 
 

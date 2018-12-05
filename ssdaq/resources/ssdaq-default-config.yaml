@@ -22,7 +22,7 @@ EventBuilder:
     listen_port: 2009
     relaxed_ip_range: false
     buffer_length: 1000
-    event_tw: !!float 1.e5 #nano seconds
+    event_tw: !!float 1.e7 #nano seconds
     buffer_time: !!float 4e9
   EventPublishers:
     ZMQEventPublisherLocal:
