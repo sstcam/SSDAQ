@@ -128,6 +128,7 @@ class SSEventBuilder:
         self.listen_addr = (listen_ip, listen_port)
         self.buffer_len = buffer_length
         self.buffer_time = buffer_time
+        
         #counters
         self.nprocessed_packets = 0
         self.nconstructed_events = 0
@@ -137,9 +138,11 @@ class SSEventBuilder:
 
         self.loop = asyncio.get_event_loop()
         self.corrs = [self.builder(),self.handle_commands()]
-    
-        #buffers
+        
+        #controlers
+        self.publish_events = True
 
+        #buffers
         self.inter_buff = []
         self.partial_ev_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
         
@@ -183,6 +186,19 @@ class SSEventBuilder:
         self.log.info('Event count has ben reset')
         self.event_count = 1
         return b'Event count reset'
+    
+    def cmd_set_publish_events(self,arg):
+        if(arg[0] == 'false' or arg[0] == 'False'):
+            self.publish_events = False
+            self.log.info('Pause publishing events')
+            return b'Paused event publishing'
+        elif(arg[0] == 'true' or arg[0] == 'True'):
+            self.publish_events = True
+            self.log.info('Pause publishing events')
+            return b'Unpaused event publishing'
+        else:
+            self.log.info('Unrecognized command for command `set_publish_events` \n    no action taken')
+            return ('Unrecognized arg `%s` for command `set_publish_events` \nno action taken'%arg[0]).encode('ascii') 
 
     async def handle_commands(self):
         '''
@@ -274,8 +290,9 @@ class SSEventBuilder:
                     self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
                     self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
                 self.log.debug('Built event %d'%self.nconstructed_events)
-                for pub in self.publishers:
-                    pub.publish(event)
+                if(self.publish_events):
+                    for pub in self.publishers:
+                        pub.publish(event)
     
     def build_event(self,pe):
         #construct event

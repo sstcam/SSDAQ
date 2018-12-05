@@ -47,7 +47,8 @@ class EventFileWriterDaemonWrapper(daemon.Daemon):
             return signal_handler
         signal.signal(signal.SIGHUP, signal_handler_fact(data_writer))
 
-        data_writer.start()
+        # data_writer.start()
+        # while
 
 import yaml
 import click
@@ -67,39 +68,54 @@ def cli(ctx):
     ctx.obj['CONFIG'] =yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml')) 
     pass
 
-@click.group(cls=MyGroup)
+
+
+@click.group()
+@click.pass_context
+def start(ctx):#,config):
+    '''Start an event builder or writer '''
+    ctx.ensure_object(dict)    
+
+@start.command()
 @click.option('--daemon/--no-daemon','-d',default=False,help='run as daemon')
 @click.argument('config',required=False)
 @click.pass_context
-def start(ctx,daemon,config):#,config):
-    '''Start an event builder or writer with and optiononal custom CONFIG file'''
-    ctx.ensure_object(dict)
-    ctx.obj['DAEMON'] = daemon
+def eb(ctx,daemon,config):
+    '''Start an event builder with an optional custom CONFIG file'''
+    
+    print('Starting event builder...')
+    if(daemon):
+        print('Run as deamon')
     if(config):
         ctx.obj['CONFIG'] = yaml.load(open(config,'r'))
-    
-
-@start.command()
-@click.pass_context
-def eb(ctx):
-    '''Start an event builder'''
-    print('Starting event builder...')
     config = ctx.obj['CONFIG']
     event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["EventBuilder"])
-    event_builder.start(ctx.obj['DAEMON'])
+    event_builder.start(daemon)
 
 @start.command()
+@click.option('--daemon/--no-daemon','-d',default=False,help='run as daemon')
+@click.argument('config',required=False)
+@click.option('--filename-prefix','-f',default=None,help='Set filename prefix (over-rides the loaded configuration)')
+@click.option('--output-folder','-o',default=None,help='Set output folder (over-rides the loaded configuration)')
 @click.pass_context
-def ew(ctx):
+def ew(ctx,filename_prefix,output_folder,daemon,config):
     '''Start an event writer'''
     print('Starting event writer...')
+    if(daemon):
+        print('Run as deamon')
+    if(config):
+        ctx.obj['CONFIG'] = yaml.load(open(config,'r'))
     config = ctx.obj['CONFIG']
-    
+
+    if(filename_prefix):
+        config['file_prefix'] = filename_prefix
+    if(output_folder):
+        config['folder'] = output_folder
     event_writer = EventFileWriterDaemonWrapper(**config['EventFileWriterDaemon'],**config["EventFileWriter"])
-    event_writer.start(ctx.obj['DAEMON'])
+    event_writer.start(daemon)
 
 
-@click.group(cls=MyGroup)
+@click.group()
 @click.pass_context
 def stop(ctx):
     '''Stop a running eventbuilder or writer'''
@@ -139,7 +155,7 @@ def all(ctx):
     eb(ctx)
     ew(ctx)
 
-@click.group(name='eb-ctrl', cls=MyGroup)
+@click.group(name='eb-ctrl')
 @click.pass_context
 def eb_ctrl(ctx):
     '''Send control commands to a running event builder daemon'''
@@ -156,10 +172,33 @@ def reset_count(ctx):
     sock.send(b'reset_ev_count 1')
     print(sock.recv())
 
+@eb_ctrl.command()
+@click.pass_context
+def pause_pub(ctx):
+    '''Pauses event publishing'''
+    import zmq
+    zmqctx = zmq.Context()  
+    sock = zmqctx.socket(zmq.REQ)  
+    sock.connect('ipc:///tmp/ssdaq-control')    
+    sock.send(b'set_publish_events False')
+    print(sock.recv())
+
+@eb_ctrl.command()
+@click.pass_context
+def restart_pub(ctx):
+    '''Restart event publishing'''
+    import zmq
+    zmqctx = zmq.Context()  
+    sock = zmqctx.socket(zmq.REQ)  
+    sock.connect('ipc:///tmp/ssdaq-control')    
+    sock.send(b'set_publish_events True')
+    print(sock.recv().decode('ascii'))
+
 
 cli.add_command(start)
 cli.add_command(stop)
 cli.add_command(eb_ctrl)
+
 
 def main():
     
