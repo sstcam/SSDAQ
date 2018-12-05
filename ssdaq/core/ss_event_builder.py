@@ -322,16 +322,45 @@ class SSEventBuilder:
         return event    
 
 class ZMQEventPublisher():
-    def __init__(self,ip,port,name='ZMQEventPublisher',logger=None, bind=True):
+    ''' Slow signal event publisher
+        
+        Publishes event on a TCP/IP socket using the zmq PUB-SUB protocol.
+        
+        Args:
+            ip (str):   the name (ip) interface which the events are published on
+            port (int): the port number of the interface which the events are published on
+        Kwargs:
+            name (str): The name of this instance (usefull for logging)
+            logger:     An instance of a logger to inherit from
+            mode (str): The mode of publishing. Possible modes ('local','outbound', 'remote')
+
+        The three different modes defines how the socket is setup for different use cases.
+
+            * 'local' this is the normal use case where events are published on localhost
+                and ip should be '127.x.x.x'
+            * 'outbound' is when the events are published on an outbound network interface of 
+                the machine so that remote clients can connect to the machine to receive the events. 
+                In this case ip is the ip address of the interface on which the events should be published
+            * 'remote' specifies that the given ip is of a remote machine to which the events should be sent to.   
+
+
+    '''
+    def __init__(self,ip,port,name='ZMQEventPublisher',logger=None, mode = 'local'):
+        '''Slow signal event publisher
+        '''
+
         import zmq
         import logging
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.PUB)
         con_str = 'tcp://%s:'%ip+str(port)
-        if(bind):
+        
+        if(mode == 'local' or mode == 'outbound'):
             self.sock.bind(con_str)
-        else:
+        
+        if(mode == 'outbound' or mode == 'remote'):
             self.sock.connect(con_str)
+        
         if(logger==None):
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:

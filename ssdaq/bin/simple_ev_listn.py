@@ -33,20 +33,8 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    ev_list = SSEventListener(port = args.listen_port,ip = args.ip_addr)
+    ev_list = SSEventListener(port = args.listen_port, ip = args.ip_addr)
     ev_list.start()
-
-    # def signal_handler(sig, frame):
-            
-    #         ctrc_count +=1
-        
-    #         ev_list.running=False
-    #         print('\npressed ctrl-C')
-    #         ev_list.CloseThread()
-    #         print("Closing listener")
-    #         raise RuntimeError
-
-    # signal.signal(signal.SIGINT, signal_handler)
 
     event_counter = np.zeros(32)
     n_modules_per_event =[]

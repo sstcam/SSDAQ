@@ -31,4 +31,4 @@ EventBuilder:
     # ZMQEventPublisherOutbound:
     #   ip: 141.34.29.161
     #   port: 9999
-    #   bind: false
+    #   mode: outbound

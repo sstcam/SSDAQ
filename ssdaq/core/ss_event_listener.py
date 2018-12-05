@@ -7,25 +7,26 @@ import logging
 
 class SSEventListener(Thread):
     id_counter = 0
-    def __init__(self,ip = '127.0.0.101', port = 5555 ,protocol='tcp',logger=None):
+    def __init__(self,ip,port,logger=None):
         Thread.__init__(self)
+        SSEventListener.id_counter += 1
         if(logger == None):
-            self.log=logging.getLogger('ssdaq.SSEventListener')
+            self.log=logging.getLogger('ssdaq.SSEventListener%d'%SSEventListener.id_counter) 
         else:
             self.log=logger
 
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.SUB)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
-        con_str = "%s://%s:%d"%(protocol,ip,port)
-        if(ip == '0.0.0.0'):
+        con_str = "tcp://%s:%s"%(ip,port)
+        if('0.0.0.0' == ip):
             self.sock.bind(con_str)
         else:
             self.sock.connect(con_str)
         self.log.info('Connected to : %s'%con_str)
         self.running = False
         self._event_buffer = Queue()
-        SSEventListener.id_counter += 1
+        
         self.id_counter = SSEventListener.id_counter
         self.inproc_sock_name = "SSEventListener%d"%(self.id_counter) 
         self.close_sock = self.context.socket(zmq.PAIR)
@@ -55,7 +56,7 @@ class SSEventListener(Thread):
         con_str = "inproc://"+self.inproc_sock_name
         recv_close.connect(con_str)
         self.running = True
-        self.log.info('Connecting to %s'%con_str)
+        self.log.debug('Connecting close socket to %s'%con_str)
         poller = zmq.Poller()
         poller.register(self.sock,zmq.POLLIN)
         poller.register(recv_close,zmq.POLLIN)
