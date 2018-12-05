@@ -50,8 +50,11 @@ class EventFileWriterDaemonWrapper(daemon.Daemon):
         # data_writer.start()
         # while
 
+
+
 import yaml
 import click
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 class MyGroup(click.Group):
     def parse_args(self, ctx, args):
         if args[0] in self.commands:
@@ -59,7 +62,7 @@ class MyGroup(click.Group):
                 args.insert(0, '')
         super(MyGroup, self).parse_args(ctx, args)
 
-@click.group()
+@click.group(context_settings=CONTEXT_SETTINGS)
 @click.pass_context
 def cli(ctx):
     '''Start, stop and control ssdaq event builder and writer daemons'''
