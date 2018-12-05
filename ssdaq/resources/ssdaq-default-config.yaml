@@ -27,7 +27,7 @@ EventBuilder:
   EventPublishers:
     ZMQEventPublisherLocal:
       ip: 127.0.0.101
-      port: 5555
+      port: 5551
     # ZMQEventPublisherOutbound:
     #   ip: 141.34.29.161
     #   port: 9999

@@ -12,7 +12,7 @@ class SimControl(object):
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter
                                     )
         self.parser.add_argument('-V','--verbose', action='store_true', help='Turns on verbosity')
-        self.commands = self.parser.add_subparsers(title='sub-commands')
+        self.commands = self.parser.add_subparsers(title='Commands')
 
         self.subprograms = {}
         for sp in subprogram_list:
@@ -118,7 +118,7 @@ class DirectCommand(object):
         self.cmd_parser = cmd_parser.add_parser(self.name,formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
                                  help='Send command to a TM simulation process')
 
-        self.cmd_parser.add_argument('cmd',nargs='+',help='Send command CMD [ARG ...] ') 
+        self.cmd_parser.add_argument('COMMAND',nargs='+',help='Send command CMD [ARG ...] ') 
 
         self.cmd_parser.add_argument('-l','--local', action='store_true',
                             help='If the simulation runs on local host use this option.')
@@ -165,7 +165,7 @@ class DirectCommand(object):
                 print('Connecting to:\n   %s'%con_str)
             com_sock.connect(con_str)
         
-        com_sock.send((' '.join(args.cmd)).encode('ascii'))
+        com_sock.send((' '.join(args.COMMAND)).encode('ascii'))
         reply = pickle.loads(com_sock.recv())
         print('Received reply from: %s@%s'%(reply['name'],reply['ip']))
         print('Status: %s'%reply['status'])
