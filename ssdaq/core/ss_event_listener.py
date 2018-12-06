@@ -33,7 +33,7 @@ class SSEventListener(Thread):
         self.close_sock.bind("inproc://"+self.inproc_sock_name)
         
 
-    def CloseThread(self):
+    def close(self):
 
         if(self.running):
             self.log.debug('Sending close message to listener thread')
@@ -45,7 +45,7 @@ class SSEventListener(Thread):
             self._event_buffer.task_done()
         self._event_buffer.join()
 
-    def GetEvent(self,**kwargs):
+    def get_event(self,**kwargs):
         event = self._event_buffer.get(**kwargs)
         self._event_buffer.task_done()       
         return event

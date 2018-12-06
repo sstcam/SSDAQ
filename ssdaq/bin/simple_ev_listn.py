@@ -44,10 +44,10 @@ def main():
     print('Press `ctrl-C` to stop')
     while(True):
         try:
-            event = ev_list.GetEvent()
+            event = ev_list.get_event()
         except :
             print("\nClosing listener")
-            ev_list.CloseThread()
+            ev_list.close()
             break
         # if(n>0):
         #     print('\033[7   A ')    
@@ -77,7 +77,7 @@ def main():
     plt.figure()
     plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
     plt.show()
-    ev_list.CloseThread()
+    ev_list.close()
     ev_list.join()
 
 

@@ -62,7 +62,7 @@ class EventFileWriter(Thread):
                                                                                       self.filename))
     def close(self):
         self.running = False
-        self.event_listener.CloseThread()
+        self.event_listener.close()
         self.join()
 
     def run(self):
@@ -71,7 +71,7 @@ class EventFileWriter(Thread):
         self.running = True
         ev_row = self.table.row
         while(self.running):
-            event = self.event_listener.GetEvent()
+            event = self.event_listener.get_event()
             if(event == None):
                 continue
             #Start a new file if we get 
@@ -91,7 +91,7 @@ class EventFileWriter(Thread):
             self.file_event_counter +=1
 
         self.log.info('Stopping listener thread')
-        self.event_listener.CloseThread()
+        self.event_listener.close()
         self._close_file()        
         self.log.info('EventFileWriter has written a'
                       ' total of %d events to %d file(s)'%(self.event_counter,
