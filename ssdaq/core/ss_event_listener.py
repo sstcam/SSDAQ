@@ -6,6 +6,16 @@ from queue import Queue
 import logging
 
 class SSEventListener(Thread):
+    ''' A convinience class to subscribe to a published SS event data stream. 
+        Events are retrived by the `get_event()` method once the listener has been started by the 
+        `start()` method
+
+        Args:
+            ip (str):   The ip address where the events are published (can be local or remote) 
+            port (int): The port number at which the events are published
+        Kwargs:
+            logger:     Optionally provide a logger instance 
+    '''
     id_counter = 0
     def __init__(self,ip,port,logger=None):
         Thread.__init__(self)
@@ -34,6 +44,9 @@ class SSEventListener(Thread):
         
 
     def close(self):
+        ''' Closes listener thread and empties the event buffer to unblock the
+            the get_event method  
+        '''
 
         if(self.running):
             self.log.debug('Sending close message to listener thread')
@@ -46,11 +59,20 @@ class SSEventListener(Thread):
         self._event_buffer.join()
 
     def get_event(self,**kwargs):
+        ''' Returns an SSEvent instance from the published event stream.
+            By default a blocking call. See python Queue docs.
+
+            Kwargs:
+                Se Queue docs
+
+        '''
         event = self._event_buffer.get(**kwargs)
         self._event_buffer.task_done()       
         return event
 
     def run(self):
+        ''' This is the main method of the listener
+        '''
         self.log.info('Starting listener')
         recv_close = self.context.socket(zmq.PAIR)
         con_str = "inproc://"+self.inproc_sock_name
