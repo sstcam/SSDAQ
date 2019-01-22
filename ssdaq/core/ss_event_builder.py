@@ -292,7 +292,7 @@ class SSEventBuilder:
             if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
                 #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
                 event = self.build_event(self.partial_ev_buff.popleft())               
-                #   if(self.nconstructed_events%10==0):
+                if(self.nconstructed_events%10==0):
                     # for d in self.partial_ev_buff:
                         # print(d.timestamp*1e-9,d.timestamp,d.event_number, d.tm_parts)
                     self.log.info('Built event %d'%self.nconstructed_events)
