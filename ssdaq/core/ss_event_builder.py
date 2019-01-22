@@ -18,14 +18,14 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.packet_debug_stream = False
 
     def connection_made(self, transport):
-        #self.log.info('Connected to port')
+        self.log.info('Connected to port')
         self.transport = transport
 
     def datagram_received(self, data, addr):
         
         if(len(data)%(READOUT_LENGTH) != 0):
             self.log.warn("Got unsuported packet size, skipping packet")
-            #self.log.info("Bad package came from %s:%d"%tuple(data[0]))
+            self.log.info("Bad package came from %s:%d"%tuple(data[0]))
             return
         nreadouts = int(len(data)/(READOUT_LENGTH))
 
@@ -177,14 +177,14 @@ class SSEventBuilder:
                 self.cmds[method[0][4:]] = method[1]
 
     def run(self):
-        #self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
+        self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
         listen = self.loop.create_datagram_endpoint(
         lambda :SlowSignalDataProtocol(self.loop,self.log,self.relaxed_ip_range, packet_debug_stream_file = self.packet_debug_stream_file), 
         local_addr=self.listen_addr)
         
         transport, protocol = self.loop.run_until_complete(listen)
         self.ss_data_protocol = protocol
-        #self.log.info('Number of publishers registered %d'%len(self.publishers))
+        self.log.info('Number of publishers registered %d'%len(self.publishers))
         for c in self.corrs:
             self.loop.create_task(c)
 
@@ -195,21 +195,21 @@ class SSEventBuilder:
         self.loop.close()
 
     def cmd_reset_ev_count(self,arg):
-        #self.log.info('Event count has ben reset')
+        self.log.info('Event count has ben reset')
         self.event_count = 1
         return b'Event count reset'
     
     def cmd_set_publish_events(self,arg):
         if(arg[0] == 'false' or arg[0] == 'False'):
             self.publish_events = False
-            #self.log.info('Pause publishing events')
+            self.log.info('Pause publishing events')
             return b'Paused event publishing'
         elif(arg[0] == 'true' or arg[0] == 'True'):
             self.publish_events = True
-            #self.log.info('Pause publishing events')
+            self.log.info('Pause publishing events')
             return b'Unpaused event publishing'
         else:
-            #self.log.info('Unrecognized command for command `set_publish_events` \n    no action taken')
+            self.log.info('Unrecognized command for command `set_publish_events` \n    no action taken')
             return ('Unrecognized arg `%s` for command `set_publish_events` \nno action taken'%arg[0]).encode('ascii') 
 
     async def handle_commands(self):
@@ -219,24 +219,24 @@ class SSEventBuilder:
         '''
         while(True):
             cmd = await self.com_sock.recv()
-            #self.log.info('Handling incoming command %s'%cmd.decode('ascii'))
+            self.log.info('Handling incoming command %s'%cmd.decode('ascii'))
             cmd = cmd.decode('ascii').split(' ')
             if(cmd[0] in self.cmds.keys()):
                 reply = self.cmds[cmd[0]](cmd[1:])
             else:
                 reply = b"Error, No command `%s` found."%(cmd[0])
-                #self.log.info('Incomming command `%s` not recognized')
+                self.log.info('Incomming command `%s` not recognized')
             self.com_sock.send(reply)
 
 
     async def builder(self):
         n_packets = 0
-        #self.log.info('Empty socket buffer before starting event building')
+        self.log.info('Empty socket buffer before starting event building')
         packet = await self.ss_data_protocol._buffer.get()
         got_packet = True
         while(got_packet):
             got_packet = False
-            #self.log.info('Thrown away %d packets in buffer before start'%n_packets)
+            self.log.info('Thrown away %d packets in buffer before start'%n_packets)
             try:
                 while(True):
                     await asyncio.wait_for(self.ss_data_protocol._buffer.get(), timeout=0)
@@ -244,8 +244,8 @@ class SSEventBuilder:
                     got_packet = True
             except:
                 pass
-        #self.log.info('Thrown away %d packets in buffer before start'%n_packets)
-        #self.log.info('Starting event build loop')
+        self.log.info('Thrown away %d packets in buffer before start'%n_packets)
+        self.log.info('Starting event build loop')
         packet = await self.ss_data_protocol._buffer.get()
         self.partial_ev_buff.append(PartialEvent(packet[0], packet[2]))
         while(True):
@@ -287,20 +287,20 @@ class SSEventBuilder:
                             
                     if(not found):
                         self.log.warning('No partial event found for packet with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
-                        #self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                        #self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
+                        self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                        self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
             if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
                 #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
                 event = self.build_event(self.partial_ev_buff.popleft())               
                 #   if(self.nconstructed_events%10==0):
                     # for d in self.partial_ev_buff:
                         # print(d.timestamp*1e-9,d.timestamp,d.event_number, d.tm_parts)
-                    #self.log.info('Built event %d'%self.nconstructed_events)
-                    #self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                    #self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
-                    #self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
-                    #self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
-                    #self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
+                    self.log.info('Built event %d'%self.nconstructed_events)
+                    self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                    self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
+                    self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
+                    self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
+                    self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
                 #self.log.debug('Built event %d'%self.nconstructed_events)
                 if(self.publish_events):
                     for pub in self.publishers:
@@ -377,7 +377,7 @@ class ZMQEventPublisher():
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:
             self.log = logger.getChild(name)
-        #self.log.info('Initialized event publisher on: %s'%con_str)
+        self.log.info('Initialized event publisher on: %s'%con_str)
     
     def give_loop(self,loop):
         self.loop = loop
