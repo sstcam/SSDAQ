@@ -48,7 +48,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             unpacked_data = struct.unpack_from('>Q32HQ32H',data,i*(READOUT_LENGTH))
             
             self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data)))
-        if(self.packet_debug_stream):
+            if(self.packet_debug_stream):
                 self.packet_debug_stream_file.write('%d  %d  %d\n'%(unpacked_data[0],int(datetime.utcnow().timestamp()*1e9) , module_nr))
         #self.log.debug('Front buffer length %d'%(self._buffer.qsize()))
         if(self._buffer.qsize()>1000):
