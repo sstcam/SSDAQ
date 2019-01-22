@@ -1,24 +1,31 @@
 import asyncio
 import struct
 import numpy as np
-
+from datetime import datetime
 READOUT_LENGTH = 64*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 
 class SlowSignalDataProtocol(asyncio.Protocol):
-    def __init__(self,loop,log,relaxed_ip_range):
+    def __init__(self,loop,log,relaxed_ip_range, packet_debug_stream_file = None):
         self._buffer = asyncio.Queue()
         self.loop = loop
         self.log = log.getChild('SlowSignalDataProtocol')
         self.relaxed_ip_range = relaxed_ip_range
+        if(packet_debug_stream_file != None):
+            self.log.info('Opening a packet_debug_stream_file at %s'%packet_debug_stream_file)
+            self.packet_debug_stream_file = open(packet_debug_stream_file,'w')
+            self.packet_debug_stream = True
+        else:
+            self.packet_debug_stream = False
+
     def connection_made(self, transport):
-        self.log.info('Connected to port')
+        #self.log.info('Connected to port')
         self.transport = transport
 
     def datagram_received(self, data, addr):
         
         if(len(data)%(READOUT_LENGTH) != 0):
             self.log.warn("Got unsuported packet size, skipping packet")
-            self.log.info("Bad package came from %s:%d"%tuple(data[0]))
+            #self.log.info("Bad package came from %s:%d"%tuple(data[0]))
             return
         nreadouts = int(len(data)/(READOUT_LENGTH))
 
@@ -29,18 +36,21 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             #ensure that the module number is in the allowed range
             #(mostly important for local or standalone setups simulations)
             module_nr = module_nr%32
-            self.log.debug('Got data from ip %s which is outsie the allowed range'%ip)
+            #self.log.debug('Got data from ip %s which is outsie the allowed range'%ip)
         elif(module_nr>31):
             self.log.error('Error: got packets from ip out of range:')
             self.log.error('   %s'%ip)
             self.log.error('This can be supressed if relaxed_ip_range=True')
             raise RuntimeError
             
-        self.log.debug("Got data from %s assigned to module %d"%(str(ip),module_nr))
+        #self.log.debug("Got data from %s assigned to module %d"%(str(ip),module_nr))
         for i in range(nreadouts):
             unpacked_data = struct.unpack_from('>Q32HQ32H',data,i*(READOUT_LENGTH))
+            
             self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data)))
-        self.log.debug('Front buffer length %d'%(self._buffer.qsize()))
+        if(self.packet_debug_stream):
+                self.packet_debug_stream_file.write('%d  %d  %d\n'%(unpacked_data[0],int(datetime.utcnow().timestamp()*1e9) , module_nr))
+        #self.log.debug('Front buffer length %d'%(self._buffer.qsize()))
         if(self._buffer.qsize()>1000):
             self.log.warning('Front buffer length %d'%(self._buffer.qsize()))
 
@@ -107,7 +117,8 @@ class SSEventBuilder:
                        listen_port = 2009,
                        buffer_length = 1000,
                        buffer_time = 10*1e9,
-                       publishers = []):
+                       publishers = [],
+                       packet_debug_stream_file = None):
         from ssdaq import sslogger
         import zmq
         import zmq.asyncio
@@ -128,6 +139,7 @@ class SSEventBuilder:
         self.listen_addr = (listen_ip, listen_port)
         self.buffer_len = buffer_length
         self.buffer_time = buffer_time
+        self.packet_debug_stream_file = packet_debug_stream_file 
         
         #counters
         self.nprocessed_packets = 0
@@ -165,14 +177,14 @@ class SSEventBuilder:
                 self.cmds[method[0][4:]] = method[1]
 
     def run(self):
-        self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
+        #self.log.info('Settting up listener at %s:%d'%(tuple(self.listen_addr)))
         listen = self.loop.create_datagram_endpoint(
-        lambda :SlowSignalDataProtocol(self.loop,self.log,self.relaxed_ip_range), 
+        lambda :SlowSignalDataProtocol(self.loop,self.log,self.relaxed_ip_range, packet_debug_stream_file = self.packet_debug_stream_file), 
         local_addr=self.listen_addr)
         
         transport, protocol = self.loop.run_until_complete(listen)
         self.ss_data_protocol = protocol
-        self.log.info('Number of publishers registered %d'%len(self.publishers))
+        #self.log.info('Number of publishers registered %d'%len(self.publishers))
         for c in self.corrs:
             self.loop.create_task(c)
 
@@ -183,21 +195,21 @@ class SSEventBuilder:
         self.loop.close()
 
     def cmd_reset_ev_count(self,arg):
-        self.log.info('Event count has ben reset')
+        #self.log.info('Event count has ben reset')
         self.event_count = 1
         return b'Event count reset'
     
     def cmd_set_publish_events(self,arg):
         if(arg[0] == 'false' or arg[0] == 'False'):
             self.publish_events = False
-            self.log.info('Pause publishing events')
+            #self.log.info('Pause publishing events')
             return b'Paused event publishing'
         elif(arg[0] == 'true' or arg[0] == 'True'):
             self.publish_events = True
-            self.log.info('Pause publishing events')
+            #self.log.info('Pause publishing events')
             return b'Unpaused event publishing'
         else:
-            self.log.info('Unrecognized command for command `set_publish_events` \n    no action taken')
+            #self.log.info('Unrecognized command for command `set_publish_events` \n    no action taken')
             return ('Unrecognized arg `%s` for command `set_publish_events` \nno action taken'%arg[0]).encode('ascii') 
 
     async def handle_commands(self):
@@ -207,55 +219,55 @@ class SSEventBuilder:
         '''
         while(True):
             cmd = await self.com_sock.recv()
-            self.log.info('Handling incoming command %s'%cmd.decode('ascii'))
+            #self.log.info('Handling incoming command %s'%cmd.decode('ascii'))
             cmd = cmd.decode('ascii').split(' ')
             if(cmd[0] in self.cmds.keys()):
                 reply = self.cmds[cmd[0]](cmd[1:])
             else:
                 reply = b"Error, No command `%s` found."%(cmd[0])
-                self.log.info('Incomming command `%s` not recognized')
+                #self.log.info('Incomming command `%s` not recognized')
             self.com_sock.send(reply)
 
 
     async def builder(self):
         n_packets = 0
-        self.log.info('Empty socket buffer before starting event building')
+        #self.log.info('Empty socket buffer before starting event building')
         packet = await self.ss_data_protocol._buffer.get()
         got_packet = True
         while(got_packet):
             got_packet = False
-            self.log.info('Thrown away %d packets in buffer before start'%n_packets)
+            #self.log.info('Thrown away %d packets in buffer before start'%n_packets)
             try:
                 while(True):
-                    await asyncio.wait_for(self.ss_data_protocol._buffer.get(), timeout=.2)
+                    await asyncio.wait_for(self.ss_data_protocol._buffer.get(), timeout=0)
                     n_packets +=1
                     got_packet = True
             except:
                 pass
-        self.log.info('Thrown away %d packets in buffer before start'%n_packets)
-        self.log.info('Starting event build loop')
+        #self.log.info('Thrown away %d packets in buffer before start'%n_packets)
+        #self.log.info('Starting event build loop')
         packet = await self.ss_data_protocol._buffer.get()
         self.partial_ev_buff.append(PartialEvent(packet[0], packet[2]))
         while(True):
             packet = await self.ss_data_protocol._buffer.get()
-            self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
+            #self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
             pe = self.partial_ev_buff[-1]
             dt = (pe.timestamp - packet[1])
 
             if(abs(dt) < self.event_tw  and pe.tm_parts[packet[0]] == 0):#
                 self.partial_ev_buff[-1].add_part(packet[0], packet[2])
-                self.log.debug('Packet added to the tail of the buffer')
+                #self.log.debug('Packet added to the tail of the buffer')
             
             elif(dt<0):
                 self.partial_ev_buff.append(PartialEvent(packet[0], packet[2]))
-                self.log.debug('Packet added to a new event at the tail of the buffer')
+                #self.log.debug('Packet added to a new event at the tail of the buffer')
             
             else:
                 if(self.partial_ev_buff[0].timestamp - packet[1]>0):
                     self.partial_ev_buff.appendleft(PartialEvent(packet[0], packet[2]))
-                    self.log.debug('Packet added to a new event at the head of the buffer')   
+                    #self.log.debug('Packet added to a new event at the head of the buffer')   
                 else:
-                    self.log.debug('Finding right event in buffer')
+                    #self.log.debug('Finding right event in buffer')
                     found = False
                     for i in range(len(self.partial_ev_buff)-1,0,-1):
                         pe = self.partial_ev_buff[i]
@@ -265,7 +277,7 @@ class SSEventBuilder:
                             if(pe.tm_parts[packet[0]]==1):
                                 self.log.warning('Dublette packet with timestamp %f and tm id %d with cpu timestamp %f'%(packet[1]*1e-9,packet[0],packet[2][33]*1e-9))
                             self.partial_ev_buff[i].add_part(packet[0], packet[2]) 
-                            self.log.debug('Packet added to %d:th event in buffer'%i)
+                            #self.log.debug('Packet added to %d:th event in buffer'%i)
                             found =True
                             break
                         elif(dt<0):
@@ -275,21 +287,21 @@ class SSEventBuilder:
                             
                     if(not found):
                         self.log.warning('No partial event found for packet with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
-                        self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                        self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
+                        #self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                        #self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
             if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
-                self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
+                #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
                 event = self.build_event(self.partial_ev_buff.popleft())               
-                if(self.nconstructed_events%10==0):
+                #   if(self.nconstructed_events%10==0):
                     # for d in self.partial_ev_buff:
                         # print(d.timestamp*1e-9,d.timestamp,d.event_number, d.tm_parts)
-                    self.log.info('Built event %d'%self.nconstructed_events)
-                    self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                    self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
-                    self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
-                    self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
-                    self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
-                self.log.debug('Built event %d'%self.nconstructed_events)
+                    #self.log.info('Built event %d'%self.nconstructed_events)
+                    #self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                    #self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
+                    #self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
+                    #self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
+                    #self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
+                #self.log.debug('Built event %d'%self.nconstructed_events)
                 if(self.publish_events):
                     for pub in self.publishers:
                         pub.publish(event)
@@ -365,7 +377,8 @@ class ZMQEventPublisher():
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:
             self.log = logger.getChild(name)
-        self.log.info('Initialized event publisher on: %s'%con_str)
+        #self.log.info('Initialized event publisher on: %s'%con_str)
+    
     def give_loop(self,loop):
         self.loop = loop
 

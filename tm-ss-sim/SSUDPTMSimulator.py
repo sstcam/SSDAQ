@@ -50,7 +50,7 @@ class TMSimulator(object):
         self.npackets_c = 0
         self.data = np.random.uniform(0,400,64)
         self.sending_ss_data = True
-        self.dt = 1.0
+        self.dt = .01
         self.t_past = datetime.utcnow()        
         self.t1 = datetime.utcnow()
         self.send_ss_datae = asyncio.Event()
@@ -159,7 +159,7 @@ class TMSimulator(object):
             await self.send_ss_datae.wait()
             if(counter==packets_per_sec):
                 counter = 0
-                master_tmstmp =int(self.t1.timestamp())#+1#int(self.t1.timestamp())
+                master_tmstmp =int(self.t1.timestamp()+self.dt)#+1#int(self.t1.timestamp())
             #     t = datetime.utcnow()
             #     sleeptime = (1.0 - t.microsecond/1000000.0)
             #     if(sleeptime<self.dt*5):
@@ -170,9 +170,10 @@ class TMSimulator(object):
             self.t1 = datetime.utcnow()
             timestamp = self.t1.timestamp()
             if(counter==0):
-                timestamp_packet =  int(self.t1.timestamp()+self.dt) + cloc_cycles[counter] # + np.random.uniform(-2e-5,2e-5)
+                master_tmstmp = int(self.t1.timestamp()+self.dt)
+                timestamp_packet =  master_tmstmp + cloc_cycles[counter] # + np.random.uniform(-2e-5,2e-5)
             else:
-                timestamp_packet =  int(self.t1.timestamp()) + cloc_cycles[counter]
+                timestamp_packet =  master_tmstmp + cloc_cycles[counter]
             data_packet = bytearray()
             for i in range(10):
                 data = self._simulate_data()

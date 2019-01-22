@@ -148,7 +148,7 @@ class DirectCommand(object):
             if('TM' in args.ip):
                 if(self.sargs.verbose):
                     print('Looking up ip for %s:'%args.ip)
-                tms_running = open('started_tms.txt','r').readlines()
+                tms_running = open('.started_tms.txt','r').readlines()
                 ip = None
                 for tm in tms_running:
                     if(args.ip in tm):
@@ -206,13 +206,13 @@ class DockerCommand(object):
             call(call_list)
             
         if(self.args == 'stop'):
-            if(os.path.isfile('started_tms.txt')):
-                tms_to_stop = open('started_tms.txt','r').readlines()
+            if(os.path.isfile('.started_tms.txt')):
+                tms_to_stop = open('.started_tms.txt','r').readlines()
                 for tm in tms_to_stop:
                     cmd_list = ['docker','rm','-f',tm.split()[0]]
                     print(' '.join(cmd_list))
                     call(cmd_list)
-                os.remove('started_tms.txt')
+                os.remove('.started_tms.txt')
                 print('Removed %d container(s)'%len(tms_to_stop))
             else:
                 print('No container file found')
