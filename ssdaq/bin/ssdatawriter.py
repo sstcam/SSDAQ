@@ -13,6 +13,10 @@ def main():
                         default='5555',
                         help='port for incoming event data')
 
+    parser.add_argument('-i', dest='listen_interface', type=str,
+                        default='127.0.0.101',
+                        help='port for incoming event data')
+
     parser.add_argument('filename', type=str,
                         default='5555',
                         help='Output file name')
@@ -20,7 +24,7 @@ def main():
     args = parser.parse_args()
 
 
-    data_writer = EventFileWriter(args.filename,file_enumerator='date')
+    data_writer = EventFileWriter(args.filename,file_enumerator='date',port=args.listen_port,ip =args.listen_interface)
 
     data_writer.start()
 
