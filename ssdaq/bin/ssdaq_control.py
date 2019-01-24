@@ -40,15 +40,14 @@ class EventFileWriterDaemonWrapper(daemon.Daemon):
         import sys
 
         data_writer = EventFileWriter(**self.kwargs)
-        def signal_handler_fact(data_writer):
+        def signal_handler_fact(data_writer,self):
 
             def signal_handler(sig, frame):
                 data_writer.close()
             return signal_handler
-        signal.signal(signal.SIGHUP, signal_handler_fact(data_writer))
+        signal.signal(signal.SIGHUP, signal_handler_fact(data_writer,self))
 
-        # data_writer.start()
-        # while
+        data_writer.start()
 
 
 
@@ -147,9 +146,6 @@ def ew(ctx):
         return
     if(ewpid != None):
        os.kill(ewpid,signal.SIGHUP)
-       import time
-       time.sleep(2)
-       event_writer.stop()
 
 @stop.command()
 @click.pass_context
