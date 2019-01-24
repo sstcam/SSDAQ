@@ -14,7 +14,7 @@ sslogger.setLevel(logging.ERROR)
 import numpy as np
 class TestSSEvent(unittest.TestCase):
     def test_pack_unpack(self):
-        event1 = SSEvent(timestamp = 12345,event_number=1234,run_number=123)
+        event1 = SSEvent(timestamp = 12345,event_number=1234)
         event1.data[2,:] = np.arange(64)
         event1.data[3,:] = np.arange(64)
         event1.timestamps[:,0] = np.arange(32,dtype=np.uint64)
@@ -23,7 +23,6 @@ class TestSSEvent(unittest.TestCase):
         event2.unpack(packed_event)
 
         self.assertEqual(event1.event_number , event2.event_number)
-        self.assertEqual(event1.run_number , event2.run_number)
         self.assertEqual(event1.event_timestamp , event2.event_timestamp)
         self.assertTrue((event1.data[2]==event2.data[2]).all())
         self.assertTrue((event1.data[3]==event2.data[3]).all())

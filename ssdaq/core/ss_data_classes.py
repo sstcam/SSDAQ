@@ -22,9 +22,8 @@ class SSEvent(object):
         '''
         Convinience method to pack the event into a bytestream
         '''
-        d_stream = bytearray(struct.pack('3Q',
+        d_stream = bytearray(struct.pack('2Q',
                             self.event_number,
-                            self.run_number,
                             self.event_timestamp))
 
         d_stream.extend(self.data.tobytes())
@@ -36,9 +35,9 @@ class SSEvent(object):
         '''
         Unpack a bytestream into an event
         '''
-        self.event_number, self.run_number,self.event_timestamp = struct.unpack_from('3Q',byte_stream,0)
-        self.data = np.frombuffer(byte_stream[8*3:8*(3+2048)],dtype=np.float64).reshape(32,64)
-        self.timestamps = np.frombuffer(byte_stream[8*(3+2048):8*(3+2048+64)],dtype=np.uint64).reshape(32,2)
+        self.event_number,self.event_timestamp = struct.unpack_from('2Q',byte_stream,0)
+        self.data = np.frombuffer(byte_stream[8*2:8*(2+2048)],dtype=np.float64).reshape(32,64)
+        self.timestamps = np.frombuffer(byte_stream[8*(2+2048):8*(2+2048+64)],dtype=np.uint64).reshape(32,2)
 
     def __repr__(self):
         return "ssdaq.SSEvent({},\n{},\n{},\n{})".format(self.event_timestamp,
