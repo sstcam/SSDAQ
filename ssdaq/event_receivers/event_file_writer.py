@@ -1,16 +1,5 @@
-from ssdaq import SSEventListener
+from ssdaq import SSEventListener, SSDataWriter
 from threading import Thread
-import numpy as np
-import tables
-from tables import IsDescription,open_file,UInt64Col,Float64Col,Float32Col
-
-
-class SSEventTableDs(IsDescription):
-    event_number = UInt64Col()
-    runt_number  = UInt64Col()
-    ev_time      = UInt64Col()
-    data         = Float32Col((32,64))
-    time_stamps  = UInt64Col((32,2))
 
 class EventFileWriter(Thread):
     """
@@ -27,10 +16,9 @@ class EventFileWriter(Thread):
         self.folder = folder
         self.file_prefix = file_prefix
         self.log = sslogger.getChild('EventFileWriter')
-        self.event_listener = SSEventListener(logger=self.log.getChild('EventListener'),**kwargs)
+        self._event_listener = SSEventListener(logger=self.log.getChild('EventListener'),**kwargs)
         self.running = False
         self.event_counter = 0
-        self.file_event_counter = 0
         self.file_counter = 1
         self._open_file()
     
@@ -45,33 +33,30 @@ class EventFileWriter(Thread):
         else:
             suffix = ''
 
+        
         self.filename = os.path.join(self.folder,self.file_prefix+suffix+'.hdf5') 
-        self.file = open_file(self.filename, mode="w", title="CHEC-S Slow signal monitor data")
-        self.group = self.file.create_group("/", 'SlowSignal', 'Slow signal data')
-        self.table = self.file.create_table(self.group, 'readout', SSEventTableDs, "Slow signal readout")
+        self._writer = SSDataWriter(self.filename)
         self.log.info('Opened new file, will write events to file: %s'%self.filename)
 
     def _close_file(self):
         import os
         from ssdaq.utils.file_size import convert_size
-        self.table.flush()
         self.log.info('Closing file %s'%self.filename)
-        self.file.close()
-        self.log.info('EventFileWriter has written %d events in %s bytes to file %s'%(self.file_event_counter,
+        self._writer.close_file()
+        self.log.info('EventFileWriter has written %d events in %s bytes to file %s'%(self._writer.event_counter,
                                                                                       convert_size(os.stat(self.filename).st_size),
                                                                                       self.filename))
     def close(self):
         self.running = False
-        self.event_listener.close()
+        self._event_listener.close()
         self.join()
 
     def run(self):
         self.log.info('Starting writer thread')
-        self.event_listener.start()
+        self._event_listener.start()
         self.running = True
-        ev_row = self.table.row
         while(self.running):
-            event = self.event_listener.get_event()
+            event = self._event_listener.get_event()
             if(event == None):
                 continue
             #Start a new file if we get 
@@ -80,18 +65,12 @@ class EventFileWriter(Thread):
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()
-                ev_row = self.table.row  
-            ev_row['event_number'] = event.event_number
-            ev_row['ev_time'] = event.event_timestamp
-            ev_row['data'] = np.asarray(event.data,dtype=np.float32)
-            ev_row['time_stamps'] = event.timestamps
-            ev_row.append()
-            self.table.flush()
+
+            self._writer.write_readout(event)
             self.event_counter +=1
-            self.file_event_counter +=1
 
         self.log.info('Stopping listener thread')
-        self.event_listener.close()
+        self._event_listener.close()
         self._close_file()        
         self.log.info('EventFileWriter has written a'
                       ' total of %d events to %d file(s)'%(self.event_counter,

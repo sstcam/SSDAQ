@@ -1,5 +1,6 @@
 import logging as _logging
-from .core.ss_event_builder import SSEventBuilder, ZMQEventPublisher, SSEvent
+from .core.ss_data_classes import SSEvent,SSDataReader, SSDataWriter
+from .core.ss_event_builder import SSEventBuilder, ZMQEventPublisher
 from .core.ss_event_listener import SSEventListener
 
 

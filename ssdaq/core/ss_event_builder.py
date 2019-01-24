@@ -54,42 +54,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         if(self._buffer.qsize()>1000):
             self.log.warning('Front buffer length %d'%(self._buffer.qsize()))
 
-class SSEvent(object):
-    """
-    A class representing a slow signal event
-    """
 
-    def __init__(self, timestamp=0, event_number = 0, run_number = 0):
-                
-        self.event_number = event_number
-        self.run_number = run_number
-        self.event_timestamp = timestamp
-        self.data = np.empty((32,64))
-        self.data[:] = np.nan
-        #store also the time stamps for the individual readings 
-        #two per TM (primary and aux)
-        self.timestamps = np.zeros((32,2),dtype=np.uint64)
-    
-    def pack(self):
-        '''
-        Convinience method to pack the event into a bytestream
-        '''
-        d_stream = bytearray(struct.pack('3Q',
-                            self.event_number,
-                            self.run_number,
-                            self.event_timestamp))
-
-        d_stream.extend(self.data.tobytes())
-        d_stream.extend(self.timestamps.tobytes())
-        return d_stream
-
-    def unpack(self,byte_stream):
-        '''
-        Unpack a bytestream into an event
-        '''
-        self.event_number, self.run_number,self.event_timestamp = struct.unpack_from('3Q',byte_stream,0)
-        self.data = np.frombuffer(byte_stream[8*3:8*(3+2048)],dtype=np.float64).reshape(32,64)
-        self.timestamps = np.frombuffer(byte_stream[8*(3+2048):8*(3+2048+64)],dtype=np.uint64).reshape(32,2)
 
 class PartialEvent:
     int_counter = 0
@@ -104,6 +69,8 @@ class PartialEvent:
     def add_part(self, tm_num, data):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
+
+from ssdaq import SSEvent
 
 class SSEventBuilder:
     """ 

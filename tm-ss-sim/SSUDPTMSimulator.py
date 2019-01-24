@@ -50,7 +50,7 @@ class TMSimulator(object):
         self.npackets_c = 0
         self.data = np.random.uniform(0,400,64)
         self.sending_ss_data = True
-        self.dt = .01
+        self.dt = .3
         self.t_past = datetime.utcnow()        
         self.t1 = datetime.utcnow()
         self.send_ss_datae = asyncio.Event()

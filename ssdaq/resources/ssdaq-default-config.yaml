@@ -3,7 +3,7 @@ EventFileWriter:
   file_prefix: SlowSignalData
   folder: /tmp/
   ip: 127.0.0.101
-  port: 5555
+  port: 5551
 
 EventFileWriterDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)
