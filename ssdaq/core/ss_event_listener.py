@@ -63,7 +63,7 @@ class SSReadoutListener(Thread):
             By default a blocking call. See python Queue docs.
 
             Kwargs:
-                Se Queue docs
+                See queue.Queue docs
 
         '''
         readout = self._readout_buffer.get(**kwargs)
