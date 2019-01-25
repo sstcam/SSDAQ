@@ -1,7 +1,7 @@
 import logging as _logging
 from .core.ss_data_classes import SSReadout,SSDataReader, SSDataWriter
-from .core.ss_event_builder import SSReadoutAssembler, ZMQReadoutPublisher
-from .core.ss_event_listener import SSReadoutListener
+from .core.ss_readout_assembler import SSReadoutAssembler, ZMQReadoutPublisher
+from .core.ss_readout_listener import SSReadoutListener
 
 
 #This is the root logger for the core modules

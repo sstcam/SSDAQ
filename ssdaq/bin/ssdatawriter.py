@@ -1,6 +1,6 @@
 import sys
 import os
-from ssdaq.event_receivers import SSFileWriter
+from ssdaq.receivers import SSFileWriter
 
 def main():
     import argparse

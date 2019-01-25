@@ -35,7 +35,7 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         daemon.Daemon.__init__(self, '/tmp/ssdaq_writer_daemon.pid', stdout=stdout, stderr=stderr)
         self.kwargs = kwargs
     def run(self):
-        from ssdaq.event_receivers import SSFileWriter
+        from ssdaq.receivers import SSFileWriter
         import signal
         import sys
 
@@ -46,7 +46,7 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
                 data_writer.close()
             return signal_handler
         signal.signal(signal.SIGHUP, signal_handler_fact(data_writer,self))
-
+        signal.signal(signal.SIGINT, signal_handler_fact(data_writer,self))
         data_writer.start()
 
 
