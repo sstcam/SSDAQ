@@ -1,8 +1,6 @@
 import sys
 import os
-# from os.path import dirname as dn
-# sys.path = [dn(dn(dn(os.path.realpath(__file__))))] + sys.path
-from ssdaq import SSEventListener
+from ssdaq import SSReadoutListener
 import numpy as np
 
 import argparse
@@ -12,12 +10,12 @@ import sys
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Start a simple event data listener.',
+    parser = argparse.ArgumentParser(description='Start a simple Slow Signal readout listener.',
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-l', dest='listen_port', type=int,
                         default=5555,
-                        help='port for incoming event data')
+                        help='port for incoming readout data')
     parser.add_argument('-i', dest='ip_addr', type=str,
                         default='127.0.0.101',
                         help='The ip/interface which the listener should listen too')
@@ -33,38 +31,36 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    ev_list = SSEventListener(port = args.listen_port, ip = args.ip_addr)
+    ev_list = SSReadoutListener(port = args.listen_port, ip = args.ip_addr)
     ev_list.start()
 
     event_counter = np.zeros(32)
-    n_modules_per_event =[]
+    n_modules_per_readout =[]
     n = 0
     signal.alarm(0)
     ctrc_count = 0
     print('Press `ctrl-C` to stop')
     while(True):
         try:
-            event = ev_list.get_event()
+            readout = ev_list.get_readout()
         except :
             print("\nClosing listener")
             ev_list.close()
             break
         # if(n>0):
         #     print('\033[7   A ')    
-        print("Event number %d run number %d"%(event.event_number,event.run_number))
-        print("Timestamp %d ns"%(event.event_timestamp))
-        print("Timestamp %f s"%(event.event_timestamp*1e-9))
-        m = event.timestamps[:,0]>0
+        print("Readout number %d"%(readout.readout_number))
+        print("Timestamp %d ns"%(readout.readout_timestamp))
+        print("Timestamp %f s"%(readout.readout_timestamp*1e-9))
+        m = readout.timestamps[:,0]>0
         print(np.sum(m))
         print(np.where(m)[0])
-        n_modules_per_event.append(np.sum(m))
-        print((event.timestamps[m][0,0]*1e-9-event.timestamps[m][:,0]*1e-9))
+        n_modules_per_readout.append(np.sum(m))
         event_counter[m] += 1
         m = event_counter>0
 
-        # print(list(zip(np.where(m)[0],event_counter[m])))
         if(args.tm_numb):
-            print(event.data[args.tm_numb])
+            print(readout.data[args.tm_numb])
         n +=1
         if(args.n_events != None and n>=args.n_events):
             break
@@ -75,7 +71,7 @@ def main():
         return
     
     plt.figure()
-    plt.hist(n_modules_per_event, 10,  facecolor='g', alpha=0.75)
+    plt.hist(n_modules_per_readout, 10,  facecolor='g', alpha=0.75)
     plt.show()
     ev_list.close()
     ev_list.join()

@@ -56,7 +56,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
 
 
 
-class PartialEvent:
+class PartialReadout:
     int_counter = 0
     def __init__(self,tm_num,data):
         self.data = [None]*32
@@ -64,15 +64,15 @@ class PartialEvent:
         self.timestamp =data[0]
         self.tm_parts = [0]*32
         self.tm_parts[tm_num] = 1
-        PartialEvent.int_counter += 1
-        self.event_number =  PartialEvent.int_counter   
+        PartialReadout.int_counter += 1
+        self.event_number =  PartialReadout.int_counter   
     def add_part(self, tm_num, data):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
 
-from ssdaq import SSEvent
+from ssdaq import SSReadout
 
-class SSEventBuilder:
+class SSReadoutAssembler:
     """ 
     Slow signal event builder. Constructs 
     slow signal events from data packets recieved from 
@@ -93,7 +93,7 @@ class SSEventBuilder:
         if(LooseVersion('17')>LooseVersion(zmq.__version__)):
             zmq.asyncio.install()
         import inspect
-        self.log = sslogger.getChild('SSEventBuilder')
+        self.log = sslogger.getChild('SSReadoutBuilder')
         self.relaxed_ip_range = relaxed_ip_range
         # self.listening = 
         # self.building_events = 
@@ -111,9 +111,9 @@ class SSEventBuilder:
         #counters
         self.nprocessed_packets = 0
         self.nconstructed_events = 0
-        self.event_count = 1
+        self.readout_count = 1
         self.packet_counter = {}
-        self.event_counter = {}
+        self.readout_counter = {}
 
         self.loop = asyncio.get_event_loop()
         self.corrs = [self.builder(),self.handle_commands()]
@@ -163,7 +163,7 @@ class SSEventBuilder:
 
     def cmd_reset_ev_count(self,arg):
         self.log.info('Event count has been reset')
-        self.event_count = 1
+        self.readout_count = 1
         return b'Event count reset'
     
     def cmd_set_publish_events(self,arg):
@@ -214,41 +214,41 @@ class SSEventBuilder:
         self.log.info('Thrown away %d packets in buffer before start'%n_packets)
         self.log.info('Starting event build loop')
         packet = await self.ss_data_protocol._buffer.get()
-        self.partial_ev_buff.append(PartialEvent(packet[0], packet[2]))
+        self.partial_ev_buff.append(PartialReadout(packet[0], packet[2]))
         while(True):
             packet = await self.ss_data_protocol._buffer.get()
             #self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
-            pe = self.partial_ev_buff[-1]
-            dt = (pe.timestamp - packet[1])
+            pro = self.partial_ev_buff[-1]
+            dt = (pro.timestamp - packet[1])
 
-            if(abs(dt) < self.event_tw  and pe.tm_parts[packet[0]] == 0):#
+            if(abs(dt) < self.event_tw  and pro.tm_parts[packet[0]] == 0):#
                 self.partial_ev_buff[-1].add_part(packet[0], packet[2])
                 #self.log.debug('Packet added to the tail of the buffer')
             
             elif(dt<0):
-                self.partial_ev_buff.append(PartialEvent(packet[0], packet[2]))
+                self.partial_ev_buff.append(PartialReadout(packet[0], packet[2]))
                 #self.log.debug('Packet added to a new event at the tail of the buffer')
             
             else:
                 if(self.partial_ev_buff[0].timestamp - packet[1]>0):
-                    self.partial_ev_buff.appendleft(PartialEvent(packet[0], packet[2]))
+                    self.partial_ev_buff.appendleft(PartialReadout(packet[0], packet[2]))
                     #self.log.debug('Packet added to a new event at the head of the buffer')   
                 else:
                     #self.log.debug('Finding right event in buffer')
                     found = False
                     for i in range(len(self.partial_ev_buff)-1,0,-1):
-                        pe = self.partial_ev_buff[i]
-                        dt = (pe.timestamp - packet[1])
+                        pro = self.partial_ev_buff[i]
+                        dt = (pro.timestamp - packet[1])
 
                         if(abs(dt)< self.event_tw):#
-                            if(pe.tm_parts[packet[0]]==1):
+                            if(pro.tm_parts[packet[0]]==1):
                                 self.log.warning('Dublette packet with timestamp %f and tm id %d with cpu timestamp %f'%(packet[1]*1e-9,packet[0],packet[2][33]*1e-9))
                             self.partial_ev_buff[i].add_part(packet[0], packet[2]) 
                             #self.log.debug('Packet added to %d:th event in buffer'%i)
                             found =True
                             break
                         elif(dt<0):
-                            self.partial_ev_buff.insert(i+1,PartialEvent(packet[0], packet[2]))
+                            self.partial_ev_buff.insert(i+1,PartialReadout(packet[0], packet[2]))
                             found = True
                             break
                             
@@ -258,7 +258,7 @@ class SSEventBuilder:
                         self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
             if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
                 #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
-                event = self.build_event(self.partial_ev_buff.popleft())               
+                readout = self.assemble_readout(self.partial_ev_buff.popleft())               
                 if(self.nconstructed_events%10==0):
                     # for d in self.partial_ev_buff:
                         # print(d.timestamp*1e-9,d.timestamp,d.event_number, d.tm_parts)
@@ -266,24 +266,24 @@ class SSEventBuilder:
                     self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
                     self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
                     self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
-                    self.log.info('Number of TMs participating %d'%(sum(event.timestamps[:,0]>0)))
+                    self.log.info('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
                     self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
                 #self.log.debug('Built event %d'%self.nconstructed_events)
                 if(self.publish_events):
                     for pub in self.publishers:
-                        pub.publish(event)
+                        pub.publish(readout)
     
-    def build_event(self,pe):
+    def assemble_readout(self,pro):
         #construct event
-        event = SSEvent(int(pe.timestamp),self.event_count,0)
-        for i,tmp_data in enumerate(pe.data):
+        readout = SSReadout(int(pro.timestamp),self.readout_count)
+        for i,tmp_data in enumerate(pro.data):
             if(tmp_data == None):
                 continue
-            if(i in self.event_counter):
-                self.event_counter[i] += 1
+            if(i in self.readout_counter):
+                self.readout_counter[i] += 1
             else:
-                self.event_counter[i] = 1
-            #put data into a temporary array of uint type
+                self.readout_counter[i] = 1
+            #put data into a temporary array of uint typro
             tmp_array = np.empty(64,dtype=np.uint64)
             tmp_array[:32] = tmp_data[1:33]
             tmp_array[32:] = tmp_data[34:]
@@ -292,22 +292,22 @@ class SSEventBuilder:
             m = tmp_array < 0x8000
             tmp_array[m] += 0x8000
             tmp_array[~m] = tmp_array[~m]&0x7FFF
-            event.data[i] = tmp_array* 0.03815*2.
+            readout.data[i] = tmp_array* 0.03815*2.
             #get the readout time stamps for the primary and aux
-            event.timestamps[i][0]=tmp_data[0]
-            event.timestamps[i][1]=tmp_data[33]
+            readout.timestamps[i][0]=tmp_data[0]
+            readout.timestamps[i][1]=tmp_data[33]
         self.nconstructed_events += 1
-        self.event_count += 1
-        return event    
+        self.readout_count += 1
+        return readout    
 
-class ZMQEventPublisher():
-    ''' Slow signal event publisher
+class ZMQReadoutPublisher():
+    ''' Slow signal readout publisher
         
-        Publishes event on a TCP/IP socket using the zmq PUB-SUB protocol.
+        Publishes readout on a TCP/IP socket using the zmq PUB-SUB protocol.
         
         Args:
-            ip (str):   the name (ip) interface which the events are published on
-            port (int): the port number of the interface which the events are published on
+            ip (str):   the name (ip) interface which the readouts are published on
+            port (int): the port number of the interface which the readouts are published on
         Kwargs:
             name (str): The name of this instance (usefull for logging)
             logger:     An instance of a logger to inherit from
@@ -315,17 +315,17 @@ class ZMQEventPublisher():
 
         The three different modes defines how the socket is setup for different use cases.
 
-            * 'local' this is the normal use case where events are published on localhost
+            * 'local' this is the normal use case where readouts are published on localhost
                 and ip should be '127.x.x.x'
-            * 'outbound' is when the events are published on an outbound network interface of 
-                the machine so that remote clients can connect to the machine to receive the events. 
-                In this case ip is the ip address of the interface on which the events should be published
-            * 'remote' specifies that the given ip is of a remote machine to which the events should be sent to.   
+            * 'outbound' is when the readouts are published on an outbound network interface of 
+                the machine so that remote clients can connect to the machine to receive the readouts. 
+                In this case ip is the ip address of the interface on which the readouts should be published
+            * 'remote' specifies that the given ip is of a remote machine to which the readouts should be sent to.   
 
 
     '''
-    def __init__(self,ip,port,name='ZMQEventPublisher',logger=None, mode = 'local'):
-        '''Slow signal event publisher
+    def __init__(self,ip,port,name='ZMQReadoutPublisher',logger=None, mode = 'local'):
+        '''Slow signal readout publisher
         '''
 
         import zmq
@@ -344,13 +344,13 @@ class ZMQEventPublisher():
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:
             self.log = logger.getChild(name)
-        self.log.info('Initialized event publisher on: %s'%con_str)
+        self.log.info('Initialized readout publisher on: %s'%con_str)
     
     def give_loop(self,loop):
         self.loop = loop
 
-    def publish(self,event):
-        self.sock.send(event.pack())
+    def publish(self,readout):
+        self.sock.send(readout.pack())
 
 if(__name__ == "__main__"):
     from ssdaq import sslogger
@@ -359,7 +359,7 @@ if(__name__ == "__main__"):
     from subprocess import call
     call(["taskset","-cp", "0,4","%s"%(str(os.getpid()))])
     sslogger.setLevel(logging.INFO)
-    zmq_pub = ZMQEventPublisher('127.0.0.101',5555) 
-    ev_builder = SSEventBuilder(publishers= [zmq_pub])
-    ev_builder.run()
+    zmq_pub = ZMQReadoutPublisher('127.0.0.101',5555) 
+    ro_assembler = SSReadoutAssembler(publishers= [zmq_pub])
+    ro_assembler.run()
 

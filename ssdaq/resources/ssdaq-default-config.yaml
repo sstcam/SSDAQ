@@ -16,16 +16,16 @@ EventBuilderDaemon:
   stderr: '/tmp/ssdaq.log'
   set_taskset: true #Using task set to force kernel not to swap cores
   core_id: 0 #which cpu core to use with taskset
-EventBuilder:
-  SSEventBuilder:
+ReadoutAssembler:
+  SSReadoutAssembler:
     listen_ip: 0.0.0.0
     listen_port: 2009
     relaxed_ip_range: false
     buffer_length: 1000
     event_tw: !!float 1.e7 #nano seconds
     buffer_time: !!float 4e9
-  EventPublishers:
-    ZMQEventPublisherLocal:
+  ReadoutPublishers:
+    ZMQReadoutPublisherLocal:
       ip: 127.0.0.101
       port: 5551
     # ZMQEventPublisherOutbound:

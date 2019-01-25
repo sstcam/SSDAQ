@@ -1,4 +1,4 @@
-from ssdaq import SSEventBuilder,ZMQEventPublisher
+from ssdaq import SSReadoutAssembler,ZMQReadoutPublisher
 from ssdaq.utils import daemon
 
 
@@ -21,12 +21,12 @@ class EventBuilderDaemonWrapper(daemon.Daemon):
                 call(["taskset","-cp", self.core_id,"%s"%(str(os.getpid()))])
             eps = []
             i = 1
-            for eptype,epconf in self.kwargs['EventPublishers'].items():
+            for eptype,epconf in self.kwargs['ReadoutPublishers'].items():
                 if('name' not in epconf):
-                    epconf['name'] = eptype#'ZMQEventPublisher%d'%i
-                eps.append(ZMQEventPublisher(**epconf))
+                    epconf['name'] = eptype#'ZMQReadoutPublisher%d'%i
+                eps.append(ZMQReadoutPublisher(**epconf))
                 i+=1           
-            eb = SSEventBuilder(publishers = eps, **self.kwargs['SSEventBuilder'])
+            eb = SSReadoutAssembler(publishers = eps, **self.kwargs['SSReadoutAssembler'])
             eb.run()
 
 class EventFileWriterDaemonWrapper(daemon.Daemon):
@@ -91,7 +91,7 @@ def eb(ctx,daemon,config):
     if(config):
         ctx.obj['CONFIG'] = yaml.load(open(config,'r'))
     config = ctx.obj['CONFIG']
-    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["EventBuilder"])
+    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["ReadoutAssembler"])
     event_builder.start(daemon)
 
 @start.command()
@@ -129,7 +129,7 @@ def stop(ctx):
 def eb(ctx):
     '''Stop a running event builder'''
     config = ctx.obj['CONFIG']
-    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["EventBuilder"])
+    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["ReadoutAssembler"])
     event_builder.stop()
 
 @stop.command()

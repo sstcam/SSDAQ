@@ -1,6 +1,6 @@
 import unittest
 
-from ssdaq import SSEvent,SSEventBuilder#,SSEventlowSignalDataProtocol
+from ssdaq import SSReadout,SSReadoutAssembler#,SSReadoutlowSignalDataProtocol
 
 import socket
 from queue import Queue
@@ -12,33 +12,33 @@ from ssdaq import sslogger
 sslogger.setLevel(logging.ERROR)
 
 import numpy as np
-class TestSSEvent(unittest.TestCase):
+class TestSSReadout(unittest.TestCase):
     def test_pack_unpack(self):
-        event1 = SSEvent(timestamp = 12345,event_number=1234)
-        event1.data[2,:] = np.arange(64)
-        event1.data[3,:] = np.arange(64)
-        event1.timestamps[:,0] = np.arange(32,dtype=np.uint64)
-        packed_event = event1.pack()
-        event2 = SSEvent()
-        event2.unpack(packed_event)
+        readout1 = SSReadout(timestamp = 12345,readout_number=1234)
+        readout1.data[2,:] = np.arange(64)
+        readout1.data[3,:] = np.arange(64)
+        readout1.timestamps[:,0] = np.arange(32,dtype=np.uint64)
+        packed_readout = readout1.pack()
+        readout2 = SSReadout()
+        readout2.unpack(packed_readout)
 
-        self.assertEqual(event1.event_number , event2.event_number)
-        self.assertEqual(event1.event_timestamp , event2.event_timestamp)
-        self.assertTrue((event1.data[2]==event2.data[2]).all())
-        self.assertTrue((event1.data[3]==event2.data[3]).all())
-        self.assertFalse((event1.data[4]==event2.data[4]).all())
-        self.assertTrue(np.isnan(event1.data[4,0]))
-        self.assertTrue((event1.timestamps[0]==event2.timestamps[0]).all())
+        self.assertEqual(readout1.readout_number , readout2.readout_number)
+        self.assertEqual(readout1.readout_timestamp , readout2.readout_timestamp)
+        self.assertTrue((readout1.data[2]==readout2.data[2]).all())
+        self.assertTrue((readout1.data[3]==readout2.data[3]).all())
+        self.assertFalse((readout1.data[4]==readout2.data[4]).all())
+        self.assertTrue(np.isnan(readout1.data[4,0]))
+        self.assertTrue((readout1.timestamps[0]==readout2.timestamps[0]).all())
 
 
-# from ssdaq.core.SSEventBuilder import SSEventBuilder
-# class TestSSEventBuilder(unittest.TestCase):
+# from ssdaq.core.SSReadoutAssembler import SSReadoutAssembler
+# class TestSSReadoutAssembler(unittest.TestCase):
     
 #     def test_out_of_range_ip(self):
 #         sslogger.setLevel(logging.FATAL)
 #         import numpy as np
 #         import struct
-#         builder = SSEventBuilder()
+#         builder = SSReadoutAssembler()
 #         try:    
 #             builder.start()
 #             data_packet = bytearray()
@@ -55,7 +55,7 @@ class TestSSEvent(unittest.TestCase):
 #         else:
 #             self.assertTrue(False,'IP out of range not allowed without relaxed_ip_range set to True')
 
-#         builder = SSEventBuilder(relaxed_ip_range = True)
+#         builder = SSReadoutAssembler(relaxed_ip_range = True)
 #         try:    
 #             builder.start()
 #             data_packet = bytearray()
