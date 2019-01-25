@@ -3,7 +3,7 @@
 import sys
 import os
 def main():
-    from ssdaq import SSReadoutAssembler, ZMQEventPublisher
+    from ssdaq import SSReadoutAssembler, ZMQReadoutPublisher
     import time
     import argparse
 
@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    ep = ZMQEventPublisher(port=args.publishing_port,ip=args.publishing_interface)
+    ep = ZMQReadoutPublisher(port=args.publishing_port,ip=args.publishing_interface)
     eb = SSReadoutAssembler(relaxed_ip_range=args.relaxed_ip, listen_ip = '0.0.0.0', listen_port = args.listen_port, publishers = [ep])
     
     eb.run()

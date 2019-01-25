@@ -1,7 +1,7 @@
 from ssdaq import SSReadoutListener, SSDataWriter
 from threading import Thread
 
-class EventFileWriter(Thread):
+class SSFileWriter(Thread):
     """
     An readout data file writer for slow signal data.
 

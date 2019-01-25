@@ -65,7 +65,7 @@ class PartialReadout:
         self.tm_parts = [0]*32
         self.tm_parts[tm_num] = 1
         PartialReadout.int_counter += 1
-        self.event_number =  PartialReadout.int_counter   
+        self.readout_number =  PartialReadout.int_counter   
     def add_part(self, tm_num, data):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
@@ -74,12 +74,12 @@ from ssdaq import SSReadout
 
 class SSReadoutAssembler:
     """ 
-    Slow signal event builder. Constructs 
-    slow signal events from data packets recieved from 
+    Slow signal readout builder. Constructs 
+    slow signal readouts from data packets recieved from 
     Target Modules.
     """
     def __init__(self, relaxed_ip_range=False, 
-                       event_tw = 0.0001*1e9, 
+                       readout_tw = 0.0001*1e9, 
                        listen_ip = '0.0.0.0',
                        listen_port = 2009,
                        buffer_length = 1000,
@@ -96,13 +96,13 @@ class SSReadoutAssembler:
         self.log = sslogger.getChild('SSReadoutBuilder')
         self.relaxed_ip_range = relaxed_ip_range
         # self.listening = 
-        # self.building_events = 
-        # self.publishing_events = 
+        # self.building_readouts = 
+        # self.publishing_readouts = 
 
         
 
         #settings 
-        self.event_tw = int(event_tw)
+        self.readout_tw = int(readout_tw)
         self.listen_addr = (listen_ip, listen_port)
         self.buffer_len = buffer_length
         self.buffer_time = buffer_time
@@ -110,7 +110,7 @@ class SSReadoutAssembler:
         
         #counters
         self.nprocessed_packets = 0
-        self.nconstructed_events = 0
+        self.nconstructed_readouts = 0
         self.readout_count = 1
         self.packet_counter = {}
         self.readout_counter = {}
@@ -119,14 +119,14 @@ class SSReadoutAssembler:
         self.corrs = [self.builder(),self.handle_commands()]
         
         #controlers
-        self.publish_events = True
+        self.publish_readouts = True
 
         #buffers
         self.inter_buff = []
         self.partial_ev_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
         
         self.publishers = publishers 
-        #Giving the event loop to the publishers     
+        #Giving the readout loop to the publishers     
         for p in self.publishers:
             p.give_loop(self.loop)
 
@@ -161,27 +161,27 @@ class SSReadoutAssembler:
             pass
         self.loop.close()
 
-    def cmd_reset_ev_count(self,arg):
-        self.log.info('Event count has been reset')
+    def cmd_reset_ro_count(self,arg):
+        self.log.info('Readout count has been reset')
         self.readout_count = 1
-        return b'Event count reset'
+        return b'Readout count reset'
     
-    def cmd_set_publish_events(self,arg):
+    def cmd_set_publish_readouts(self,arg):
         if(arg[0] == 'false' or arg[0] == 'False'):
-            self.publish_events = False
-            self.log.info('Pause publishing events')
-            return b'Paused event publishing'
+            self.publish_readouts = False
+            self.log.info('Pause publishing readouts')
+            return b'Paused readout publishing'
         elif(arg[0] == 'true' or arg[0] == 'True'):
-            self.publish_events = True
-            self.log.info('Pause publishing events')
-            return b'Unpaused event publishing'
+            self.publish_readouts = True
+            self.log.info('Pause publishing readouts')
+            return b'Unpaused readout publishing'
         else:
-            self.log.info('Unrecognized command for command `set_publish_events` \n    no action taken')
-            return ('Unrecognized arg `%s` for command `set_publish_events` \nno action taken'%arg[0]).encode('ascii') 
+            self.log.info('Unrecognized command for command `set_publish_readouts` \n    no action taken')
+            return ('Unrecognized arg `%s` for command `set_publish_readouts` \nno action taken'%arg[0]).encode('ascii') 
 
     async def handle_commands(self):
         '''
-        This is the server part of the event builder that handles 
+        This is the server part of the readout builder that handles 
         incomming control commands
         '''
         while(True):
@@ -198,7 +198,7 @@ class SSReadoutAssembler:
 
     async def builder(self):
         n_packets = 0
-        self.log.info('Empty socket buffer before starting event building')
+        self.log.info('Empty socket buffer before starting readout building')
         packet = await self.ss_data_protocol._buffer.get()
         got_packet = True
         while(got_packet):
@@ -212,7 +212,7 @@ class SSReadoutAssembler:
             except:
                 pass
         self.log.info('Thrown away %d packets in buffer before start'%n_packets)
-        self.log.info('Starting event build loop')
+        self.log.info('Starting readout build loop')
         packet = await self.ss_data_protocol._buffer.get()
         self.partial_ev_buff.append(PartialReadout(packet[0], packet[2]))
         while(True):
@@ -221,30 +221,30 @@ class SSReadoutAssembler:
             pro = self.partial_ev_buff[-1]
             dt = (pro.timestamp - packet[1])
 
-            if(abs(dt) < self.event_tw  and pro.tm_parts[packet[0]] == 0):#
+            if(abs(dt) < self.readout_tw  and pro.tm_parts[packet[0]] == 0):#
                 self.partial_ev_buff[-1].add_part(packet[0], packet[2])
                 #self.log.debug('Packet added to the tail of the buffer')
             
             elif(dt<0):
                 self.partial_ev_buff.append(PartialReadout(packet[0], packet[2]))
-                #self.log.debug('Packet added to a new event at the tail of the buffer')
+                #self.log.debug('Packet added to a new readout at the tail of the buffer')
             
             else:
                 if(self.partial_ev_buff[0].timestamp - packet[1]>0):
                     self.partial_ev_buff.appendleft(PartialReadout(packet[0], packet[2]))
-                    #self.log.debug('Packet added to a new event at the head of the buffer')   
+                    #self.log.debug('Packet added to a new readout at the head of the buffer')   
                 else:
-                    #self.log.debug('Finding right event in buffer')
+                    #self.log.debug('Finding right readout in buffer')
                     found = False
                     for i in range(len(self.partial_ev_buff)-1,0,-1):
                         pro = self.partial_ev_buff[i]
                         dt = (pro.timestamp - packet[1])
 
-                        if(abs(dt)< self.event_tw):#
+                        if(abs(dt)< self.readout_tw):#
                             if(pro.tm_parts[packet[0]]==1):
                                 self.log.warning('Dublette packet with timestamp %f and tm id %d with cpu timestamp %f'%(packet[1]*1e-9,packet[0],packet[2][33]*1e-9))
                             self.partial_ev_buff[i].add_part(packet[0], packet[2]) 
-                            #self.log.debug('Packet added to %d:th event in buffer'%i)
+                            #self.log.debug('Packet added to %d:th readout in buffer'%i)
                             found =True
                             break
                         elif(dt<0):
@@ -253,28 +253,28 @@ class SSReadoutAssembler:
                             break
                             
                     if(not found):
-                        self.log.warning('No partial event found for packet with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
-                        self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                        self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
+                        self.log.warning('No partial readout found for packet with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
+                        self.log.info('Newest readout timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                        self.log.info('Next readout timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))     
             if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
                 #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
                 readout = self.assemble_readout(self.partial_ev_buff.popleft())               
-                if(self.nconstructed_events%10==0):
+                if(self.nconstructed_readouts%10==0):
                     # for d in self.partial_ev_buff:
-                        # print(d.timestamp*1e-9,d.timestamp,d.event_number, d.tm_parts)
-                    self.log.info('Built event %d'%self.nconstructed_events)
-                    self.log.info('Newest event timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                    self.log.info('Next event timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
+                        # print(d.timestamp*1e-9,d.timestamp,d.readout_number, d.tm_parts)
+                    self.log.info('Built readout %d'%self.nconstructed_readouts)
+                    self.log.info('Newest readout timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
+                    self.log.info('Next readout timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
                     self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
                     self.log.info('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
                     self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
-                #self.log.debug('Built event %d'%self.nconstructed_events)
-                if(self.publish_events):
+                #self.log.debug('Built readout %d'%self.nconstructed_readouts)
+                if(self.publish_readouts):
                     for pub in self.publishers:
                         pub.publish(readout)
     
     def assemble_readout(self,pro):
-        #construct event
+        #construct readout
         readout = SSReadout(int(pro.timestamp),self.readout_count)
         for i,tmp_data in enumerate(pro.data):
             if(tmp_data == None):
@@ -296,7 +296,7 @@ class SSReadoutAssembler:
             #get the readout time stamps for the primary and aux
             readout.timestamps[i][0]=tmp_data[0]
             readout.timestamps[i][1]=tmp_data[33]
-        self.nconstructed_events += 1
+        self.nconstructed_readouts += 1
         self.readout_count += 1
         return readout    
 

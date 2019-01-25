@@ -23,7 +23,7 @@ def main():
     parser.add_argument('-V','--verbosity',nargs='?',const='DEBUG',default='INFO', dest='verbose', type=str,
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
-    parser.add_argument('-n',dest = 'n_events',type=int,default=None,help ='the number of events to listen to before exiting (if not set there is no limit')
+    parser.add_argument('-n',dest = 'n_readouts',type=int,default=None,help ='the number of readouts to listen to before exiting (if not set there is no limit')
     
     args = parser.parse_args()
     from ssdaq import sslogger
@@ -34,7 +34,7 @@ def main():
     ev_list = SSReadoutListener(port = args.listen_port, ip = args.ip_addr)
     ev_list.start()
 
-    event_counter = np.zeros(32)
+    readout_counter = np.zeros(32)
     n_modules_per_readout =[]
     n = 0
     signal.alarm(0)
@@ -56,13 +56,13 @@ def main():
         print(np.sum(m))
         print(np.where(m)[0])
         n_modules_per_readout.append(np.sum(m))
-        event_counter[m] += 1
-        m = event_counter>0
+        readout_counter[m] += 1
+        m = readout_counter>0
 
         if(args.tm_numb):
             print(readout.data[args.tm_numb])
         n +=1
-        if(args.n_events != None and n>=args.n_events):
+        if(args.n_readouts != None and n>=args.n_readouts):
             break
     
     try:

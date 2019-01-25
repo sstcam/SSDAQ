@@ -1,6 +1,6 @@
 import sys
 import os
-from ssdaq.event_receivers import EventFileWriter
+from ssdaq.event_receivers import SSFileWriter
 
 def main():
     import argparse
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
 
 
-    data_writer = EventFileWriter(args.filename,file_enumerator='date',port=args.listen_port,ip =args.listen_interface)
+    data_writer = SSFileWriter(args.filename,file_enumerator='date',port=args.listen_port,ip =args.listen_interface)
 
     data_writer.start()
 

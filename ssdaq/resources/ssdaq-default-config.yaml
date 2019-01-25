@@ -1,16 +1,16 @@
-EventFileWriter:
+SSFileWriter:
   file_enumerator: date #enumerates with timestamp (yr-mo-dy.H.M) or `order` which enumerates with numbers starting from 00001 
   file_prefix: SlowSignalData
   folder: /tmp/
   ip: 127.0.0.101
   port: 5551
 
-EventFileWriterDaemon:
+ReadoutFileWriterDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)
   stdout: '/tmp/ssdaq_writer.log'
   stderr: '/tmp/ssdaq_writer.log'
 
-EventBuilderDaemon:
+ReadoutAssemblerDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)
   stdout: '/tmp/ssdaq.log'
   stderr: '/tmp/ssdaq.log'
@@ -22,7 +22,7 @@ ReadoutAssembler:
     listen_port: 2009
     relaxed_ip_range: false
     buffer_length: 1000
-    event_tw: !!float 1.e7 #nano seconds
+    readout_tw: !!float 1.e7 #nano seconds
     buffer_time: !!float 4e9
   ReadoutPublishers:
     ZMQReadoutPublisherLocal:

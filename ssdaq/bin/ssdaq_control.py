@@ -2,7 +2,7 @@ from ssdaq import SSReadoutAssembler,ZMQReadoutPublisher
 from ssdaq.utils import daemon
 
 
-class EventBuilderDaemonWrapper(daemon.Daemon):
+class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
     def __init__(self,stdout = '/dev/null', stderr = '/dev/null', set_taskset = False, core_id = 0,log_level='INFO',**kwargs):
         #Deamonizing the server
         daemon.Daemon.__init__(self, '/tmp/ssdaq_daemon.pid', stdout=stdout, stderr=stderr)
@@ -29,17 +29,17 @@ class EventBuilderDaemonWrapper(daemon.Daemon):
             eb = SSReadoutAssembler(publishers = eps, **self.kwargs['SSReadoutAssembler'])
             eb.run()
 
-class EventFileWriterDaemonWrapper(daemon.Daemon):
+class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
     def __init__(self,stdout = '/dev/null', stderr = '/dev/null', **kwargs):
         #Deamonizing the server
         daemon.Daemon.__init__(self, '/tmp/ssdaq_writer_daemon.pid', stdout=stdout, stderr=stderr)
         self.kwargs = kwargs
     def run(self):
-        from ssdaq.event_receivers import EventFileWriter
+        from ssdaq.event_receivers import SSFileWriter
         import signal
         import sys
 
-        data_writer = EventFileWriter(**self.kwargs)
+        data_writer = SSFileWriter(**self.kwargs)
         def signal_handler_fact(data_writer,self):
 
             def signal_handler(sig, frame):
@@ -64,7 +64,7 @@ class MyGroup(click.Group):
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.pass_context
 def cli(ctx):
-    '''Start, stop and control ssdaq event builder and writer daemons'''
+    '''Start, stop and control ssdaq readout builder and writer daemons'''
     ctx.ensure_object(dict)
     from pkg_resources import resource_stream,resource_string, resource_listdir
     ctx.obj['CONFIG'] =yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml')) 
@@ -75,7 +75,7 @@ def cli(ctx):
 @click.group()
 @click.pass_context
 def start(ctx):#,config):
-    '''Start an event builder or writer '''
+    '''Start an readout builder or writer '''
     ctx.ensure_object(dict)    
 
 @start.command()
@@ -83,16 +83,16 @@ def start(ctx):#,config):
 @click.argument('config',required=False)
 @click.pass_context
 def eb(ctx,daemon,config):
-    '''Start an event builder with an optional custom CONFIG file'''
+    '''Start an readout builder with an optional custom CONFIG file'''
     
-    print('Starting event builder...')
+    print('Starting readout builder...')
     if(daemon):
         print('Run as deamon')
     if(config):
         ctx.obj['CONFIG'] = yaml.load(open(config,'r'))
     config = ctx.obj['CONFIG']
-    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["ReadoutAssembler"])
-    event_builder.start(daemon)
+    readout_builder = ReadoutAssemblerDaemonWrapper(**config['ReadoutAssemblerDaemon'], **config["ReadoutAssembler"])
+    readout_builder.start(daemon)
 
 @start.command()
 @click.option('--daemon/--no-daemon','-d',default=False,help='run as daemon')
@@ -101,8 +101,8 @@ def eb(ctx,daemon,config):
 @click.option('--output-folder','-o',default=None,help='Set output folder (over-rides the loaded configuration)')
 @click.pass_context
 def ew(ctx,filename_prefix,output_folder,daemon,config):
-    '''Start an event writer an optional custom CONFIG file'''
-    print('Starting event writer...')
+    '''Start an readout writer an optional custom CONFIG file'''
+    print('Starting readout writer...')
     if(daemon):
         print('Run as deamon')
     if(config):
@@ -113,84 +113,84 @@ def ew(ctx,filename_prefix,output_folder,daemon,config):
         config['file_prefix'] = filename_prefix
     if(output_folder):
         config['folder'] = output_folder
-    event_writer = EventFileWriterDaemonWrapper(**config['EventFileWriterDaemon'],**config["EventFileWriter"])
-    event_writer.start(daemon)
+    readout_writer = ReadoutFileWriterDaemonWrapper(**config['ReadoutFileWriterDaemon'],**config["SSFileWriter"])
+    readout_writer.start(daemon)
 
 
 @click.group()
 @click.pass_context
 def stop(ctx):
-    '''Stop a running event builder or writer'''
+    '''Stop a running readout builder or writer'''
     pass
 
 
 @stop.command()
 @click.pass_context
 def eb(ctx):
-    '''Stop a running event builder'''
+    '''Stop a running readout builder'''
     config = ctx.obj['CONFIG']
-    event_builder = EventBuilderDaemonWrapper(**config['EventBuilderDaemon'], **config["ReadoutAssembler"])
-    event_builder.stop()
+    readout_builder = ReadoutAssemblerDaemonWrapper(**config['ReadoutAssemblerDaemon'], **config["ReadoutAssembler"])
+    readout_builder.stop()
 
 @stop.command()
 @click.pass_context
 def ew(ctx):
-    '''Stop a running event writer'''
+    '''Stop a running readout writer'''
     config = ctx.obj['CONFIG']
-    event_writer = EventFileWriterDaemonWrapper(**config['EventFileWriterDaemon'],**config["EventFileWriter"])
+    readout_writer = ReadoutFileWriterDaemonWrapper(**config['ReadoutFileWriterDaemon'],**config["SSFileWriter"])
     import os
     import signal
     try:
-        ewpid = event_writer.getpid()
+        ewpid = readout_writer.getpid()
     except:
         return
     if(ewpid != None):
        os.kill(ewpid,signal.SIGHUP)
 
-@stop.command()
-@click.pass_context
-def all(ctx):
-    '''Stop both the event builder and writer'''
-    eb(ctx)
-    ew(ctx)
+# @stop.command()
+# @click.pass_context
+# def all(ctx):
+#     '''Stop both the readout builder and writer'''
+#     eb(ctx)
+#     ew(ctx)
 
 @click.group(name='eb-ctrl')
 @click.pass_context
 def eb_ctrl(ctx):
-    '''Send control commands to a running event builder daemon'''
+    '''Send control commands to a running readout builder daemon'''
     pass
 
 @eb_ctrl.command()
 @click.pass_context
 def reset_count(ctx):
-    '''Resets the event counter in the event builder'''
+    '''Resets the readout counter in the readout builder'''
     import zmq
     zmqctx = zmq.Context()  
     sock = zmqctx.socket(zmq.REQ)  
     sock.connect('ipc:///tmp/ssdaq-control')    
-    sock.send(b'reset_ev_count 1')
+    sock.send(b'reset_ro_count 1')
     print(sock.recv())
 
 @eb_ctrl.command()
 @click.pass_context
 def pause_pub(ctx):
-    '''Pauses event publishing'''
+    '''Pauses readout publishing'''
     import zmq
     zmqctx = zmq.Context()  
     sock = zmqctx.socket(zmq.REQ)  
     sock.connect('ipc:///tmp/ssdaq-control')    
-    sock.send(b'set_publish_events False')
+    sock.send(b'set_publish_readouts False')
     print(sock.recv())
 
 @eb_ctrl.command()
 @click.pass_context
 def restart_pub(ctx):
-    '''Restart event publishing'''
+    '''Restart readout publishing'''
     import zmq
     zmqctx = zmq.Context()  
     sock = zmqctx.socket(zmq.REQ)  
     sock.connect('ipc:///tmp/ssdaq-control')    
-    sock.send(b'set_publish_events True')
+    sock.send(b'set_publish_readouts True')
     print(sock.recv().decode('ascii'))
 
 
