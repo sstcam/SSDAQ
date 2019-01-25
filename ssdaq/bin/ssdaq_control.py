@@ -26,8 +26,8 @@ class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
                     epconf['name'] = eptype#'ZMQReadoutPublisher%d'%i
                 eps.append(ZMQReadoutPublisher(**epconf))
                 i+=1           
-            eb = SSReadoutAssembler(publishers = eps, **self.kwargs['SSReadoutAssembler'])
-            eb.run()
+            roa = SSReadoutAssembler(publishers = eps, **self.kwargs['SSReadoutAssembler'])
+            roa.run()
 
 class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
     def __init__(self,stdout = '/dev/null', stderr = '/dev/null', **kwargs):
@@ -64,7 +64,7 @@ class MyGroup(click.Group):
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.pass_context
 def cli(ctx):
-    '''Start, stop and control ssdaq readout builder and writer daemons'''
+    '''Start, stop and control ssdaq readout assembler and writer daemons'''
     ctx.ensure_object(dict)
     from pkg_resources import resource_stream,resource_string, resource_listdir
     ctx.obj['CONFIG'] =yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml')) 
@@ -75,24 +75,24 @@ def cli(ctx):
 @click.group()
 @click.pass_context
 def start(ctx):#,config):
-    '''Start an readout builder or writer '''
+    '''Start a readout assembler or data writer '''
     ctx.ensure_object(dict)    
 
 @start.command()
 @click.option('--daemon/--no-daemon','-d',default=False,help='run as daemon')
 @click.argument('config',required=False)
 @click.pass_context
-def eb(ctx,daemon,config):
-    '''Start an readout builder with an optional custom CONFIG file'''
+def roa(ctx,daemon,config):
+    '''Start a readout assembler with an optional custom CONFIG file'''
     
-    print('Starting readout builder...')
+    print('Starting readout assembler...')
     if(daemon):
         print('Run as deamon')
     if(config):
         ctx.obj['CONFIG'] = yaml.load(open(config,'r'))
     config = ctx.obj['CONFIG']
-    readout_builder = ReadoutAssemblerDaemonWrapper(**config['ReadoutAssemblerDaemon'], **config["ReadoutAssembler"])
-    readout_builder.start(daemon)
+    readout_assembler = ReadoutAssemblerDaemonWrapper(**config['ReadoutAssemblerDaemon'], **config["ReadoutAssembler"])
+    readout_assembler.start(daemon)
 
 @start.command()
 @click.option('--daemon/--no-daemon','-d',default=False,help='run as daemon')
@@ -100,8 +100,8 @@ def eb(ctx,daemon,config):
 @click.option('--filename-prefix','-f',default=None,help='Set filename prefix (over-rides the loaded configuration)')
 @click.option('--output-folder','-o',default=None,help='Set output folder (over-rides the loaded configuration)')
 @click.pass_context
-def ew(ctx,filename_prefix,output_folder,daemon,config):
-    '''Start an readout writer an optional custom CONFIG file'''
+def dw(ctx,filename_prefix,output_folder,daemon,config):
+    '''Start a data writer an optional custom CONFIG file'''
     print('Starting readout writer...')
     if(daemon):
         print('Run as deamon')
@@ -120,50 +120,50 @@ def ew(ctx,filename_prefix,output_folder,daemon,config):
 @click.group()
 @click.pass_context
 def stop(ctx):
-    '''Stop a running readout builder or writer'''
+    '''Stop a running readout assembler or writer'''
     pass
 
 
 @stop.command()
 @click.pass_context
-def eb(ctx):
-    '''Stop a running readout builder'''
+def roa(ctx):
+    '''Stop a running readout assembler'''
     config = ctx.obj['CONFIG']
-    readout_builder = ReadoutAssemblerDaemonWrapper(**config['ReadoutAssemblerDaemon'], **config["ReadoutAssembler"])
-    readout_builder.stop()
+    readout_assembler = ReadoutAssemblerDaemonWrapper(**config['ReadoutAssemblerDaemon'], **config["ReadoutAssembler"])
+    readout_assembler.stop()
 
 @stop.command()
 @click.pass_context
-def ew(ctx):
+def dw(ctx):
     '''Stop a running readout writer'''
     config = ctx.obj['CONFIG']
     readout_writer = ReadoutFileWriterDaemonWrapper(**config['ReadoutFileWriterDaemon'],**config["SSFileWriter"])
     import os
     import signal
     try:
-        ewpid = readout_writer.getpid()
+        dwpid = readout_writer.getpid()
     except:
         return
-    if(ewpid != None):
-       os.kill(ewpid,signal.SIGHUP)
+    if(dwpid != None):
+       os.kill(dwpid,signal.SIGHUP)
 
 # @stop.command()
 # @click.pass_context
 # def all(ctx):
-#     '''Stop both the readout builder and writer'''
-#     eb(ctx)
-#     ew(ctx)
+#     '''Stop both the readout assembler and writer'''
+#     roa(ctx)
+#     dw(ctx)
 
-@click.group(name='eb-ctrl')
+@click.group(name='roa-ctrl')
 @click.pass_context
-def eb_ctrl(ctx):
-    '''Send control commands to a running readout builder daemon'''
+def roa_ctrl(ctx):
+    '''Send control commands to a running readout assembler daemon'''
     pass
 
-@eb_ctrl.command()
+@roa_ctrl.command()
 @click.pass_context
 def reset_count(ctx):
-    '''Resets the readout counter in the readout builder'''
+    '''Resets the readout counter in the readout assembler'''
     import zmq
     zmqctx = zmq.Context()  
     sock = zmqctx.socket(zmq.REQ)  
@@ -171,7 +171,7 @@ def reset_count(ctx):
     sock.send(b'reset_ro_count 1')
     print(sock.recv())
 
-@eb_ctrl.command()
+@roa_ctrl.command()
 @click.pass_context
 def pause_pub(ctx):
     '''Pauses readout publishing'''
@@ -182,7 +182,7 @@ def pause_pub(ctx):
     sock.send(b'set_publish_readouts False')
     print(sock.recv())
 
-@eb_ctrl.command()
+@roa_ctrl.command()
 @click.pass_context
 def restart_pub(ctx):
     '''Restart readout publishing'''
@@ -196,7 +196,7 @@ def restart_pub(ctx):
 
 cli.add_command(start)
 cli.add_command(stop)
-cli.add_command(eb_ctrl)
+cli.add_command(roa_ctrl)
 
 
 def main():
