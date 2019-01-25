@@ -137,8 +137,9 @@ The `SSReadoutListener` class provides an easy way to listen to the data stream 
 
 ```python
 from ssdaq import SSReadoutListener
-port = "5555"
-ro_list = SSReadoutListener(port = port)
+port = 5555
+ip = '127.0.0.1'
+ro_list = SSReadoutListener(port = port, ip =ip)
 ro_list.start() #Starts listener thread
 while(True):
     try:
