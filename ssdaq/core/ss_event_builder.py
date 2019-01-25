@@ -162,7 +162,7 @@ class SSEventBuilder:
         self.loop.close()
 
     def cmd_reset_ev_count(self,arg):
-        self.log.info('Event count has ben reset')
+        self.log.info('Event count has been reset')
         self.event_count = 1
         return b'Event count reset'
     
@@ -181,8 +181,8 @@ class SSEventBuilder:
 
     async def handle_commands(self):
         '''
-        This is the server part of the simulation that handles 
-        incomming commands to control the simulation
+        This is the server part of the event builder that handles 
+        incomming control commands
         '''
         while(True):
             cmd = await self.com_sock.recv()
