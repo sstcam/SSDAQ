@@ -74,7 +74,7 @@ Commands:
   stop     Stop a running eventbuilder or writer
 ```
 
- The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `eb-ctrl` command to send control commands to the readout assembler. The two daemons for readout assembling and data writing are referred to as `roa` and `dw`, respectively. Therefore, to start an readout assembler as a daemon one could run: 
+ The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. The two daemons for readout assembling and data writing are referred to as `roa` and `dw`, respectively. Therefore, to start an readout assembler as a daemon one could run: 
  
  `control-ssdaq start roa -d`. 
  
@@ -112,7 +112,7 @@ ReadoutAssembler:
     listen_port: 2009
     relaxed_ip_range: false
     buffer_length: 1000
-    event_tw: !!float 1.e7 #nano seconds
+    readout_tw: !!float 1.e7 #nano seconds
     buffer_time: !!float 4e9
   ReadoutPublishers:
     #This publisher publishes events  on the local interface at port 5551
@@ -137,8 +137,9 @@ The `SSReadoutListener` class provides an easy way to listen to the data stream 
 
 ```python
 from ssdaq import SSReadoutListener
-port = "5555"
-ro_list = SSReadoutListener(port = port)
+port = 5555
+ip = '127.0.0.1'
+ro_list = SSReadoutListener(port = port, ip =ip)
 ro_list.start() #Starts listener thread
 while(True):
     try:
@@ -150,7 +151,7 @@ while(True):
 	    break 
     except :
         print("\nClosing listener")
-        ev_list.close() 
+        ro_list.close() 
         break
     #do stuff with readout
 ```
