@@ -70,8 +70,8 @@ Options:
 
 Commands:
   roa-ctrl  Send control commands to a running readout assembler daemon
-  start    Start an readout assembler or writer
-  stop     Stop a running eventbuilder or writer
+  start    Start a readout assembler or writer
+  stop     Stop a running readout assembler or writer
 ```
 
  The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. The two daemons for readout assembling and data writing are referred to as `roa` and `dw`, respectively. Therefore, to start an readout assembler as a daemon one could run: 
