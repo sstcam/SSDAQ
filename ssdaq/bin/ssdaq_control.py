@@ -101,7 +101,7 @@ def roa(ctx,daemon,config):
 @click.option('--output-folder','-o',default=None,help='Set output folder (over-rides the loaded configuration)')
 @click.pass_context
 def dw(ctx,filename_prefix,output_folder,daemon,config):
-    '''Start a data writer an optional custom CONFIG file'''
+    '''Start a data writer with an optional custom CONFIG file'''
     print('Starting readout writer...')
     if(daemon):
         print('Run as deamon')
