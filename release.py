@@ -34,7 +34,7 @@ def release():
     if ans in ("", "y", "yes"):
         os.system("git add ssdaq/version.py")
         os.system("git commit -m 'new release'")
-        os.system("git tag {0}".format(v))
+        os.system("git tag v{0}".format(v))
         ans = input("change committed, push to server?(Y/n)")
         if ans in ("", "y", "yes"):
             os.system("git push")
