@@ -244,7 +244,7 @@ class SSReadoutAssembler:
 
                         if(abs(dt)< self.readout_tw):#
                             if(pro.tm_parts[packet[0]]==1):
-                                self.log.warning('Dublette packet with timestamp %f and tm id %d with cpu timestamp %f'%(packet[1]*1e-9,packet[0],packet[2][33]*1e-9))
+                                self.log.warning('Doublette packet with timestamp %f and tm id %d with cpu timestamp %f'%(packet[1]*1e-9,packet[0],packet[2][33]*1e-9))
                             self.partial_ev_buff[i].add_part(packet[0], packet[2]) 
                             #self.log.debug('Packet added to %d:th readout in buffer'%i)
                             found =True

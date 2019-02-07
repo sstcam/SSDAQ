@@ -43,6 +43,10 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         def signal_handler_fact(data_writer,self):
 
             def signal_handler(sig, frame):
+                #print new line so that the next log message will
+                #have a fresh line to print to
+                if(sig == signal.SIGINT):
+                    print()
                 data_writer.close()
             return signal_handler
         signal.signal(signal.SIGHUP, signal_handler_fact(data_writer,self))

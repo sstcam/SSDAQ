@@ -3,12 +3,12 @@ from threading import Thread
 
 class SSFileWriter(Thread):
     """
-    An readout data file writer for slow signal data.
+    A data file writer for slow signal data.
 
-    This class uses a instance of a SSReadoutListener to receive events and
-    a an instance of SSDataWriter to write a HDF5 table to disk.
+    This class uses a instance of a SSReadoutListener to receive readouts and
+    an instance of SSDataWriter to write a HDF5 file to disk.
     """
-    def __init__(self, file_prefix, folder='',file_enumerator=None,**kwargs):
+    def __init__(self, file_prefix,ip,port, folder='',file_enumerator=None,**kwargs):
         from ssdaq import sslogger
         import logging
         Thread.__init__(self)
@@ -16,7 +16,7 @@ class SSFileWriter(Thread):
         self.folder = folder
         self.file_prefix = file_prefix
         self.log = sslogger.getChild('SSFileWriter')
-        self._readout_listener = SSReadoutListener(logger=self.log.getChild('Listener'),**kwargs)
+        self._readout_listener = SSReadoutListener(logger=self.log.getChild('Listener'),ip=ip,port=port)
         self.running = False
         self.readout_counter = 0
         self.file_counter = 1
