@@ -169,6 +169,16 @@ class SSDataReader(object):
         return self.file.root.SlowSignal.readout.nrows
 
     def load_all_data_tm(self,tm, calib=None, mapping=None):
+        '''Loads all rows of data for a particular target moduel into memory
+            
+            Args:
+                tm (int):   The slot number of the target module 
+
+            Kwargs:
+                calib (arraylike): an array with calibration coefficient that should be applied to the data
+                mapping (str or arraylike): a string to select a mapping  or an array with the mapping
+                                            ['ssl2colrow','ssl2asic_ch','raw']  
+        '''
         from collections import namedtuple
         if calib is None:
             calib = 1.0 
