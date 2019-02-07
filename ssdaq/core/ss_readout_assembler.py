@@ -2,7 +2,9 @@ import asyncio
 import struct
 import numpy as np
 from datetime import datetime
-READOUT_LENGTH = 64*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
+from ssdaq.core import ss_data_classes as dc
+
+READOUT_LENGTH = dc.N_TM_PIX*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 
 class SlowSignalDataProtocol(asyncio.Protocol):
     def __init__(self,loop,log,relaxed_ip_range, packet_debug_stream_file = None):
@@ -32,12 +34,12 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         #getting the module number from the last two digits of the ip
         ip = addr[0]
         module_nr = int(ip[-ip[::-1].find('.'):])%100
-        if(module_nr>31 and self.relaxed_ip_range):
+        if(module_nr>dc.N_TM-1 and self.relaxed_ip_range):
             #ensure that the module number is in the allowed range
             #(mostly important for local or standalone setups simulations)
-            module_nr = module_nr%32
+            module_nr = module_nr%dc.N_TM
             #self.log.debug('Got data from ip %s which is outsie the allowed range'%ip)
-        elif(module_nr>31):
+        elif(module_nr>dc.N_TM-1):
             self.log.error('Error: got packets from ip out of range:')
             self.log.error('   %s'%ip)
             self.log.error('This can be supressed if relaxed_ip_range=True')
@@ -59,10 +61,10 @@ class SlowSignalDataProtocol(asyncio.Protocol):
 class PartialReadout:
     int_counter = 0
     def __init__(self,tm_num,data):
-        self.data = [None]*32
+        self.data = [None]*dc.N_TM
         self.data[tm_num] = data
         self.timestamp =data[0]
-        self.tm_parts = [0]*32
+        self.tm_parts = [0]*dc.N_TM
         self.tm_parts[tm_num] = 1
         PartialReadout.int_counter += 1
         self.readout_number =  PartialReadout.int_counter   
@@ -284,9 +286,9 @@ class SSReadoutAssembler:
             else:
                 self.readout_counter[i] = 1
             #put data into a temporary array of uint typro
-            tmp_array = np.empty(64,dtype=np.uint64)
-            tmp_array[:32] = tmp_data[1:33]
-            tmp_array[32:] = tmp_data[34:]
+            tmp_array = np.empty(dc.N_TM_PIX,dtype=np.uint64)
+            tmp_array[:dc.N_TM] = tmp_data[1:dc.N_TM+1]
+            tmp_array[dc.N_TM:] = tmp_data[dc.N_TM+2:]
             
             #converting counts to mV
             m = tmp_array < 0x8000
@@ -295,7 +297,7 @@ class SSReadoutAssembler:
             readout.data[i] = tmp_array* 0.03815*2.
             #get the readout time stamps for the primary and aux
             readout.timestamps[i][0]=tmp_data[0]
-            readout.timestamps[i][1]=tmp_data[33]
+            readout.timestamps[i][1]=tmp_data[dc.N_TM+1]
         self.nconstructed_readouts += 1
         self.readout_count += 1
         return readout    

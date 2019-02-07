@@ -14,6 +14,11 @@ def bump_version():
         ans = input(newv)
         if ans:
             newv = ans
+            ans = input("Change version to, %s?(Y/n)"%newv)
+            if ans not in ("", "y", "yes"):
+                print('Exiting...')
+                raise KeyboardInterrupt
+
         s = s.replace(oldv, newv)
         with open("ssdaq/version.py", "w") as f:
             f.write(s)

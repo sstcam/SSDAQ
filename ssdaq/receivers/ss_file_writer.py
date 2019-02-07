@@ -5,8 +5,8 @@ class SSFileWriter(Thread):
     """
     An readout data file writer for slow signal data.
 
-    This class uses a instance of an SSReadoutListener to receive events and
-    implements a HDF5 table writer that writes the events to disk.
+    This class uses a instance of a SSReadoutListener to receive events and
+    a an instance of SSDataWriter to write a HDF5 table to disk.
     """
     def __init__(self, file_prefix, folder='',file_enumerator=None,**kwargs):
         from ssdaq import sslogger
@@ -15,8 +15,8 @@ class SSFileWriter(Thread):
         self.file_enumerator =file_enumerator
         self.folder = folder
         self.file_prefix = file_prefix
-        self.log = sslogger.getChild('EventFileWriter')
-        self._readout_listener = SSReadoutListener(logger=self.log.getChild('EventListener'),**kwargs)
+        self.log = sslogger.getChild('SSFileWriter')
+        self._readout_listener = SSReadoutListener(logger=self.log.getChild('Listener'),**kwargs)
         self.running = False
         self.readout_counter = 0
         self.file_counter = 1
@@ -43,7 +43,7 @@ class SSFileWriter(Thread):
         from ssdaq.utils.file_size import convert_size
         self.log.info('Closing file %s'%self.filename)
         self._writer.close_file()
-        self.log.info('EventFileWriter has written %d events in %s bytes to file %s'%(self._writer.readout_counter,
+        self.log.info('SSFileWriter has written %d events in %s bytes to file %s'%(self._writer.readout_counter,
                                                                                       convert_size(os.stat(self.filename).st_size),
                                                                                       self.filename))
     def close(self):
@@ -72,7 +72,7 @@ class SSFileWriter(Thread):
         self.log.info('Stopping listener thread')
         self._readout_listener.close()
         self._close_file()        
-        self.log.info('EventFileWriter has written a'
+        self.log.info('SSFileWriter has written a'
                       ' total of %d events to %d file(s)'%(self.readout_counter,
                                                             self.file_counter))
 
