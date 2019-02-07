@@ -76,7 +76,7 @@ from ssdaq import SSReadout
 
 class SSReadoutAssembler:
     """ 
-    Slow signal readout builder. Constructs 
+    Slow signal readout assembler. Constructs 
     slow signal readouts from data packets recieved from 
     Target Modules.
     """

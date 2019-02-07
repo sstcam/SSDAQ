@@ -106,44 +106,101 @@ class SSDataWriter(object):
         self.table.flush()
         self.file.close()
 
+from collections import namedtuple as _nt
+ 
+_SSMappings = _nt('SSMappings','ssl2colrow ssl2asic_ch')
+ss_mappings = _SSMappings(np.array([ 9, 12,  2, 15, 13, 11,  3, 17, 27, 18, 29,  4, 28, 25, 31,  1,  6,
+       14,  7,  8,  5, 10, 16, 20, 21, 19, 32, 26, 22, 30, 23, 24, 42, 45,
+       44, 37, 39, 41, 38, 40, 57, 63, 55, 54, 59, 50, 53, 58, 52, 43, 48,
+       47, 34, 35, 46, 49, 36, 33, 64, 62, 60, 51, 56, 61], dtype=np.uint64),
+        np.array([29, 23, 21, 22, 30, 27, 24,  0, 25, 31, 20, 18, 28, 26, 17,  3,  2,
+       16, 10, 12, 19,  4, 15,  9,  1,  8, 11, 14,  6,  7,  5, 13, 62, 56,
+       54, 53, 59, 60, 55, 50, 57, 58, 52, 49, 61, 63, 32, 35, 51, 47, 42,
+       46, 33, 34, 45, 48, 44, 36, 41, 43, 40, 38, 39, 37], dtype=np.uint64),
+ )
+
 
 class SSDataReader(object):
     """A reader for Slow Signal data"""
-    def __init__(self,filename):
+    def __init__(self, filename, mapping='ssl2asic_ch'):
         self.filename = filename
         self.file = tables.open_file(self.filename, mode="r")        
 
         self.raw_readout = np.zeros((N_TM,N_TM_PIX),dtype=np.float32)
+        self.readout = np.zeros((N_TM,N_TM_PIX),dtype=np.float32)
         self.readout_number = None
         self.readout_time = None
-        self.readout_timestamps = np.zeros((N_TM,2),dtype=np.uint64)
-        self.readversions = {0:self._read0,1:self._read1}
+        self.readout_timestamps = np.zeros((N_TM,2), dtype=np.uint64)
+        
+        self._readversions = {0:self._read0,1:self._read1}
         self.attrs = self.file.root.SlowSignal.readout.attrs
+        
+        try:
+            self.map = ss_mappings.__getattribute__(mapping)
+        except:
+            raise ValueError('No mapping found with name %s'%mapping)
+        
         if('ssdata_version' not in self.attrs):
             self.read = self._read0
         else:
-            self.read = self.readversions[self.attrs.ssdata_version]
+            self.read = self._readversions[self.attrs.ssdata_version]
     
     def _read0(self,start=None,stop=None,step=None):
         for r in self.file.root.SlowSignal.readout.iterrows(start,stop,step):
             self.raw_readout[:] = r['data']
+            self.readout[:] = r['data'][:,self.map]
             self.readout_number = r['event_number']
             self.readout_time = r['ev_time']
             self.readout_timestamps = r['time_stamps']
             #we skip the event_number col since it was never used (put to 0) even with the old format
-            yield self.raw_readout
+            yield self.readout
     
     def _read1(self,start=None,stop=None,step=None):
         for r in self.file.root.SlowSignal.readout.iterrows(start,stop,step):
             self.raw_readout[:] = r['data']
+            self.readout[:] = r['data'][:,self.map]
             self.readout_number = r['readout_number']
             self.readout_time = r['ro_time']
             self.readout_timestamps = r['time_stamps']
-            yield self.raw_readout
+            yield self.readout
               
     @property
     def n_readouts(self):
         return self.file.root.SlowSignal.readout.nrows
+
+    def load_all_data_tm(self,tm, calib=None, mapping=None):
+        from collections import namedtuple
+        if calib is None:
+            calib = 1.0 
+        if(mapping is None):
+            map = self.map
+        elif(isinstance(mapping,str)):
+            if(mapping == 'raw'):
+                map = np.arange(N_TM_PIX)
+            else:
+                try:
+                    map = ss_mappings.__getattribute__(mapping)
+                except:
+                    raise ValueError('No mapping found with name %s'%mapping)        
+        else:
+            map = mapping
+
+        amps = np.zeros((self.n_readouts,N_TM_PIX)) 
+        time = np.zeros(self.n_readouts)
+        iro = np.zeros(self.n_readouts,dtype=np.uint64)
+
+        for i, r in enumerate(self.read()):
+            amps[i,:] = self.raw_readout[tm,:]*calib
+            time[i] = self.readout_time
+            iro[i] = self.readout_number
+        
+
+                
+        amps = amps[:,map]
+
+        ssdata = namedtuple('ssdata','iro amps time tm')
+        return ssdata(iro,amps,time,tm)
+
     
     def __repr__(self):
         return repr(self.file)
