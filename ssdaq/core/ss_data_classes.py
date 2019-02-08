@@ -8,6 +8,19 @@ N_TM_PIX = 64 #Number of pixels on a Target Module
 N_BYTES_NUM = 8 #Number of bytes to encode numbers (uint and float) in the SSReadout
 N_CAM_PIX = N_TM*N_TM_PIX #Number of pixels in the camera
 
+from collections import namedtuple as _nt
+ 
+_SSMappings = _nt('SSMappings','ssl2colrow ssl2asic_ch')
+ss_mappings = _SSMappings(np.array([ 9, 12,  2, 15, 13, 11,  3, 17, 27, 18, 29,  4, 28, 25, 31,  1,  6,
+       14,  7,  8,  5, 10, 16, 20, 21, 19, 32, 26, 22, 30, 23, 24, 42, 45,
+       44, 37, 39, 41, 38, 40, 57, 63, 55, 54, 59, 50, 53, 58, 52, 43, 48,
+       47, 34, 35, 46, 49, 36, 33, 64, 62, 60, 51, 56, 61], dtype=np.uint64)-1,
+        np.array([29, 23, 21, 22, 30, 27, 24,  0, 25, 31, 20, 18, 28, 26, 17,  3,  2,
+       16, 10, 12, 19,  4, 15,  9,  1,  8, 11, 14,  6,  7,  5, 13, 62, 56,
+       54, 53, 59, 60, 55, 50, 57, 58, 52, 49, 61, 63, 32, 35, 51, 47, 42,
+       46, 33, 34, 45, 48, 44, 36, 41, 43, 40, 38, 39, 37], dtype=np.uint64),
+ )
+
 class SSReadout(object):
     """
     A class representing a slow signal readout
@@ -64,7 +77,15 @@ class SSReadout(object):
         return "SSReadout:\n    Readout number: {}\n    Timestamp:    {}\n    data: {}".format(self.readout_number,
                                                                                                 self.readout_timestamp,
                                                                                                 str(self.data))
-    
+    def _get_asic_mapped(self):
+        return self.data[:,ss_mappings.ssl2asic_ch]
+
+    def _get_colrow_mapped(self):
+        return self.data[:,ss_mappings.ssl2colrow]
+
+    asic_mapped_data = property(lambda self: self._get_asic_mapped())
+    colrow_mapped_data = property(lambda self: self._get_colrow_mapped())
+
 class SSReadoutTableDs(IsDescription):
 
     readout_number = UInt64Col()
@@ -103,26 +124,30 @@ class SSDataWriter(object):
         self.readout_counter += 1
 
     def close_file(self):
+        '''Closes file handle 
+        '''
         self.table.flush()
         self.file.close()
 
-from collections import namedtuple as _nt
- 
-_SSMappings = _nt('SSMappings','ssl2colrow ssl2asic_ch')
-ss_mappings = _SSMappings(np.array([ 9, 12,  2, 15, 13, 11,  3, 17, 27, 18, 29,  4, 28, 25, 31,  1,  6,
-       14,  7,  8,  5, 10, 16, 20, 21, 19, 32, 26, 22, 30, 23, 24, 42, 45,
-       44, 37, 39, 41, 38, 40, 57, 63, 55, 54, 59, 50, 53, 58, 52, 43, 48,
-       47, 34, 35, 46, 49, 36, 33, 64, 62, 60, 51, 56, 61], dtype=np.uint64),
-        np.array([29, 23, 21, 22, 30, 27, 24,  0, 25, 31, 20, 18, 28, 26, 17,  3,  2,
-       16, 10, 12, 19,  4, 15,  9,  1,  8, 11, 14,  6,  7,  5, 13, 62, 56,
-       54, 53, 59, 60, 55, 50, 57, 58, 52, 49, 61, 63, 32, 35, 51, 47, 42,
-       46, 33, 34, 45, 48, 44, 36, 41, 43, 40, 38, 39, 37], dtype=np.uint64),
- )
+
 
 
 class SSDataReader(object):
     """A reader for Slow Signal data"""
     def __init__(self, filename, mapping='ssl2asic_ch'):
+        """ 
+
+            Args:
+                filename (str): path to file
+
+            Kwargs:
+                mapping (str): determines how the pixels are mapped. Two mappings 
+                               are availabe: 'ssl2colrow' and 'ssl2asic_ch' which correspond to
+                               a 2D col-row layout and ASIC-channel which is the same ordering used for the
+                               fast signal data.
+
+        
+        """
         self.filename = filename
         self.file = tables.open_file(self.filename, mode="r")        
 
@@ -141,11 +166,23 @@ class SSDataReader(object):
             raise ValueError('No mapping found with name %s'%mapping)
         
         if('ssdata_version' not in self.attrs):
-            self.read = self._read0
+            self._read = self._read0
         else:
-            self.read = self._readversions[self.attrs.ssdata_version]
+            self._read = self._readversions[self.attrs.ssdata_version]
+     
+    def read(self,start=None,stop=None,step=None):
+        if(stop is None and start is not None):
+            stop = start+1
+        return self._read(start,stop,step) 
     
     def _read0(self,start=None,stop=None,step=None):
+        ''' A data file iterator for reading data rows.
+            
+            Args:
+                start (int): starting row number
+                stop  (int): stopping row number
+                step  (int): size of the step at each iteration
+        '''        
         for r in self.file.root.SlowSignal.readout.iterrows(start,stop,step):
             self.raw_readout[:] = r['data']
             self.readout[:] = r['data'][:,self.map]
@@ -156,6 +193,13 @@ class SSDataReader(object):
             yield self.readout
     
     def _read1(self,start=None,stop=None,step=None):
+        ''' A data file iterator for reading data rows.
+            
+            Args:
+                start (int): starting row number
+                stop  (int): stopping row number
+                step  (int): size of the step at each iteration
+        '''
         for r in self.file.root.SlowSignal.readout.iterrows(start,stop,step):
             self.raw_readout[:] = r['data']
             self.readout[:] = r['data'][:,self.map]
@@ -167,6 +211,13 @@ class SSDataReader(object):
     @property
     def n_readouts(self):
         return self.file.root.SlowSignal.readout.nrows
+
+    @property
+    def ssreadout(self):
+        return SSReadout(self.readout_time, 
+                        self.readout_number, 
+                        data=self.raw_readout, 
+                        timestamps=self.readout_timestamps)
 
     def load_all_data_tm(self,tm, calib=None, mapping=None):
         '''Loads all rows of data for a particular target moduel into memory
@@ -224,4 +275,6 @@ class SSDataReader(object):
         
         return s
     def close_file(self):
+        '''Closes file handle
+        '''
         self.file.close()
