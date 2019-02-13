@@ -6,22 +6,22 @@ from queue import Queue
 import logging
 
 class SSReadoutListener(Thread):
-    ''' A convinience class to subscribe to a published SS readout data stream. 
-        readouts are retrived by the `get_readout()` method once the listener has been started by the 
+    ''' A convinience class to subscribe to a published SS readout data stream.
+        readouts are retrived by the `get_readout()` method once the listener has been started by the
         `start()` method
 
         Args:
-            ip (str):   The ip address where the readouts are published (can be local or remote) 
+            ip (str):   The ip address where the readouts are published (can be local or remote)
             port (int): The port number at which the readouts are published
         Kwargs:
-            logger:     Optionally provide a logger instance 
+            logger:     Optionally provide a logger instance
     '''
     id_counter = 0
     def __init__(self,ip,port,logger=None):
         Thread.__init__(self)
         SSReadoutListener.id_counter += 1
         if(logger == None):
-            self.log=logging.getLogger('ssdaq.SSReadoutListener%d'%SSReadoutListener.id_counter) 
+            self.log=logging.getLogger('ssdaq.SSReadoutListener%d'%SSReadoutListener.id_counter)
         else:
             self.log=logger
 
@@ -36,16 +36,16 @@ class SSReadoutListener(Thread):
         self.log.info('Connected to : %s'%con_str)
         self.running = False
         self._readout_buffer = Queue()
-        
+
         self.id_counter = SSReadoutListener.id_counter
-        self.inproc_sock_name = "SSReadoutListener%d"%(self.id_counter) 
+        self.inproc_sock_name = "SSReadoutListener%d"%(self.id_counter)
         self.close_sock = self.context.socket(zmq.PAIR)
         self.close_sock.bind("inproc://"+self.inproc_sock_name)
-        
+
 
     def close(self):
         ''' Closes listener thread and empties the readout buffer to unblock the
-            the get_readout method  
+            the get_readout method
         '''
 
         if(self.running):
@@ -67,7 +67,7 @@ class SSReadoutListener(Thread):
 
         '''
         readout = self._readout_buffer.get(**kwargs)
-        self._readout_buffer.task_done()       
+        self._readout_buffer.task_done()
         return readout
 
     def run(self):
@@ -84,9 +84,9 @@ class SSReadoutListener(Thread):
         poller.register(recv_close,zmq.POLLIN)
 
         while(self.running):
-            
+
             socks= dict(poller.poll())
-            
+
             if(self.sock in socks):
                 data = self.sock.recv()
                 readout = SSReadout()

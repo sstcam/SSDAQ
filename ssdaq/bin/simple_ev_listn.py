@@ -24,7 +24,7 @@ def main():
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
     parser.add_argument('-n',dest = 'n_readouts',type=int,default=None,help ='the number of readouts to listen to before exiting (if not set there is no limit')
-    
+
     args = parser.parse_args()
     from ssdaq import sslogger
     import logging;
@@ -48,7 +48,7 @@ def main():
             ev_list.close()
             break
         # if(n>0):
-        #     print('\033[7   A ')    
+        #     print('\033[7   A ')
         print("Readout number %d"%(readout.readout_number))
         print("Timestamp %d ns"%(readout.readout_timestamp))
         print("Timestamp %f s"%(readout.readout_timestamp*1e-9))
@@ -64,12 +64,12 @@ def main():
         n +=1
         if(args.n_readouts != None and n>=args.n_readouts):
             break
-    
+
     try:
         from matplotlib import pyplot as plt
     except:
         return
-    
+
     plt.figure()
     plt.hist(n_modules_per_readout, 10,  facecolor='g', alpha=0.75)
     plt.show()
