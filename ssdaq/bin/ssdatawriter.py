@@ -1,5 +1,3 @@
-import sys
-import os
 from ssdaq.receivers import SSFileWriter
 
 def main():
