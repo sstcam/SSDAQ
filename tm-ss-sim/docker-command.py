@@ -2,7 +2,7 @@ import argparse
 from subprocess import call
 import os
 
-parser = argparse.ArgumentParser(description='A simple interface to docker to build and run a TM slow signal simulation\n' 
+parser = argparse.ArgumentParser(description='A simple interface to docker to build and run a TM slow signal simulation\n'
                                             'with docker containers.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -25,7 +25,7 @@ parser.add_argument('-i', '--ip', type=str,
 parser.add_argument('-N', '--number of modules',dest='n_modules', type=str,
                     default='32',
                     help='Number of tm modules to simulate')
-    
+
 parser.add_argument('-r', '--run', action='store_true',
                     help='run simulation')
 
@@ -48,7 +48,7 @@ if(args.print_args):
         print(key,value)
 
 if(args.build):
-    call_list =["/usr/bin/docker", "build", "-t", "ss-sim", '.'] 
+    call_list =["/usr/bin/docker", "build", "-t", "ss-sim", '.']
     call(call_list)
 
 if(args.run):
@@ -60,8 +60,8 @@ if(args.run):
         exit()
     for i in range(int(args.n_modules)):
         sim_name = 'TM%d'%i
-        ip = '%s1%02d'%(args.ip,i)        
-        cmd_list = ["docker", 
+        ip = '%s1%02d'%(args.ip,i)
+        cmd_list = ["docker",
             "run",
             '--name', '%s'%(sim_name),
             '--net', '%s'%(args.network_name),
@@ -73,7 +73,7 @@ if(args.run):
             '-e',
             "COM_PORT=%d"%com_port,
             '-e',
-            "TM_ID=%d"%i,  
+            "TM_ID=%d"%i,
             'ss-sim']
 
         print(' '.join(cmd_list))
