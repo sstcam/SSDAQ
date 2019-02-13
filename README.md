@@ -25,12 +25,12 @@ instead and adding the `--user` option if not installing in a conda env. This le
 
 The project is written assuming it will be run with python3.5 or above. Additional dependencies to run the base part of the projects are listed here:
 
-*    python >= 3.5
-*    numpy
-*    zmq
-*    pytables
-*    pyparsing
-*    pyyaml
+*  python >= 3.5
+*  numpy
+*  zmq
+*  pytables
+*  pyparsing
+*  pyyaml
 
 Some receivers might have additional prerequesites not listed above. These dependencies might include:
 
