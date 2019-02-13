@@ -1,5 +1,6 @@
-# SSDAQ
-![Test Status Travis-CI](https://travis-ci.org/sflis/SSDAQ.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
+# SSDAQ 
+[![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
+
 
 Slow signal data acquisition and distribution for CHEC-S TARGET-C modules.
 
