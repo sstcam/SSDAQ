@@ -36,7 +36,7 @@ def main():
 
     ep = ZMQReadoutPublisher(port=args.publishing_port,ip=args.publishing_interface)
     eb = SSReadoutAssembler(relaxed_ip_range=args.relaxed_ip, listen_ip = '0.0.0.0', listen_port = args.listen_port, publishers = [ep])
-    
+
     eb.run()
 
 

@@ -21,7 +21,7 @@ class SSFileWriter(Thread):
         self.readout_counter = 0
         self.file_counter = 1
         self._open_file()
-    
+
     def _open_file(self):
         import os
         from datetime import datetime
@@ -33,8 +33,8 @@ class SSFileWriter(Thread):
         else:
             suffix = ''
 
-        
-        self.filename = os.path.join(self.folder,self.file_prefix+suffix+'.hdf5') 
+
+        self.filename = os.path.join(self.folder,self.file_prefix+suffix+'.hdf5')
         self._writer = SSDataWriter(self.filename)
         self.log.info('Opened new file, will write events to file: %s'%self.filename)
 
@@ -59,7 +59,7 @@ class SSFileWriter(Thread):
             readout = self._readout_listener.get_readout()
             if(readout == None):
                 continue
-            #Start a new file if we get 
+            #Start a new file if we get
             #an readout with readout number 1
             if(readout.readout_number==1 and self.readout_counter>0):
                 self._close_file()
@@ -71,7 +71,7 @@ class SSFileWriter(Thread):
 
         self.log.info('Stopping listener thread')
         self._readout_listener.close()
-        self._close_file()        
+        self._close_file()
         self.log.info('SSFileWriter has written a'
                       ' total of %d events to %d file(s)'%(self.readout_counter,
                                                             self.file_counter))

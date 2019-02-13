@@ -15,7 +15,7 @@ class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
     def run(self):
             from subprocess import call
             import os
-            
+
             if(self.set_taskset):
                 #forces the process to one particular CPU core
                 call(["taskset","-cp", self.core_id,"%s"%(str(os.getpid()))])
@@ -25,7 +25,7 @@ class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
                 if('name' not in epconf):
                     epconf['name'] = eptype#'ZMQReadoutPublisher%d'%i
                 eps.append(ZMQReadoutPublisher(**epconf))
-                i+=1           
+                i+=1
             roa = SSReadoutAssembler(publishers = eps, **self.kwargs['SSReadoutAssembler'])
             roa.run()
 
@@ -71,7 +71,7 @@ def cli(ctx):
     '''Start, stop and control ssdaq readout assembler and writer daemons'''
     ctx.ensure_object(dict)
     from pkg_resources import resource_stream,resource_string, resource_listdir
-    ctx.obj['CONFIG'] =yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml')) 
+    ctx.obj['CONFIG'] =yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml'))
     pass
 
 
@@ -80,7 +80,7 @@ def cli(ctx):
 @click.pass_context
 def start(ctx):#,config):
     '''Start a readout assembler or data writer '''
-    ctx.ensure_object(dict)    
+    ctx.ensure_object(dict)
 
 @start.command()
 @click.option('--daemon/--no-daemon','-d',default=False,help='run as daemon')
@@ -88,7 +88,7 @@ def start(ctx):#,config):
 @click.pass_context
 def roa(ctx,daemon,config):
     '''Start a readout assembler with an optional custom CONFIG file'''
-    
+
     print('Starting readout assembler...')
     if(daemon):
         print('Run as deamon')
@@ -169,9 +169,9 @@ def roa_ctrl(ctx):
 def reset_count(ctx):
     '''Resets the readout counter in the readout assembler'''
     import zmq
-    zmqctx = zmq.Context()  
-    sock = zmqctx.socket(zmq.REQ)  
-    sock.connect('ipc:///tmp/ssdaq-control')    
+    zmqctx = zmq.Context()
+    sock = zmqctx.socket(zmq.REQ)
+    sock.connect('ipc:///tmp/ssdaq-control')
     sock.send(b'reset_ro_count 1')
     print(sock.recv())
 
@@ -180,9 +180,9 @@ def reset_count(ctx):
 def pause_pub(ctx):
     '''Pauses readout publishing'''
     import zmq
-    zmqctx = zmq.Context()  
-    sock = zmqctx.socket(zmq.REQ)  
-    sock.connect('ipc:///tmp/ssdaq-control')    
+    zmqctx = zmq.Context()
+    sock = zmqctx.socket(zmq.REQ)
+    sock.connect('ipc:///tmp/ssdaq-control')
     sock.send(b'set_publish_readouts False')
     print(sock.recv())
 
@@ -191,9 +191,9 @@ def pause_pub(ctx):
 def restart_pub(ctx):
     '''Restart readout publishing'''
     import zmq
-    zmqctx = zmq.Context()  
-    sock = zmqctx.socket(zmq.REQ)  
-    sock.connect('ipc:///tmp/ssdaq-control')    
+    zmqctx = zmq.Context()
+    sock = zmqctx.socket(zmq.REQ)
+    sock.connect('ipc:///tmp/ssdaq-control')
     sock.send(b'set_publish_readouts True')
     print(sock.recv().decode('ascii'))
 
@@ -204,7 +204,7 @@ cli.add_command(roa_ctrl)
 
 
 def main():
-    
+
     cli()
 
 if __name__ == "__main__":
