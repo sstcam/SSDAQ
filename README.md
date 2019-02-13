@@ -1,5 +1,6 @@
-# SSDAQ
-![Test Status Travis-CI](https://travis-ci.org/sflis/SSDAQ.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
+# SSDAQ 
+[![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
+
 
 Slow signal data acquisition and distribution for CHEC-S TARGET-C modules.
 
@@ -25,21 +26,21 @@ instead and adding the `--user` option if not installing in a conda env. This le
 
 The project is written assuming it will be run with python3.5 or above. Additional dependencies to run the base part of the projects are listed here:
 
-    * python >= 3.5
-    * numpy
-    * zmq
-    * pytables
-    * pyparsing
-    * pyyaml
+*  python >= 3.5
+*  numpy
+*  zmq
+*  pytables
+*  pyparsing
+*  pyyaml
 
 Some receivers might have additional prerequesites not listed above. These dependencies might include:
 
-    * matplotlib
-    * docker
-    * urwid
-    * target_driver
-    * target_io
-    * target_calib
+*  matplotlib
+*  docker
+*  urwid
+*  target_driver
+*  target_io
+*  target_calib
 
 ## Usage
 The SSDAQ software package contains applications for CHEC-S slow signal readout assembling and writing to disk, but can also be use as a python library to  write custom listeners as well as custom readout publishers that can be used by the readout assembler daemon.
@@ -47,10 +48,10 @@ The SSDAQ software package contains applications for CHEC-S slow signal readout 
 ### Applications
 Currently four applications are provided in the SSDAQ software package which are listed below
 
-    * `ssdaq`
-    * `ssdatawriter`
-    * `ss-example-listener`
-    * `control-ssdaq`
+*  `ssdaq`
+*  `ssdatawriter`
+*  `ss-example-listener`
+*  `control-ssdaq`
 
 The `ssdaq` and `ssdaqwriter` applications directly starts a builder and a writer, respectively. However these applications don't expose all configurable settings of the builder and writer and are provided for quick tests and 1-off runs.
 
@@ -194,12 +195,12 @@ which sets the simulation to send the data to port 2009 on localhost. For now th
 #### Docker instructions to simulate multiple modules sending SS-data from the CHEC camera
 To simulate multiple TARGET modules sending slow signal data several docker containers have to be used asigned with a specific IP as the module is identified by the IP in the UDP header of the data packets it sends. Useful docker commands are listed below:
 
-    * build docker image with:
-    	`docker build -t ss-sim .`
-    * setup your own docker network/bridge (Need to check command!)
-    	`docker network create --driver=bridge --subnet=192.168.0.0/16 br0`
-    * run container with TM sim:
-    	`docker run --net my-net --ip 172.18.0.1xx ss-sim`
+*  build docker image with:
+   `docker build -t ss-sim .`
+*  setup your own docker network/bridge (Need to check command!)
+   `docker network create --driver=bridge --subnet=192.168.0.0/16 br0`
+*  run container with TM sim:
+  `docker run --net my-net --ip 172.18.0.1xx ss-sim`
 
 the xx should be replaced by a number between 1 and 32 which corresponds to
 the module number in the CHEC-camera
