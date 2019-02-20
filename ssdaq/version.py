@@ -26,15 +26,23 @@ https://github.com/warner/python-versioneer
 but being much more lightwheight
 
 """
+from __future__ import print_function
 from subprocess import check_output, CalledProcessError
 from os import path, name, devnull, environ, listdir
 
 __all__ = ("get_version",)
 
 CURRENT_DIRECTORY = path.dirname(path.abspath(__file__))
-VERSION_FILE = path.join(CURRENT_DIRECTORY, "_version_cache.py")
+VFILE = "_version_cache.py"
+VERSION_FILE = path.join(CURRENT_DIRECTORY,VFILE )
 
 GIT_COMMAND = "git"
+
+
+import sys
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 if name == "nt":
     def find_git_on_windows():
@@ -131,9 +139,8 @@ def update_release_version(fpath,pep440=False):
         available) will be appended to the version string.
 
     """
-    print(path.join(fpath,VERSION_FILE))
     version = get_version(pep440=pep440)
-    with open(path.join(fpath,VERSION_FILE), "w") as outfile:
+    with open(path.join(fpath,VFILE), "w") as outfile:
         outfile.write("version={}".format(version))
         outfile.write("\n")
 

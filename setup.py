@@ -3,15 +3,13 @@ import os
 import sys
 install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml','click']
 
+#
 from shutil import copyfile,rmtree
 if not os.path.exists('tmps'):
     os.makedirs('tmps')
 copyfile('ssdaq/version.py', 'tmps/version.py')
-
 __import__('tmps.version')
 package = sys.modules['tmps']
-
-print(os.path.join('ssdaq','sdsa'))
 package.version.update_release_version('ssdaq')
 
 setup(name="SSDAQ",
