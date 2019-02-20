@@ -1,12 +1,9 @@
-import sys
-import os
 from ssdaq import SSReadoutListener
 import numpy as np
 
 import argparse
 
 import signal
-import sys
 
 def main():
 
@@ -26,9 +23,6 @@ def main():
     parser.add_argument('-n',dest = 'n_readouts',type=int,default=None,help ='the number of readouts to listen to before exiting (if not set there is no limit')
 
     args = parser.parse_args()
-    from ssdaq import sslogger
-    import logging;
-    args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
     ev_list = SSReadoutListener(port = args.listen_port, ip = args.ip_addr)
@@ -38,12 +32,11 @@ def main():
     n_modules_per_readout =[]
     n = 0
     signal.alarm(0)
-    ctrc_count = 0
     print('Press `ctrl-C` to stop')
     while(True):
         try:
             readout = ev_list.get_readout()
-        except :
+        except KeyboardInterrupt:
             print("\nClosing listener")
             ev_list.close()
             break
@@ -67,7 +60,7 @@ def main():
 
     try:
         from matplotlib import pyplot as plt
-    except:
+    except ImportError:
         return
 
     plt.figure()

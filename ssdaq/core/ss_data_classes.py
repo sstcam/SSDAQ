@@ -1,6 +1,6 @@
 import numpy as np
 import tables
-from tables import IsDescription,open_file,UInt64Col,Float32Col
+from tables import IsDescription,UInt64Col,Float32Col
 import struct
 
 N_TM =32 #Number of target modules in camera
@@ -232,7 +232,6 @@ class SSDataReader(object):
                 mapping (str or arraylike): a string to select a mapping  or an array with the mapping
                                             ['ssl2colrow','ssl2asic_ch','raw']
         '''
-        from collections import namedtuple
         if calib is None:
             calib = 1.0
         if(mapping is None):
@@ -260,7 +259,7 @@ class SSDataReader(object):
 
         amps = amps[:,mapping]
 
-        ssdata = namedtuple('ssdata','iro amps time tm')
+        ssdata = _nt('ssdata','iro amps time tm')
         return ssdata(iro,amps,time,tm)
 
 
