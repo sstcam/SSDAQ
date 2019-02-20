@@ -1,16 +1,16 @@
 from setuptools import setup, find_packages
-
+import os
 import sys
 install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml','click']
 
-# version = {}
-# with open('ssdaq/version.py') as fp:
-#     exec(fp.read(),version)
-PACKAGENAME = 'ssdaq'
-__import__(PACKAGENAME)
-
-package = sys.modules[PACKAGENAME]
-package.version.update_release_version()
+#
+from shutil import copyfile,rmtree
+if not os.path.exists('tmps'):
+    os.makedirs('tmps')
+copyfile('ssdaq/version.py', 'tmps/version.py')
+__import__('tmps.version')
+package = sys.modules['tmps']
+package.version.update_release_version('ssdaq')
 
 setup(name="SSDAQ",
       version=package.version.get_version(pep440=True),#version['__version__'],
@@ -43,3 +43,6 @@ setup(name="SSDAQ",
                     }
       )
 
+
+rmtree('tmps')
+# os.remove('version.py')
