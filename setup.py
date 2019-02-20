@@ -13,11 +13,11 @@ __import__(PACKAGENAME+'.version',fromlist=[None])
 
 # except:
 #     pass
-version = sys.modules[PACKAGENAME]
+package = sys.modules[PACKAGENAME+'.version']
 
 # # LONG_DESCRIPTION = package.__doc__
 
-version.update_release_version()
+package.version.update_release_version()
 setup(name="SSDAQ",
       version=version.get_version(pep440=True),#version['__version__'],
       description="A framework to handle slow signal data from the CHEC-S camera",
