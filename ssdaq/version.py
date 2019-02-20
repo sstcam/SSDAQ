@@ -118,7 +118,7 @@ def read_release_version():
         return "unknown"
 
 
-def update_release_version(pep440=False):
+def update_release_version(fpath,pep440=False):
     """Release versions are stored in a file called VERSION.
     This method updates the version stored in the file.
     This function should be called when creating new releases.
@@ -132,7 +132,7 @@ def update_release_version(pep440=False):
 
     """
     version = get_version(pep440=pep440)
-    with open(VERSION_FILE, "w") as outfile:
+    with open(path.join(fpath,VERSION_FILE), "w") as outfile:
         outfile.write("version={}".format(version))
         outfile.write("\n")
 
