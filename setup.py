@@ -7,7 +7,10 @@ install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml','cl
 # with open('ssdaq/version.py') as fp:
 #     exec(fp.read(),version)
 PACKAGENAME = 'ssdaq'
-__import__(PACKAGENAME+'.version')
+try:
+    __import__(PACKAGENAME+'.version')
+except:
+    pass
 package = sys.modules[PACKAGENAME]
 # LONG_DESCRIPTION = package.__doc__
 
