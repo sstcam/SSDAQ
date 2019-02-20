@@ -3,12 +3,16 @@ from setuptools import setup, find_packages
 import sys
 install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml','click']
 
-version = {}
-with open('ssdaq/version.py') as fp: 
-    exec(fp.read(),version)
-
+# version = {}
+# with open('ssdaq/version.py') as fp:
+#     exec(fp.read(),version)
+PACKAGENAME = 'ssdaq'
+__import__(PACKAGENAME)
+package = sys.modules[PACKAGENAME]
+LONG_DESCRIPTION = package.__doc__
+package.version.update_release_version()
 setup(name="SSDAQ",
-      version=version['__version__'],
+      version=package.version.get_version(pep440=True),#version['__version__'],
       description="A framework to handle slow signal data from the CHEC-S camera",
       author="Samuel Flis",
       author_email="samuel.flis@desy.de",

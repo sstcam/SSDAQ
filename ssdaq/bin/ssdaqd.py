@@ -6,7 +6,7 @@ def main():
     from ssdaq import SSReadoutAssembler, ZMQReadoutPublisher
     import time
     import argparse
-
+    from ssdaq.utils import common_args as cargs
     parser = argparse.ArgumentParser(description='Start slow signal data acquisition.',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -28,7 +28,7 @@ def main():
                         help='The event builder relaxes the allowed ip range by mapping ip addesses with 2'
                         ' last digits of the address being >32 to valid TM numbers. Note that several'
                         ' ip addresses will map to the same TM. Use this option with cause.')
-
+    cargs.version(parser)
     from ssdaq import sslogger
     import logging;
     args = parser.parse_args()

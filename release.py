@@ -19,9 +19,9 @@ def bump_version():
                 print('Exiting...')
                 raise KeyboardInterrupt
 
-        s = s.replace(oldv, newv)
-        with open("ssdaq/version.py", "w") as f:
-            f.write(s)
+        # s = s.replace(oldv, newv)
+        # with open("ssdaq/version.py", "w") as f:
+        #     f.write(s)
     except KeyboardInterrupt:
         print("\nInterrupted, version not changed...")
         exit()

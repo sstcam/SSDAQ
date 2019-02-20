@@ -2,7 +2,7 @@ from ssdaq.receivers import SSFileWriter
 
 def main():
     import argparse
-
+    from ssdaq.utils import common_args as cargs
 
     parser = argparse.ArgumentParser(description='Start a simple event data writer.',
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -19,6 +19,7 @@ def main():
                         default='5555',
                         help='Output file name')
 
+    cargs.version(parser)
     args = parser.parse_args()
 
 
