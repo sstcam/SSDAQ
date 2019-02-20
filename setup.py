@@ -10,6 +10,8 @@ copyfile('ssdaq/version.py', 'tmps/version.py')
 
 __import__('tmps.version')
 package = sys.modules['tmps']
+
+print(os.path.join('ssdaq','sdsa'))
 package.version.update_release_version('ssdaq')
 
 setup(name="SSDAQ",

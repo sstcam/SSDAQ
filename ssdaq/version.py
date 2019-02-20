@@ -131,6 +131,7 @@ def update_release_version(fpath,pep440=False):
         available) will be appended to the version string.
 
     """
+    print(path.join(fpath,VERSION_FILE))
     version = get_version(pep440=pep440)
     with open(path.join(fpath,VERSION_FILE), "w") as outfile:
         outfile.write("version={}".format(version))
