@@ -11,7 +11,6 @@ python:
     # in anaconda as well (we don't support python less than 3.5)
     - 3.5
     - 3.6
-    - 3.7
 # Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
 matrix:
   include:
