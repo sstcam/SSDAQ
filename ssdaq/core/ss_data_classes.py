@@ -271,7 +271,10 @@ class SSDataReader(object):
         s+='    Filename:%s\n'%self.filename
         s+='    Title: CHEC-S Slow signal monitor data\n'
         s+='    n_readouts: %d\n'%self.n_readouts
-        s+='    ssdata-verion: %d\n'%self.attrs.ssdata_version
+        if('ssdata_version' not in self.attrs):
+            s+='    ssdata-verion: 0\n'
+        else:
+            s+='    ssdata-verion: %d\n'%self.attrs.ssdata_version
 
         return s
     def close_file(self):
