@@ -8,9 +8,10 @@ install_requires = ["zmq","numpy",'tables','pyparsing','matplotlib','pyyaml','cl
 #     exec(fp.read(),version)
 PACKAGENAME = 'ssdaq'
 __import__(PACKAGENAME)
+
 package = sys.modules[PACKAGENAME]
-LONG_DESCRIPTION = package.__doc__
 package.version.update_release_version()
+
 setup(name="SSDAQ",
       version=package.version.get_version(pep440=True),#version['__version__'],
       description="A framework to handle slow signal data from the CHEC-S camera",
