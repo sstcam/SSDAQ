@@ -1,4 +1,5 @@
 from ssdaq import SSReadoutListener
+from ssdaq.utils import common_args as cargs
 import numpy as np
 
 import argparse
@@ -21,6 +22,7 @@ def main():
                         help='Set log level',choices=['DEBUG','INFO','WARN','ERROR','FATAL'])
 
     parser.add_argument('-n',dest = 'n_readouts',type=int,default=None,help ='the number of readouts to listen to before exiting (if not set there is no limit')
+    cargs.version(parser)
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)

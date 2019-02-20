@@ -1,6 +1,6 @@
 from ssdaq import SSReadoutAssembler,ZMQReadoutPublisher
 from ssdaq.utils import daemon
-
+import ssdaq
 
 class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
     def __init__(self,stdout = '/dev/null', stderr = '/dev/null', set_taskset = False, core_id = 0,log_level='INFO',**kwargs):
@@ -65,11 +65,22 @@ class MyGroup(click.Group):
                 args.insert(0, '')
         super(MyGroup, self).parse_args(ctx, args)
 
+
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(ssdaq.__version__)
+    ctx.exit()
+
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.pass_context
-def cli(ctx):
+@click.option('--version','-v',is_flag=True,help='Show version', callback=print_version,
+              expose_value=False, is_eager=True)
+def cli(ctx,version):
     '''Start, stop and control ssdaq readout assembler and writer daemons'''
     ctx.ensure_object(dict)
+
     from pkg_resources import resource_stream,resource_string, resource_listdir
     ctx.obj['CONFIG'] =yaml.load(resource_stream('ssdaq.resources','ssdaq-default-config.yaml'))
     pass

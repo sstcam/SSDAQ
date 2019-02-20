@@ -168,7 +168,7 @@ class SSDataReader(object):
 
         if('ssdata_version' not in self.attrs):
             self._read = self._read0
-            self.attrs['ssdata_version'] = 0
+            # self.attrs['ssdata_version'] = 0
         else:
             self._read = self._readversions[self.attrs.ssdata_version]
 
