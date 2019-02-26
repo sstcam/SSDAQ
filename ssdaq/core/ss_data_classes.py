@@ -95,7 +95,7 @@ class SSReadoutTableDs(IsDescription):
 
 class SSDataWriter(object):
     """A writer for Slow Signal data"""
-    def __init__(self,filename, attrs = None,filters = None):
+    def __init__(self,filename, attrs = None,filters = None,buffer=1):
 
         self.filename = filename
         filters = filters if filters != None else tables.Filters(complevel=9,
@@ -109,6 +109,8 @@ class SSDataWriter(object):
         self.table = self.file.create_table(self.group, 'readout', SSReadoutTableDs, "Slow signal readout")
         self.ro_row = self.table.row
         self.readout_counter = 0
+        self.buffer = buffer
+        self._cur_buf = 0
         if(attrs is not None):
             for k,v in attrs.items():
                 self.table.attrs[k] = v
@@ -121,7 +123,11 @@ class SSDataWriter(object):
         self.ro_row['data'] = np.asarray(ro.data, dtype=np.float32)
         self.ro_row['time_stamps'] = ro.timestamps
         self.ro_row.append()
-        self.table.flush()
+        self._cur_buf += 1
+        if(self._cur_buf=>self.buffer):
+            self.table.flush()
+            self._cur_buf = 0
+
         self.readout_counter += 1
 
     def close_file(self):
