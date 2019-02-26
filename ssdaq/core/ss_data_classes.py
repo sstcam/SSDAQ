@@ -124,7 +124,7 @@ class SSDataWriter(object):
         self.ro_row['time_stamps'] = ro.timestamps
         self.ro_row.append()
         self._cur_buf += 1
-        if(self._cur_buf=>self.buffer):
+        if(self._cur_buf >= self.buffer):
             self.table.flush()
             self._cur_buf = 0
 
