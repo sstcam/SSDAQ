@@ -77,7 +77,7 @@ def print_version(ctx, param, value):
 @click.pass_context
 @click.option('--version','-v',is_flag=True,help='Show version', callback=print_version,
               expose_value=False, is_eager=True)
-def cli(ctx,version):
+def cli(ctx):
     '''Start, stop and control ssdaq readout assembler and writer daemons'''
     ctx.ensure_object(dict)
 
