@@ -18,13 +18,13 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.packet_debug_stream = True
         else:
             self.packet_debug_stream = False
-
+        self.dt = datetime.timedelta(seconds=0.1)
     def connection_made(self, transport):
         self.log.info('Connected to port')
         self.transport = transport
 
     def datagram_received(self, data, addr):
-
+        cpu_time = datetime.utcnow()
         if(len(data)%(READOUT_LENGTH) != 0):
             self.log.warn("Got unsuported packet size, skipping packet")
             self.log.info("Bad package came from %s:%d"%tuple(data[0]))
@@ -48,8 +48,9 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         #self.log.debug("Got data from %s assigned to module %d"%(str(ip),module_nr))
         for i in range(nreadouts):
             unpacked_data = struct.unpack_from('>Q32HQ32H',data,i*(READOUT_LENGTH))
+            self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data,cpu_time.timestamp())))
+            cpu_time += self.dt
 
-            self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data)))
             if(self.packet_debug_stream):
                 self.packet_debug_stream_file.write('%d  %d  %d\n'%(unpacked_data[0],int(datetime.utcnow().timestamp()*1e9) , module_nr))
         #self.log.debug('Front buffer length %d'%(self._buffer.qsize()))
@@ -64,13 +65,15 @@ class PartialReadout:
         self.data = [None]*dc.N_TM
         self.data[tm_num] = data
         self.timestamp =data[0]
+        self.cpu_timestamp = [data[3]]
         self.tm_parts = [0]*dc.N_TM
         self.tm_parts[tm_num] = 1
         PartialReadout.int_counter += 1
-        self.readout_number =  PartialReadout.int_counter
+        self.readout_number = PartialReadout.int_counter
     def add_part(self, tm_num, data):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
+        self.cpu_timestamp.append(data[3])
 
 from ssdaq import SSReadout
 
@@ -97,11 +100,6 @@ class SSReadoutAssembler:
         import inspect
         self.log = sslogger.getChild('SSReadoutBuilder')
         self.relaxed_ip_range = relaxed_ip_range
-        # self.listening =
-        # self.building_readouts =
-        # self.publishing_readouts =
-
-
 
         #settings
         self.readout_tw = int(readout_tw)
@@ -346,7 +344,7 @@ class ZMQReadoutPublisher():
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:
             self.log = logger.getChild(name)
-        self.log.info('Initialized readout publisher on: %s'%con_str)
+        self.log.info('Initialized readout publisher with a %s connection on: %s'%(mode,con_str))
 
     def give_loop(self,loop):
         self.loop = loop

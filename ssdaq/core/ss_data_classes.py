@@ -27,15 +27,15 @@ class SSReadout(object):
     """
 
 
-    def __init__(self, timestamp=0, readout_number = 0, data=None, timestamps=None):
+    def __init__(self, timestamp=0, readout_number = 0, cpu_t = 0, data=None, timestamps=None):
 
         self.readout_number = readout_number
         self.readout_timestamp = timestamp
         self.data =  np.full((N_TM,N_TM_PIX),np.nan) if data is None else data
-
+        self.cpu_t = cpu_t
         #store also the time stamps for the individual readings
         #two per TM (primary and aux)
-        self.timestamps =  np.zeros((N_TM,2),dtype=np.uint64) if timestamps is None else timestamps
+        # self.timestamps =  np.zeros((N_TM,2),dtype=np.uint64) if timestamps is None else timestamps
 
     def pack(self):
         '''
@@ -49,12 +49,13 @@ class SSReadout(object):
 
             returns bytearray
         '''
-        d_stream = bytearray(struct.pack('2Q',
+        d_stream = bytearray(struct.pack('2Qd',
                             self.readout_number,
-                            self.readout_timestamp))
+                            self.readout_timestamp,
+                            self.cpu_t))
 
         d_stream.extend(self.data.tobytes())
-        d_stream.extend(self.timestamps.tobytes())
+        # d_stream.extend(self.timestamps.tobytes())
         return d_stream
 
 
@@ -62,11 +63,11 @@ class SSReadout(object):
         '''
         Unpack a bytestream into an readout
         '''
-        self.readout_number,self.readout_timestamp = struct.unpack_from('2Q',byte_stream,0)
-        self.data = np.frombuffer(byte_stream[N_BYTES_NUM*2 : N_BYTES_NUM*(2+N_CAM_PIX)],
+        self.readout_number,self.readout_timestamp,self.cput_t = struct.unpack_from('2Qd',byte_stream,0)
+        self.data = np.frombuffer(byte_stream[N_BYTES_NUM*3 : N_BYTES_NUM*(3+N_CAM_PIX)],
                                     dtype=np.float64).reshape(N_TM, N_TM_PIX)
-        self.timestamps = np.frombuffer(byte_stream[N_BYTES_NUM*(2+N_CAM_PIX):N_BYTES_NUM*(2+N_CAM_PIX+N_TM*2)],
-                                        dtype=np.uint64).reshape(N_TM,2)
+        # self.timestamps = np.frombuffer(byte_stream[N_BYTES_NUM*(2+N_CAM_PIX):N_BYTES_NUM*(2+N_CAM_PIX+N_TM*2)],
+        #                                 dtype=np.uint64).reshape(N_TM,2)
 
     def __repr__(self):
         return "ssdaq.SSReadout({},\n{},\n{},\n{})".format(self.readout_timestamp,
