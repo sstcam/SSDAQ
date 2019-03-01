@@ -1,7 +1,7 @@
 import asyncio
 import struct
 import numpy as np
-from datetime import datetime
+from datetime import datetime,timedelta
 from ssdaq.core import ss_data_classes as dc
 
 READOUT_LENGTH = dc.N_TM_PIX*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
@@ -18,7 +18,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.packet_debug_stream = True
         else:
             self.packet_debug_stream = False
-        self.dt = datetime.timedelta(seconds=0.1)
+        self.dt = timedelta(seconds=0.1)
     def connection_made(self, transport):
         self.log.info('Connected to port')
         self.transport = transport
@@ -61,19 +61,19 @@ class SlowSignalDataProtocol(asyncio.Protocol):
 
 class PartialReadout:
     int_counter = 0
-    def __init__(self,tm_num,data):
+    def __init__(self,tm_num,data,cpu_t):
         self.data = [None]*dc.N_TM
         self.data[tm_num] = data
         self.timestamp =data[0]
-        self.cpu_timestamp = [data[3]]
+        self.cpu_timestamp = [cpu_t]
         self.tm_parts = [0]*dc.N_TM
         self.tm_parts[tm_num] = 1
         PartialReadout.int_counter += 1
         self.readout_number = PartialReadout.int_counter
-    def add_part(self, tm_num, data):
+    def add_part(self, tm_num, data,cpu_t):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
-        self.cpu_timestamp.append(data[3])
+        self.cpu_timestamp.append(cpu_t)
 
 from ssdaq import SSReadout
 
@@ -123,7 +123,7 @@ class SSReadoutAssembler:
 
         #buffers
         self.inter_buff = []
-        self.partial_ev_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
+        self.partial_ro_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
 
         self.publishers = publishers
         #Giving the readout loop to the publishers
@@ -214,60 +214,60 @@ class SSReadoutAssembler:
         self.log.info('Thrown away %d packets in buffer before start'%n_packets)
         self.log.info('Starting readout build loop')
         packet = await self.ss_data_protocol._buffer.get()
-        self.partial_ev_buff.append(PartialReadout(packet[0], packet[2]))
+        self.partial_ro_buff.append(PartialReadout(packet[0], packet[2], packet[3]))
         while(True):
             packet = await self.ss_data_protocol._buffer.get()
             #self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
-            pro = self.partial_ev_buff[-1]
+            pro = self.partial_ro_buff[-1]
             dt = (pro.timestamp - packet[1])
 
             if(abs(dt) < self.readout_tw  and pro.tm_parts[packet[0]] == 0):#
-                self.partial_ev_buff[-1].add_part(packet[0], packet[2])
+                self.partial_ro_buff[-1].add_part(packet[0], packet[2], packet[3])
                 #self.log.debug('Packet added to the tail of the buffer')
 
             elif(dt<0):
-                self.partial_ev_buff.append(PartialReadout(packet[0], packet[2]))
+                self.partial_ro_buff.append(PartialReadout(packet[0], packet[2], packet[3]))
                 #self.log.debug('Packet added to a new readout at the tail of the buffer')
 
             else:
-                if(self.partial_ev_buff[0].timestamp - packet[1]>0):
-                    self.partial_ev_buff.appendleft(PartialReadout(packet[0], packet[2]))
+                if(self.partial_ro_buff[0].timestamp - packet[1]>0):
+                    self.partial_ro_buff.appendleft(PartialReadout(packet[0], packet[2], packet[3]))
                     #self.log.debug('Packet added to a new readout at the head of the buffer')
                 else:
                     #self.log.debug('Finding right readout in buffer')
                     found = False
-                    for i in range(len(self.partial_ev_buff)-1,0,-1):
-                        pro = self.partial_ev_buff[i]
+                    for i in range(len(self.partial_ro_buff)-1,0,-1):
+                        pro = self.partial_ro_buff[i]
                         dt = (pro.timestamp - packet[1])
 
                         if(abs(dt)< self.readout_tw):#
                             if(pro.tm_parts[packet[0]]==1):
                                 self.log.warning('Doublette packet with timestamp %f and tm id %d with cpu timestamp %f'%(packet[1]*1e-9,packet[0],packet[2][33]*1e-9))
-                            self.partial_ev_buff[i].add_part(packet[0], packet[2])
+                            self.partial_ro_buff[i].add_part(packet[0], packet[2], packet[3])
                             #self.log.debug('Packet added to %d:th readout in buffer'%i)
                             found =True
                             break
                         elif(dt<0):
-                            self.partial_ev_buff.insert(i+1,PartialReadout(packet[0], packet[2]))
+                            self.partial_ro_buff.insert(i+1,PartialReadout(packet[0], packet[2], packet[3]))
                             found = True
                             break
 
                     if(not found):
                         self.log.warning('No partial readout found for packet with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
-                        self.log.info('Newest readout timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                        self.log.info('Next readout timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
-            if(abs(float(self.partial_ev_buff[-1].timestamp) - float(self.partial_ev_buff[0].timestamp))>(self.buffer_time)):
-                #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ev_buff[0].timestamp*1e-9,self.partial_ev_buff[-1].timestamp*1e-9))
-                readout = self.assemble_readout(self.partial_ev_buff.popleft())
+                        self.log.info('Newest readout timestamp %f'%(self.partial_ro_buff[-1].timestamp*1e-9))
+                        self.log.info('Next readout timestamp %f'%(self.partial_ro_buff[0].timestamp*1e-9))
+            if(abs(float(self.partial_ro_buff[-1].timestamp) - float(self.partial_ro_buff[0].timestamp))>(self.buffer_time)):
+                #self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ro_buff[0].timestamp*1e-9,self.partial_ro_buff[-1].timestamp*1e-9))
+                readout = self.assemble_readout(self.partial_ro_buff.popleft())
                 if(self.nconstructed_readouts%10==0):
-                    # for d in self.partial_ev_buff:
+                    # for d in self.partial_ro_buff:
                         # print(d.timestamp*1e-9,d.timestamp,d.readout_number, d.tm_parts)
                     self.log.info('Built readout %d'%self.nconstructed_readouts)
-                    self.log.info('Newest readout timestamp %f'%(self.partial_ev_buff[-1].timestamp*1e-9))
-                    self.log.info('Next readout timestamp %f'%(self.partial_ev_buff[0].timestamp*1e-9))
-                    self.log.info('Last timestamp dt %f'%((self.partial_ev_buff[-1].timestamp - self.partial_ev_buff[0].timestamp)*1e-9))
-                    self.log.info('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
-                    self.log.info('Buffer lenght %d'%(len(self.partial_ev_buff)))
+                    self.log.info('Newest readout timestamp %f'%(self.partial_ro_buff[-1].timestamp*1e-9))
+                    self.log.info('Next readout timestamp %f'%(self.partial_ro_buff[0].timestamp*1e-9))
+                    self.log.info('Last timestamp dt %f'%((self.partial_ro_buff[-1].timestamp - self.partial_ro_buff[0].timestamp)*1e-9))
+                    # self.log.info('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
+                    self.log.info('Buffer lenght %d'%(len(self.partial_ro_buff)))
                 #self.log.debug('Built readout %d'%self.nconstructed_readouts)
                 if(self.publish_readouts):
                     for pub in self.publishers:
@@ -275,7 +275,7 @@ class SSReadoutAssembler:
 
     def assemble_readout(self,pro):
         #construct readout
-        readout = SSReadout(int(pro.timestamp),self.readout_count)
+        readout = SSReadout(int(pro.timestamp),self.readout_count,np.min(pro.cpu_timestamp) )
         for i,tmp_data in enumerate(pro.data):
             if(tmp_data == None):
                 continue
@@ -283,7 +283,7 @@ class SSReadoutAssembler:
                 self.readout_counter[i] += 1
             else:
                 self.readout_counter[i] = 1
-            #put data into a temporary array of uint typro
+            #put data into a temporary array of uint type
             tmp_array = np.empty(dc.N_TM_PIX,dtype=np.uint64)
             tmp_array[:dc.N_TM] = tmp_data[1:dc.N_TM+1]
             tmp_array[dc.N_TM:] = tmp_data[dc.N_TM+2:]
@@ -293,9 +293,7 @@ class SSReadoutAssembler:
             tmp_array[m] += 0x8000
             tmp_array[~m] = tmp_array[~m]&0x7FFF
             readout.data[i] = tmp_array* 0.03815*2.
-            #get the readout time stamps for the primary and aux
-            readout.timestamps[i][0]=tmp_data[0]
-            readout.timestamps[i][1]=tmp_data[dc.N_TM+1]
+
         self.nconstructed_readouts += 1
         self.readout_count += 1
         return readout

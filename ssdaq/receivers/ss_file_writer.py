@@ -61,7 +61,7 @@ class SSFileWriter(Thread):
                 continue
             #Start a new file if we get
             #an readout with readout number 1
-            if(readout.readout_number==1 and self.readout_counter>0):
+            if(readout.iro==1 and self.readout_counter>0):
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()

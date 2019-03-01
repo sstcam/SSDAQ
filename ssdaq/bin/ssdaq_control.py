@@ -125,9 +125,9 @@ def dw(ctx,filename_prefix,output_folder,daemon,config):
     config = ctx.obj['CONFIG']
 
     if(filename_prefix):
-        config['file_prefix'] = filename_prefix
+        config["SSFileWriter"]['file_prefix'] = filename_prefix
     if(output_folder):
-        config['folder'] = output_folder
+        config["SSFileWriter"]['folder'] = output_folder
     readout_writer = ReadoutFileWriterDaemonWrapper(**config['ReadoutFileWriterDaemon'],**config["SSFileWriter"])
     readout_writer.start(daemon)
 
