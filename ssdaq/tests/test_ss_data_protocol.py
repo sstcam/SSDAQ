@@ -2,7 +2,7 @@ import pytest
 from ssdaq.core.ss_readout_assembler import SlowSignalDataProtocol
 import numpy as np
 from unittest.mock import Mock
-
+import datetime
 
 @pytest.fixture
 def mock_data_protocol():
@@ -50,4 +50,8 @@ def test_correct_cpu_timestamps(mock_data_protocol,make_datapacket):
     for ro in ros:
         cpu_times.append(ro[3])
     dt = np.diff(cpu_times)
-    assert np.all( (dt>.0999) & (dt<0.100001)), 'Correct cpu times'
+    bin_length = datetime.timedelta(seconds=0.1)
+    dt -=bin_length
+    helper = np.vectorize(lambda x: x.total_seconds())
+    dt = helper(dt)
+    assert np.all( np.abs(dt)<.0001 ), 'Correct cpu times'

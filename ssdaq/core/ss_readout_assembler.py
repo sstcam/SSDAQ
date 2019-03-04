@@ -48,7 +48,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         #self.log.debug("Got data from %s assigned to module %d"%(str(ip),module_nr))
         for i in range(nreadouts):
             unpacked_data = struct.unpack_from('>Q32HQ32H',data,i*(READOUT_LENGTH))
-            self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data,cpu_time.timestamp())))
+            self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data,cpu_time)))
             cpu_time += self.dt
 
             if(self.packet_debug_stream):
@@ -65,7 +65,7 @@ class PartialReadout:
         self.data = [None]*dc.N_TM
         self.data[tm_num] = data
         self.timestamp =data[0]
-        self.cpu_timestamp = [cpu_t]
+        self.cpu_time = [cpu_t]
         self.tm_parts = [0]*dc.N_TM
         self.tm_parts[tm_num] = 1
         PartialReadout.int_counter += 1
@@ -73,7 +73,7 @@ class PartialReadout:
     def add_part(self, tm_num, data,cpu_t):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
-        self.cpu_timestamp.append(cpu_t)
+        self.cpu_time.append(cpu_t)
 
 from ssdaq import SSReadout
 
@@ -275,7 +275,8 @@ class SSReadoutAssembler:
 
     def assemble_readout(self,pro):
         #construct readout
-        readout = SSReadout(int(pro.timestamp),self.readout_count,np.min(pro.cpu_timestamp) )
+        r_cpu_time = np.min(pro.cpu_time)
+        readout = SSReadout(int(pro.timestamp),self.readout_count, np.min(pro.cpu_time))
         for i,tmp_data in enumerate(pro.data):
             if(tmp_data == None):
                 continue
@@ -338,7 +339,7 @@ class ZMQReadoutPublisher():
         if(mode == 'outbound' or mode == 'remote'):
             self.sock.connect(con_str)
 
-        if(logger==None):
+        if(logger is None):
             self.log = logging.getLogger('ssdaq.%s'%name)
         else:
             self.log = logger.getChild(name)

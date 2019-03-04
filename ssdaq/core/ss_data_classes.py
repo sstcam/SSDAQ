@@ -1,14 +1,18 @@
+from datetime import datetime
 import numpy as np
 import tables
 from tables import IsDescription,UInt64Col,Float32Col,Float64Col
 import struct
+from collections import namedtuple as _nt
+
+from ssdaq.version import get_version
 
 N_TM =32 #Number of target modules in camera
 N_TM_PIX = 64 #Number of pixels on a Target Module
 N_BYTES_NUM = 8 #Number of bytes to encode numbers (uint and float) in the SSReadout
 N_CAM_PIX = N_TM*N_TM_PIX #Number of pixels in the camera
 
-from collections import namedtuple as _nt
+
 
 _SSMappings = _nt('SSMappings','ssl2colrow ssl2asic_ch')
 ss_mappings = _SSMappings(np.array([ 8,  1,  5,  6, 41, 43, 51, 47, 11, 14, 13,  7, 44, 36, 42, 46, 12,
@@ -27,12 +31,13 @@ class SSReadout(object):
     """
 
 
-    def __init__(self, timestamp=0, readout_number = 0, cpu_t = 0, data=None):
+    def __init__(self, timestamp=0, readout_number = 0, cpu_t_s = 0, cpu_t_ns = 0, data=None):
 
         self.iro = readout_number
         self.time = timestamp
         self.data =  np.full((N_TM,N_TM_PIX),np.nan) if data is None else data
-        self.cpu_t = cpu_t
+        self.cpu_t_s = cpu_t_s
+        self.cpu_t_ns = cpu_t_ns
 
     def pack(self):
         '''
@@ -46,10 +51,11 @@ class SSReadout(object):
 
             returns bytearray
         '''
-        d_stream = bytearray(struct.pack('2Qd',
+        d_stream = bytearray(struct.pack('4Q',
                             self.iro,
                             self.time,
-                            self.cpu_t))
+                            self.cpu_t_s,
+                            self.cpu_t_ns,))
 
         d_stream.extend(self.data.tobytes())
         return d_stream
@@ -59,14 +65,15 @@ class SSReadout(object):
         '''
         Unpack a bytestream into an readout
         '''
-        self.iro,self.time,self.cpu_t = struct.unpack_from('2Qd',byte_stream,0)
-        self.data = np.frombuffer(byte_stream[N_BYTES_NUM*3 : N_BYTES_NUM*(3+N_CAM_PIX)],
+        self.iro,self.time,self.cpu_t_s,self.cpu_t_ns = struct.unpack_from('4Q',byte_stream,0)
+        self.data = np.frombuffer(byte_stream[N_BYTES_NUM*4 : N_BYTES_NUM*(4+N_CAM_PIX)],
                                     dtype=np.float64).reshape(N_TM, N_TM_PIX)
 
     def __repr__(self):
-        return "ssdaq.SSReadout({},\n{},\n{},\n{})".format(self.time,
+        return "ssdaq.SSReadout({},\n{},\n{},\n{},\n{})".format(self.time,
                                                     self.iro,
-                                                    self.cpu_t,
+                                                    self.cpu_t_s,
+                                                    self.cpu_t_ns,
                                                     repr(self.data))
     def __str__(self):
         return "SSReadout:\n    Readout number: {}\n    Timestamp:    {}\n    CPU Timestamp:    {}\n    data: {}".format(self.iro,
@@ -79,19 +86,32 @@ class SSReadout(object):
     def _get_colrow_mapped(self):
         return self.data[:,ss_mappings.ssl2colrow]
 
+    @property
+    def cpu_t(self):
+        return float(self.cpu_t_s)+self.cpu_t_ns*1e-9
+
     asic_mapped_data = property(lambda self: self._get_asic_mapped())
     colrow_mapped_data = property(lambda self: self._get_colrow_mapped())
 
-class SSReadoutTableDs(IsDescription):
+class TelData(IsDescription):
+    db_t    = Float64Col()
+    db_t_s  = UInt64Col()
+    db_t_ns = UInt64Col()
+    ra      = Float64Col()
+    dec     = Float64Col()
 
-    iro   = UInt64Col()
-    time  = UInt64Col()
-    cpu_t = Float64Col()
-    data  = Float32Col((N_TM,N_TM_PIX))
+class SSReadoutTableDs(IsDescription):
+    iro      = UInt64Col()#readout numner/index
+    time     = UInt64Col()#TACK timestamp
+    cpu_t    = Float64Col()#native python timestamp float64
+    cpu_t_s  = UInt64Col()#seconds time stamp uint64
+    cpu_t_ns = UInt64Col()#nano seconds time stamp uint64
+    data     = Float32Col((N_TM,N_TM_PIX))#2D data array containing
+
 
 class SSDataWriter(object):
     """A writer for Slow Signal data"""
-    def __init__(self,filename, attrs = None,filters = None,buffer=1):
+    def __init__(self,filename, attrs = None,filters = None,buffer=1,tel_table = True):
 
         self.filename = filename
         filters = filters if filters != None else tables.Filters(complevel=9,
@@ -103,6 +123,10 @@ class SSDataWriter(object):
                                      filters=filters)
         self.group = self.file.create_group(self.file.root, 'SlowSignal', 'Slow signal data')
         self.table = self.file.create_table(self.group, 'readout', SSReadoutTableDs, "Slow signal readout")
+        self.tel_table = None
+        if(tel_table):
+            self.tel_table = self.file.create_table(self.group, 'tel_table', TelData, "Telescope data")
+            self.tel_row = self.tel_table.row
         self.ro_row = self.table.row
         self.readout_counter = 0
         self.buffer = buffer
@@ -111,12 +135,25 @@ class SSDataWriter(object):
             for k,v in attrs.items():
                 self.table.attrs[k] = v
         self.table.attrs['ss_data_version'] = 0
+        self.table.attrs['ssdaq_version'] = get_version(pep440=True)
+
+    def write_tel_data(self,ra,dec,time,seconds,ns):
+        self.tel_row['db_t'] = time
+        self.tel_row['db_t_s'] = seconds
+        self.tel_row['db_t_ns'] = ns
+        self.tel_row['ra'] = ra
+        self.tel_row['dec'] = dec
+        self.tel_row.append()
+        self.tel_table.flush()
+
 
     def write_readout(self, ro):
 
         self.ro_row['iro'] = ro.iro
         self.ro_row['time'] = ro.time
         self.ro_row['cpu_t'] = ro.cpu_t
+        self.ro_row['cpu_t_s'] = ro.cpu_t_s
+        self.ro_row['cpu_t_ns'] = ro.cpu_t_ns
         self.ro_row['data'] = np.asarray(ro.data, dtype=np.float32)
 
         self.ro_row.append()
@@ -174,6 +211,30 @@ class SSDataReader(object):
         else:
             self._read = self._readversions[self.attrs.ss_data_version]
 
+    def __iter__(self,start=None,stop=None,step=None):
+        return read(start,stop,step)
+
+    def __getitem__(self, iro):
+
+        if isinstance(iro, slice):
+            ro_list = [self[ii] for ii in range(*iro.indices(self.n_readouts))]
+            return np.array(ro_list)
+        elif isinstance(iro, list):
+            ro_list = [self[ii] for ii in iro]
+            return np.array(ro_list)
+        elif isinstance(iro, int):
+            if iro < 0:
+                iro += self.n_events
+            if iro < 0 or iro >= len(self):
+                raise IndexError("The requested event ({}) is out of range"
+                                 .format(iro))
+            return np.copy(self.read(iro).__next__())
+        else:
+            raise TypeError("Invalid argument type")
+
+    def __len__(self):
+        return self.n_readouts
+
     def read(self,start=None,stop=None,step=None):
         ''' A data file iterator for reading data rows.
 
@@ -195,6 +256,8 @@ class SSDataReader(object):
             self.iro = r['iro']
             self.time = r['time']
             self.cpu_t = r['cpu_t']
+            self.cpu_t_s = r['cpu_t_s']
+            self.cpu_t_ns = r['cpu_t_ns']
             yield self.data
 
     @property
@@ -251,6 +314,27 @@ class SSDataReader(object):
         ssdata = _nt('ssdata','iro amps time cpu_t tm')
         return ssdata(iro,amps,time,cpu_t,tm)
 
+    def load_as_pd_table(self):
+        import pandas as pd
+        # cl
+        # df = pd.DataFrame(columns=["iro", "time",'cpu_t','pix','amp'])
+        data = []
+        for r in self.read():
+            amps = self.data.flatten()
+            for i in range(2048):
+                data.append({"iro":self.iro,
+                            "time":self.time,
+                            "cpu_t":self.cpu_t,
+                            "pix":i,
+                            "amp":amps[i]
+                            })
+        df = pd.DataFrame(data)
+        df.set_index(['iro','pix'],inplace=True)#
+        return df
+# df = df.append({
+#      "firstname": "John",
+#      "lastname":  "Johny"
+      # }, ignore_index=True)
 
     def __repr__(self):
         return repr(self.file)
