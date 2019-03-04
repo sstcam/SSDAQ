@@ -46,7 +46,8 @@ class SSReadout(object):
             The readout is packed using the folowing format:
                 8       bytes encoding the readout number (uint64)
                 8       bytes encoding the readout timestamp (TACK) (uint64)
-                8       bytes encoding the readout cpu timestamp (float64)
+                8       bytes encoding the readout cpu timestamp seconds (uint64)
+                8       bytes encoding the readout cpu timestamp nanoseconds (uint64)
                 2048x8  bytes encoding the 2D readout data using 'C' order (float64)
 
             returns bytearray
@@ -316,8 +317,6 @@ class SSDataReader(object):
 
     def load_as_pd_table(self):
         import pandas as pd
-        # cl
-        # df = pd.DataFrame(columns=["iro", "time",'cpu_t','pix','amp'])
         data = []
         for r in self.read():
             amps = self.data.flatten()
@@ -331,10 +330,7 @@ class SSDataReader(object):
         df = pd.DataFrame(data)
         df.set_index(['iro','pix'],inplace=True)#
         return df
-# df = df.append({
-#      "firstname": "John",
-#      "lastname":  "Johny"
-      # }, ignore_index=True)
+
 
     def __repr__(self):
         return repr(self.file)
