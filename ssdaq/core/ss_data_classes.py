@@ -125,9 +125,13 @@ class SSDataWriter(object):
         self.group = self.file.create_group(self.file.root, 'SlowSignal', 'Slow signal data')
         self.table = self.file.create_table(self.group, 'readout', SSReadoutTableDs, "Slow signal readout")
         self.tel_table = None
+        self.tables = [self.table]
+
         if(tel_table):
             self.tel_table = self.file.create_table(self.group, 'tel_table', TelData, "Telescope data")
             self.tel_row = self.tel_table.row
+            self.tables.append(self.tel_table)
+
         self.ro_row = self.table.row
         self.readout_counter = 0
         self.buffer = buffer
@@ -138,6 +142,7 @@ class SSDataWriter(object):
         self.table.attrs['ss_data_version'] = 0
         self.table.attrs['ssdaq_version'] = get_version(pep440=True)
 
+
     def write_tel_data(self,ra,dec,time,seconds,ns):
         self.tel_row['db_t'] = time
         self.tel_row['db_t_s'] = seconds
@@ -145,8 +150,6 @@ class SSDataWriter(object):
         self.tel_row['ra'] = ra
         self.tel_row['dec'] = dec
         self.tel_row.append()
-        self.tel_table.flush()
-
 
     def write_readout(self, ro):
 
@@ -160,10 +163,15 @@ class SSDataWriter(object):
         self.ro_row.append()
         self._cur_buf += 1
         if(self._cur_buf >= self.buffer):
-            self.table.flush()
+            self._flush()
             self._cur_buf = 0
 
         self.readout_counter += 1
+
+    def _flush(self):
+        for table in self.tables:
+            table.flush()
+
 
     def close_file(self):
         '''Closes file handle
