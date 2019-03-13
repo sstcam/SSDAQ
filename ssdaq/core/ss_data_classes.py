@@ -176,7 +176,7 @@ class SSDataWriter(object):
     def close_file(self):
         '''Closes file handle
         '''
-        self.table.flush()
+        self._flush()
         self.file.close()
 
 
