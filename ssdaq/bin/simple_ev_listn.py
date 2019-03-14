@@ -1,11 +1,13 @@
 from ssdaq import SSReadoutListener
 from ssdaq.utils import common_args as cargs
+from ssdaq import sslogger
+import logging
 import numpy as np
 
 import argparse
 
 import signal
-
+from datetime import datetime
 def main():
 
     parser = argparse.ArgumentParser(description='Start a simple Slow Signal readout listener.',
@@ -44,15 +46,15 @@ def main():
             break
         # if(n>0):
         #     print('\033[7   A ')
-        print("Readout number %d"%(readout.readout_number))
-        print("Timestamp %d ns"%(readout.readout_timestamp))
-        print("Timestamp %f s"%(readout.readout_timestamp*1e-9))
-        m = readout.timestamps[:,0]>0
-        print(np.sum(m))
-        print(np.where(m)[0])
-        n_modules_per_readout.append(np.sum(m))
-        readout_counter[m] += 1
-        m = readout_counter>0
+        print("Readout number %d"%(readout.iro))
+        print("Timestamp %d ns"%(readout.time))
+        print("Timestamp %f s"%(readout.time*1e-9))
+        print("Cpu timestamp {}".format(datetime.utcfromtimestamp(readout.cpu_t)))
+        print("Cpu timestamp {}".format(readout.cpu_t))
+        # print(np.where(m)[0])
+        # n_modules_per_readout.append(np.sum(m))
+        # readout_counter[m] += 1
+        # m = readout_counter>0
 
         if(args.tm_numb):
             print(readout.data[args.tm_numb])

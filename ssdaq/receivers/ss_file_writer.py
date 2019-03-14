@@ -27,7 +27,7 @@ class SSFileWriter(Thread):
         from datetime import datetime
         self.file_readout_counter = 0
         if(self.file_enumerator == 'date'):
-            suffix = datetime.utcnow().strftime("%Y-%m-%d.%H:%M")
+            suffix = datetime.utcnow().strftime("%Y-%m-%d_%H.%M")
         elif(self.file_enumerator == 'order'):
             suffix = '%0.3d'%self.file_counter
         else:
@@ -61,7 +61,7 @@ class SSFileWriter(Thread):
                 continue
             #Start a new file if we get
             #an readout with readout number 1
-            if(readout.readout_number==1 and self.readout_counter>0):
+            if(readout.iro==1 and self.readout_counter>0):
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()

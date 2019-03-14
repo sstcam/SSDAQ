@@ -51,7 +51,7 @@ class TMSimulator(object):
         self.npackets_c = 0
         self.data = np.random.uniform(0,400,64)
         self.sending_ss_data = True
-        self.dt = .3
+        self.dt = 1
         self.t_past = datetime.utcnow()
         self.t1 = datetime.utcnow()
         self.send_ss_datae = asyncio.Event()
@@ -61,7 +61,6 @@ class TMSimulator(object):
         self.server_port = server_port
         self.context = zmq.asyncio.Context()
         self.com_sock = self.context.socket(zmq.REP)
-        print()
         self.com_sock.bind("tcp://%s:%s"%('0.0.0.0',self.server_port))
 
         method_list = inspect.getmembers(self, predicate=inspect.ismethod)
