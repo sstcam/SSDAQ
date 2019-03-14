@@ -3,6 +3,7 @@ from ssdaq.core.ss_readout_assembler import SlowSignalDataProtocol
 import numpy as np
 from unittest.mock import Mock
 import datetime
+import struct
 
 @pytest.fixture
 def mock_data_protocol():
@@ -20,11 +21,12 @@ def mock_data_protocol():
     mock_dp.dt = datetime.timedelta(seconds=0.1)
     mock_dp.datagram_received = SlowSignalDataProtocol.datagram_received.__get__(mock_dp)
     mock_dp.packet_debug_stream= False
+    mock_dp.packet_format = struct.Struct('>Q32HQ32H')
     return mock_dp
 
 @pytest.fixture
 def make_datapacket():
-    import struct
+
     def _make_datapacket(n=10,stime=100):
         time = stime
         data_packet = bytearray()

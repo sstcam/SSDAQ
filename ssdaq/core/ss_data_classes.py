@@ -280,8 +280,8 @@ class SSDataReader(object):
                         data=self.raw_data,
                         cpu_t=self.cpu_t)
 
-    def load_all_data_tm(self,tm, calib=None, mapping=None):
-        '''Loads all rows of data for a particular target moduel into memory
+    def load_all_data(self,tm, calib=None, mapping=None):
+        '''Loads all rows of data for a particular target moduel into memory (in the future a selection of modules)
 
             Args:
                 tm (int):   The slot number of the target module

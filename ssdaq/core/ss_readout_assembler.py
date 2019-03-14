@@ -19,6 +19,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         else:
             self.packet_debug_stream = False
         self.dt = timedelta(seconds=0.1)
+        self.packet_format = struct.Struct('>Q32HQ32H')
     def connection_made(self, transport):
         self.log.info('Connected to port')
         self.transport = transport
@@ -47,7 +48,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
 
         #self.log.debug("Got data from %s assigned to module %d"%(str(ip),module_nr))
         for i in range(nreadouts):
-            unpacked_data = struct.unpack_from('>Q32HQ32H',data,i*(READOUT_LENGTH))
+            unpacked_data = self.packet_format.unpack_from(data,i*(READOUT_LENGTH))
             self.loop.create_task(self._buffer.put((module_nr,unpacked_data[0],unpacked_data,cpu_time)))
             cpu_time += self.dt
 
