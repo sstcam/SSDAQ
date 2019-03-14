@@ -2,7 +2,7 @@ import asyncio
 import struct
 import numpy as np
 from datetime import datetime,timedelta
-from ssdaq.core import ss_data_classes as dc
+from ssdaq.core import data_classes as dc
 
 READOUT_LENGTH = dc.N_TM_PIX*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 
