@@ -51,6 +51,8 @@ def main():
         print("Timestamp %f s"%(readout.time*1e-9))
         print("Cpu timestamp {}".format(datetime.utcfromtimestamp(readout.cpu_t)))
         print("Cpu timestamp {}".format(readout.cpu_t))
+        print("Cpu timestamp {}".format(readout.cpu_t_s))
+        print("Cpu timestamp {}".format(readout.cpu_t_ns))
         # print(np.where(m)[0])
         # n_modules_per_readout.append(np.sum(m))
         # readout_counter[m] += 1

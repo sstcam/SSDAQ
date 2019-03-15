@@ -2,7 +2,7 @@ import asyncio
 import struct
 import numpy as np
 from datetime import datetime,timedelta
-from ssdaq.core import data_classes as dc
+from . import data as dc
 
 READOUT_LENGTH = dc.N_TM_PIX*2+2*8 #64 2-byte channel amplitudes and 2 8-byte timestamps
 
@@ -129,7 +129,7 @@ class SSReadoutAssembler:
         self.publishers = publishers
         #Giving the readout loop to the publishers
         for p in self.publishers:
-            p.give_loop(self.loop)
+            p.set_loop(self.loop)
 
         #setting up communications socket
         self.context = zmq.asyncio.Context()
@@ -272,12 +272,14 @@ class SSReadoutAssembler:
                 #self.log.debug('Built readout %d'%self.nconstructed_readouts)
                 if(self.publish_readouts):
                     for pub in self.publishers:
-                        pub.publish(readout)
+                        pub.publish(readout.pack())
 
     def assemble_readout(self,pro):
         #construct readout
         r_cpu_time = np.min(pro.cpu_time)
-        readout = SSReadout(int(pro.timestamp),self.readout_count, np.min(pro.cpu_time))
+        cpu_time_s = int(r_cpu_time.timestamp())
+        cpu_time_ns = int((r_cpu_time.timestamp()-cpu_time_s)*1e9)
+        readout = SSReadout(int(pro.timestamp),self.readout_count, cpu_time_s,cpu_time_ns)
         for i,tmp_data in enumerate(pro.data):
             if(tmp_data == None):
                 continue
@@ -300,66 +302,17 @@ class SSReadoutAssembler:
         self.readout_count += 1
         return readout
 
-class ZMQReadoutPublisher():
-    ''' Slow signal readout publisher
 
-        Publishes readout on a TCP/IP socket using the zmq PUB-SUB protocol.
-
-        Args:
-            ip (str):   the name (ip) interface which the readouts are published on
-            port (int): the port number of the interface which the readouts are published on
-        Kwargs:
-            name (str): The name of this instance (usefull for logging)
-            logger:     An instance of a logger to inherit from
-            mode (str): The mode of publishing. Possible modes ('local','outbound', 'remote')
-
-        The three different modes defines how the socket is setup for different use cases.
-
-            * 'local' this is the normal use case where readouts are published on localhost
-                and ip should be '127.x.x.x'
-            * 'outbound' is when the readouts are published on an outbound network interface of
-                the machine so that remote clients can connect to the machine to receive the readouts.
-                In this case ip is the ip address of the interface on which the readouts should be published
-            * 'remote' specifies that the given ip is of a remote machine to which the readouts should be sent to.
-
-
-    '''
-    def __init__(self,ip,port,name='ZMQReadoutPublisher',logger=None, mode = 'local'):
-        '''Slow signal readout publisher
-        '''
-
-        import zmq
-        import logging
-        self.context = zmq.Context()
-        self.sock = self.context.socket(zmq.PUB)
-        con_str = 'tcp://%s:'%ip+str(port)
-
-        if(mode == 'local' or mode == 'outbound'):
-            self.sock.bind(con_str)
-
-        if(mode == 'outbound' or mode == 'remote'):
-            self.sock.connect(con_str)
-
-        if(logger is None):
-            self.log = logging.getLogger('ssdaq.%s'%name)
-        else:
-            self.log = logger.getChild(name)
-        self.log.info('Initialized readout publisher with a %s connection on: %s'%(mode,con_str))
-
-    def give_loop(self,loop):
-        self.loop = loop
-
-    def publish(self,readout):
-        self.sock.send(readout.pack())
 
 if(__name__ == "__main__"):
     from ssdaq import sslogger
     import logging
     import os
     from subprocess import call
+    from ssdaq.core.publishers.zmq_tcp_publisher import ZMQTCPPublisher
     call(["taskset","-cp", "0,4","%s"%(str(os.getpid()))])
     sslogger.setLevel(logging.INFO)
-    zmq_pub = ZMQReadoutPublisher('127.0.0.101',5555)
+    zmq_pub = ZMQTCPPublisher('127.0.0.101',5555)
     ro_assembler = SSReadoutAssembler(publishers= [zmq_pub])
     ro_assembler.run()
 

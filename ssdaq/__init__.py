@@ -2,9 +2,11 @@ import logging as _logging
 from . import version
 __version__ = version.get_version(pep440=False)
 
-from .core.data_classes import SSReadout,SSDataReader, SSDataWriter
-from .core.readout_assembler import SSReadoutAssembler, ZMQReadoutPublisher
-from .core.readout_listener import SSReadoutListener
+from .core.slowsignal.data import SSReadout
+from .core.io.slowsignal_io import SSDataReader, SSDataWriter
+from .core.slowsignal.readout_assembler import SSReadoutAssembler
+from .core.publishers import ZMQTCPPublisher
+from .receivers.slowsignal import SSReadoutListener, SSFileWriter
 
 #This is the root logger for the core modules
 sslogger = _logging.getLogger(__name__)

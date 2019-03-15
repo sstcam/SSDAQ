@@ -1,4 +1,4 @@
-from ssdaq import SSReadoutAssembler,ZMQReadoutPublisher
+from ssdaq import SSReadoutAssembler,ZMQTCPPublisher
 from ssdaq.utils import daemon
 import ssdaq
 
@@ -23,8 +23,8 @@ class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
             i = 1
             for eptype,epconf in self.kwargs['ReadoutPublishers'].items():
                 if('name' not in epconf):
-                    epconf['name'] = eptype#'ZMQReadoutPublisher%d'%i
-                eps.append(ZMQReadoutPublisher(**epconf))
+                    epconf['name'] = eptype#'ZMQTCPPublisher%d'%i
+                eps.append(ZMQTCPPublisher(**epconf))
                 i+=1
             roa = SSReadoutAssembler(publishers = eps, **self.kwargs['SSReadoutAssembler'])
             roa.run()
@@ -35,7 +35,7 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         daemon.Daemon.__init__(self, '/tmp/ssdaq_writer_daemon.pid', stdout=stdout, stderr=stderr)
         self.kwargs = kwargs
     def run(self):
-        from ssdaq.receivers import SSFileWriter
+        from ssdaq.receivers.slowsignal import SSFileWriter
         import signal
         import sys
 

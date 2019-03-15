@@ -1,8 +1,9 @@
-from ssdaq.receivers import SSFileWriter
+from ssdaq.receivers.slowsignal import SSFileWriter
+from ssdaq.utils import common_args as cargs
 
 def main():
     import argparse
-    from ssdaq.utils import common_args as cargs
+
 
     parser = argparse.ArgumentParser(description='Start a simple event data writer.',
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
