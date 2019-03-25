@@ -18,9 +18,9 @@ class RawWriter(Publisher):
         self.file.write(packet)
 
 class ZMQTCPPublisher(Publisher):
-    ''' Slow signal readout publisher
+    ''' A generic zmq tcp publisher
 
-        Publishes readout on a TCP/IP socket using the zmq PUB-SUB protocol.
+        Publishes on a TCP/IP socket using the zmq PUB-SUB protocol.
 
         Args:
             ip (str):   the name (ip) interface which the readouts are published on

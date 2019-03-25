@@ -23,10 +23,9 @@ class SSReadoutTableDs(IsDescription):
     cpu_t_ns = UInt64Col()#nano seconds time stamp uint64
     data     = Float32Col((N_TM,N_TM_PIX))#2D data array containing
 
-
 class SSDataWriter(object):
     """A writer for Slow Signal data"""
-    def __init__(self,filename, attrs = None,filters = None,buffer=1,tel_table = True):
+    def __init__(self,filename:str, attrs:dict = None,filters:tables.Filters = None,buffer:int=1,tel_table = True):
 
         self.filename = filename
         filters = filters if filters != None else tables.Filters(complevel=9,

@@ -106,9 +106,9 @@ class SSFileWriter(Thread):
     A data file writer for slow signal data.
 
     This class uses a instance of a SSReadoutListener to receive readouts and
-    an instance of SSDataWriter to write a HDF5 file to disk.
+    an instance of SSDataWriter to write an HDF5 file to disk.
     """
-    def __init__(self, file_prefix,ip,port, folder='',file_enumerator=None,**kwargs):
+    def __init__(self, file_prefix:str,ip:str,port:int, folder:str='',file_enumerator:str=None,):
         from ssdaq import sslogger
         import logging
         Thread.__init__(self)

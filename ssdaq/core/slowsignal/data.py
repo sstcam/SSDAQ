@@ -31,7 +31,7 @@ class SSReadout(object):
     """
 
 
-    def __init__(self, timestamp=0, readout_number = 0, cpu_t_s = 0, cpu_t_ns = 0, data=None):
+    def __init__(self, timestamp:int=0, readout_number:int = 0, cpu_t_s:int = 0, cpu_t_ns:int = 0, data:np.array=None):
 
         self.iro = readout_number
         self.time = timestamp

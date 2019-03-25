@@ -84,14 +84,14 @@ class SSReadoutAssembler:
     slow signal readouts from data packets recieved from
     Target Modules.
     """
-    def __init__(self, relaxed_ip_range=False,
-                       readout_tw = 0.0001*1e9,
-                       listen_ip = '0.0.0.0',
-                       listen_port = 2009,
-                       buffer_length = 1000,
-                       buffer_time = 10*1e9,
-                       publishers = [],
-                       packet_debug_stream_file = None):
+    def __init__(self, relaxed_ip_range:bool=False,
+                       readout_tw:float = 0.0001*1e9,
+                       listen_ip:str = '0.0.0.0',
+                       listen_port:int = 2009,
+                       buffer_length:int = 1000,
+                       buffer_time:float = 10*1e9,
+                       publishers:list = [],
+                       packet_debug_stream_file:str = None):
         from ssdaq import sslogger
         import zmq
         import zmq.asyncio
