@@ -39,7 +39,7 @@ def main():
     print('Press `ctrl-C` to stop')
     while(True):
         try:
-            readout = ev_list.get_readout()
+            readout = ev_list.get_data()
         except KeyboardInterrupt:
             print("\nClosing listener")
             ev_list.close()

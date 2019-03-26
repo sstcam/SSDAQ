@@ -1,8 +1,8 @@
 import struct
 from collections import namedtuple
-from chec import checlogger
+from ssdaq import sslogger
 from bitarray import bitarray
-log = checlogger.getChild('trigger_data')
+log = sslogger.getChild('trigger_data')
 
 TriggerPacketHeader = struct.Struct('<H2B')
 

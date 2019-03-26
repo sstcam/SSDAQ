@@ -39,6 +39,12 @@ class SSReadout(object):
         self.cpu_t_s = cpu_t_s
         self.cpu_t_ns = cpu_t_ns
 
+    @classmethod
+    def from_bytes(cls,data):
+        inst = cls()
+        inst.unpack(data)
+        return inst
+
     def pack(self):
         '''
             Convinience method to pack the readout into a bytestream

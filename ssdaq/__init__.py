@@ -2,11 +2,7 @@ import logging as _logging
 from . import version
 __version__ = version.get_version(pep440=False)
 
-from .core.slowsignal.data import SSReadout
-from .core.io.slowsignal_io import SSDataReader, SSDataWriter
-from .core.slowsignal.readout_assembler import SSReadoutAssembler
-from .core.publishers import ZMQTCPPublisher
-from .receivers.slowsignal import SSReadoutListener, SSFileWriter
+
 
 #This is the root logger for the core modules
 sslogger = _logging.getLogger(__name__)
@@ -17,3 +13,11 @@ _handler = _logging.StreamHandler()
 _handler.setFormatter(_formatter)
 sslogger.addHandler(_handler)
 sslogger.setLevel(_logging.INFO)
+
+
+from .core.slowsignal.data import SSReadout
+from .core.io.slowsignal_io import SSDataReader, SSDataWriter
+from .core.slowsignal.readout_assembler import SSReadoutAssembler
+from .core.publishers import ZMQTCPPublisher
+from .receivers.basiclistener import BasicListener
+from .receivers.slowsignal import SSReadoutListener, SSFileWriter

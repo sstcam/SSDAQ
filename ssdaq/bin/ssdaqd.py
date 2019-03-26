@@ -3,7 +3,7 @@
 import sys
 import os
 def main():
-    from ssdaq import SSReadoutAssembler, ZMQReadoutPublisher
+    from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
     import time
     import argparse
     from ssdaq.utils import common_args as cargs
@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)"%args.verbose)
 
-    rop = ZMQReadoutPublisher(port=args.publishing_port,ip=args.publishing_interface)
+    rop = ZMQTCPPublisher(port=args.publishing_port,ip=args.publishing_interface)
     roa = SSReadoutAssembler(relaxed_ip_range=args.relaxed_ip, listen_ip = '0.0.0.0', listen_port = args.listen_port, publishers = [rop])
 
     roa.run()
