@@ -79,6 +79,7 @@ class SSDataWriter(object):
                 self.table.attrs[k] = v
         self.table.attrs["ss_data_version"] = 0
         self.table.attrs["ssdaq_version"] = get_version(pep440=True)
+        self.table.attrs["ssl2asic_ch"] = ss_mappings.ssl2asic_ch
 
     def write_tel_data(self, ra, dec, time, seconds, ns):
         self.tel_row["db_t"] = time
@@ -213,7 +214,7 @@ class SSDataReader(object):
         return SSReadout(self.time, self.iro, data=self.raw_data, cpu_t=self.cpu_t)
 
     def load_all_data(self, tm, calib=None, mapping=None):
-        """Loads all rows of data for a particular target moduel into memory (in the future a selection of modules)
+        """ Loads all rows of data for a particular target moduel into memory (in the future a selection of modules)
 
             Args:
                 tm (int):   The slot number of the target module
