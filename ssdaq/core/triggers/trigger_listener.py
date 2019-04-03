@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import zmq
 import zmq.asyncio
 from distutils.version import LooseVersion
-from chec import checlogger
+from ssdaq import sslogger
 
 if LooseVersion("17") > LooseVersion(zmq.__version__):
     zmq.asyncio.install()
@@ -29,13 +29,12 @@ class TriggerPacketProtocol(asyncio.Protocol):
 class TriggerPacketListener:
     def __init__(self, ip: str, port: int, publishers: list):
         self.loop = asyncio.get_event_loop()
-        self.log = checlogger.getChild("TriggerPacketListener")
+        self.log = sslogger.getChild("TriggerPacketListener")
         self.running = True
         self.publishers = publishers
         self.listen_addr = (ip, port)
         self.corrs = [self.relay()]
         self.loop = asyncio.get_event_loop()
-        # self.tpp = TriggerPacketProtocol(self.loop,self.log)
         for p in self.publishers:
             p.set_loop(self.loop)
 
