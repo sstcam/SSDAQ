@@ -1,6 +1,6 @@
 import unittest
 
-from ssdaq import SSReadout,SSReadoutAssembler#,SSReadoutlowSignalDataProtocol
+from ssdaq import SSReadout, SSReadoutAssembler  # ,SSReadoutlowSignalDataProtocol
 
 import socket
 from queue import Queue
@@ -74,5 +74,5 @@ import time
 
 #         sslogger.setLevel(logging.ERROR)
 
-if (__name__ == '__main__'):
-           unittest.main()
+if __name__ == "__main__":
+    unittest.main()

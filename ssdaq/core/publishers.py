@@ -2,23 +2,24 @@ class Publisher:
     def __init__(self):
         self.loop = None
 
-    def publish(self,packet):
+    def publish(self, packet):
         raise NotImplementedError
 
-    def set_loop(self,loop):
+    def set_loop(self, loop):
         self.loop = loop
 
 
 class RawWriter(Publisher):
-    def __init__(self,file_name):
+    def __init__(self, file_name):
         self.file_name = file_name
-        self.file = open('file_name','wb')
+        self.file = open("file_name", "wb")
 
-    def publish(self,packet):
+    def publish(self, packet):
         self.file.write(packet)
 
+
 class ZMQTCPPublisher(Publisher):
-    ''' A generic zmq tcp publisher
+    """ A generic zmq tcp publisher
 
         Publishes on a TCP/IP socket using the zmq PUB-SUB protocol.
 
@@ -40,29 +41,40 @@ class ZMQTCPPublisher(Publisher):
             * 'remote' specifies that the given ip is of a remote machine to which the readouts should be sent to.
 
 
-    '''
-    def __init__(self,ip:str,port:int,name:str='ZMQTCPPublisher',logger=None, mode:str = 'local'):
-        '''Slow signal readout publisher
-        '''
+    """
+
+    def __init__(
+        self,
+        ip: str,
+        port: int,
+        name: str = "ZMQTCPPublisher",
+        logger=None,
+        mode: str = "local",
+    ):
+        """Slow signal readout publisher
+        """
 
         import zmq
         import logging
+
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.PUB)
-        con_str = 'tcp://%s:'%ip+str(port)
+        con_str = "tcp://%s:" % ip + str(port)
 
-        if(mode == 'local' or mode == 'outbound'):
+        if mode == "local" or mode == "outbound":
             self.sock.bind(con_str)
 
-        if(mode == 'outbound' or mode == 'remote'):
+        if mode == "outbound" or mode == "remote":
             self.sock.connect(con_str)
 
-        if(logger is None):
-            self.log = logging.getLogger('ssdaq.%s'%name)
+        if logger is None:
+            self.log = logging.getLogger("ssdaq.%s" % name)
         else:
             self.log = logger.getChild(name)
-        self.log.info('Initialized readout publisher with a %s connection on: %s'%(mode,con_str))
+        self.log.info(
+            "Initialized readout publisher with a %s connection on: %s"
+            % (mode, con_str)
+        )
 
-
-    def publish(self,packet:bytes):
+    def publish(self, packet: bytes):
         self.sock.send(packet)
