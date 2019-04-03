@@ -4,11 +4,11 @@ from ssdaq import SSDataWriter
 from threading import Thread
 from ssdaq import sslogger
 
-from ssdaq import BasicListener
+from ssdaq import BasicSubscriber
 import logging
 
 
-class SSReadoutListener(BasicListener):
+class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(
             ip=ip, port=port, unpack=lambda data: SSReadout.from_bytes(data)
@@ -19,7 +19,7 @@ class SSFileWriter(Thread):
     """
     A data file writer for slow signal data.
 
-    This class uses a instance of a SSReadoutListener to receive readouts and
+    This class uses a instance of a SSReadoutSubscriber to receive readouts and
     an instance of SSDataWriter to write an HDF5 file to disk.
     """
 
@@ -37,8 +37,8 @@ class SSFileWriter(Thread):
         self.folder = folder
         self.file_prefix = file_prefix
         self.log = sslogger.getChild("SSFileWriter")
-        self._readout_listener = SSReadoutListener(
-            logger=self.log.getChild("Listener"), ip=ip, port=port
+        self._readout_subscriber = SSReadoutSubscriber(
+            logger=self.log.getChild("Subscriber"), ip=ip, port=port
         )
         self.running = False
         self.readout_counter = 0
@@ -78,15 +78,15 @@ class SSFileWriter(Thread):
 
     def close(self):
         self.running = False
-        self._readout_listener.close()
+        self._readout_subscriber.close()
         self.join()
 
     def run(self):
         self.log.info("Starting writer thread")
-        self._readout_listener.start()
+        self._readout_subscriber.start()
         self.running = True
         while self.running:
-            readout = self._readout_listener.get_readout()
+            readout = self._readout_subscriber.get_readout()
             if readout == None:
                 continue
             # Start a new file if we get
@@ -99,8 +99,8 @@ class SSFileWriter(Thread):
             self._writer.write_readout(readout)
             self.readout_counter += 1
 
-        self.log.info("Stopping listener thread")
-        self._readout_listener.close()
+        self.log.info("Stopping Subscriber thread")
+        self._readout_subscriber.close()
         self._close_file()
         self.log.info(
             "SSFileWriter has written a"

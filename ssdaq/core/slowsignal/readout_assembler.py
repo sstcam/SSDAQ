@@ -111,7 +111,7 @@ class SSReadoutAssembler:
         listen_port: int = 2009,
         buffer_length: int = 1000,
         buffer_time: float = 10 * 1e9,
-        publishers: list = [],
+        publishers: list = None if publishers is not None else [],
         packet_debug_stream_file: str = None,
     ):
         from ssdaq import sslogger
@@ -123,7 +123,7 @@ class SSReadoutAssembler:
             zmq.asyncio.install()
         import inspect
 
-        self.log = sslogger.getChild("SSReadoutBuilder")
+        self.log = sslogger.getChild("SSReadoutAssembler")
         self.relaxed_ip_range = relaxed_ip_range
 
         # settings
@@ -141,7 +141,7 @@ class SSReadoutAssembler:
         self.readout_counter = {}
 
         self.loop = asyncio.get_event_loop()
-        self.corrs = [self.builder(), self.handle_commands()]
+        self.corrs = [self.assembler(), self.handle_commands()]
 
         # controlers
         self.publish_readouts = True
@@ -150,7 +150,7 @@ class SSReadoutAssembler:
         self.inter_buff = []
         self.partial_ro_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
 
-        self.publishers = publishers
+        self.publishers = publishers if publishers is not None else []
         # Giving the readout loop to the publishers
         for p in self.publishers:
             p.set_loop(self.loop)
@@ -217,7 +217,7 @@ class SSReadoutAssembler:
 
     async def handle_commands(self):
         """
-        This is the server part of the readout builder that handles
+        This is the server part of the readout assembler that handles
         incomming control commands
         """
         while True:
@@ -231,7 +231,7 @@ class SSReadoutAssembler:
                 self.log.info("Incomming command `%s` not recognized")
             self.com_sock.send(reply)
 
-    async def builder(self):
+    async def assembler(self):
         n_packets = 0
         self.log.info("Empty socket buffer before starting readout building")
         packet = await self.ss_data_protocol._buffer.get()

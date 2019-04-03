@@ -18,5 +18,5 @@ from .core.slowsignal.data import SSReadout
 from .core.io.slowsignal_io import SSDataReader, SSDataWriter
 from .core.slowsignal.readout_assembler import SSReadoutAssembler
 from .core.publishers import ZMQTCPPublisher
-from .receivers.basiclistener import BasicListener
-from .receivers.slowsignal import SSReadoutListener, SSFileWriter
+from .subscribers.basicsubscriber import BasicSubscriber
+from .subscribers.slowsignal import SSReadoutSubscriber, SSFileWriter

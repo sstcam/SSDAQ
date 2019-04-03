@@ -4,9 +4,9 @@ from queue import Queue
 import logging
 
 
-class BasicListener(Thread):
-    """ A convinience class to subscribe to a published data stream.
-        datas are retrived by the `get_data()` method once the listener has been started by the
+class BasicSubscriber(Thread):
+    """ A convinience class to subscribe to a published data stream from a reciver.
+        Data are retrived by the `get_data()` method once the listener has been started by the
         `start()` method
 
         Args:
@@ -20,10 +20,10 @@ class BasicListener(Thread):
 
     def __init__(self, ip: str, port: int, unpack, logger: logging.Logger = None):
         Thread.__init__(self)
-        BasicListener.id_counter += 1
+        BasicSubscriber.id_counter += 1
         if logger == None:
             self.log = logging.getLogger(
-                "ssdaq.BasicListener%d" % BasicListener.id_counter
+                "ssdaq.BasicSubscriber%d" % BasicSubscriber.id_counter
             )
         else:
             self.log = logger
@@ -40,7 +40,7 @@ class BasicListener(Thread):
         self.running = False
         self._data_buffer = Queue()
 
-        self.id_counter = BasicListener.id_counter
+        self.id_counter = BasicSubscriber.id_counter
         self.inproc_sock_name = "SSdataListener%d" % (self.id_counter)
         self.close_sock = self.context.socket(zmq.PAIR)
         self.close_sock.bind("inproc://" + self.inproc_sock_name)
@@ -62,7 +62,7 @@ class BasicListener(Thread):
         self._data_buffer.join()
 
     def get_data(self, **kwargs):
-        """ Returns an SSdata instance from the published data stream.
+        """ Returns unpacked data from the published data stream.
             By default a blocking call. See python Queue docs.
 
             Kwargs:

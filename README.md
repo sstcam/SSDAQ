@@ -1,4 +1,4 @@
-# SSDAQ 
+# SSDAQ
 [![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
 
 
@@ -20,7 +20,7 @@ If you are developing it is recommendended to do
 
 `pip install -e .`
 
-instead and adding the `--user` option if not installing in a conda env. This lets changes made to the project automatically propagate to the isntall without the need to reinstall.
+instead and adding the `--user` option if not installing in a conda env. This lets changes made to the project automatically propagate to the install without the need to reinstall.
 
 #### Prerequisites
 

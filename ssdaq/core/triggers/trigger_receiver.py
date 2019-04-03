@@ -26,10 +26,10 @@ class TriggerPacketProtocol(asyncio.Protocol):
         self.buffer.put_nowait((data, addr))
 
 
-class TriggerPacketListener:
+class TriggerPacketReceiver:
     def __init__(self, ip: str, port: int, publishers: list):
         self.loop = asyncio.get_event_loop()
-        self.log = sslogger.getChild("TriggerPacketListener")
+        self.log = sslogger.getChild("TriggerPacketReceiver")
         self.running = True
         self.publishers = publishers
         self.listen_addr = (ip, port)
@@ -67,7 +67,7 @@ class TriggerPacketListener:
 if __name__ == "__main__":
     from ssdaq.core import publishers
 
-    trpl = TriggerPacketListener(
+    trpl = TriggerPacketReceiver(
         port=2009,
         ip="0.0.0.0",
         publishers=[publishers.ZMQTCPPublisher(ip="127.0.0.101", port=5555)],
