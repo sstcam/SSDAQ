@@ -2,7 +2,6 @@ from datetime import datetime
 import numpy as np
 import tables
 from tables import IsDescription, UInt64Col, Float32Col, Float64Col
-import struct
 from collections import namedtuple as _nt
 
 from ssdaq.version import get_version
@@ -258,7 +257,7 @@ class SSDataReader(object):
 
         data = []
         for r in self.read():
-            amps = self.data.flatten()
+            amps = r.flatten()#self.data.flatten()
             for i in range(2048):
                 data.append(
                     {

@@ -1,7 +1,6 @@
 import asyncio
 import struct
 import numpy as np
-from datetime import datetime, timedelta
 import zmq
 import zmq.asyncio
 from distutils.version import LooseVersion
@@ -22,7 +21,6 @@ class TriggerPacketProtocol(asyncio.Protocol):
         self.transport = transport
 
     def datagram_received(self, data, addr):
-        cpu_time = datetime.utcnow()
         self.buffer.put_nowait((data, addr))
 
 
