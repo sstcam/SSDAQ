@@ -1,4 +1,3 @@
-from datetime import datetime
 import numpy as np
 import tables
 from tables import IsDescription, UInt64Col, Float32Col, Float64Col

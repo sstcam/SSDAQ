@@ -1,6 +1,4 @@
 import asyncio
-import struct
-import numpy as np
 import zmq
 import zmq.asyncio
 from distutils.version import LooseVersion
@@ -45,6 +43,7 @@ class TriggerPacketReceiver:
 
         transport, protocol = self.loop.run_until_complete(listen)
         self.tpp = protocol
+        self.transport = transport
         self.ss_data_protocol = protocol
         self.log.info("Number of publishers registered %d" % len(self.publishers))
         for c in self.corrs:

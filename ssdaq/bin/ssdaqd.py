@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-
-
 def main():
     from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
-    import time
     import argparse
     from ssdaq.utils import common_args as cargs
 
@@ -57,7 +52,6 @@ def main():
     )
     cargs.version(parser)
     from ssdaq import sslogger
-    import logging
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
