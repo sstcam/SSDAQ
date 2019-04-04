@@ -53,7 +53,7 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         self.kwargs = kwargs
 
     def run(self):
-        from ssdaq.receivers.slowsignal import SSFileWriter
+        from ssdaq.subscribers.slowsignal import SSFileWriter
         import signal
         import sys
 

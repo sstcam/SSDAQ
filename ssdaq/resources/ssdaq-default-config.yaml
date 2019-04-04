@@ -4,6 +4,7 @@ SSFileWriter:
   folder: /tmp/
   ip: 127.0.0.101
   port: 5555
+  filesize_lim: 10
 
 ReadoutFileWriterDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)

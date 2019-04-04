@@ -6,7 +6,7 @@ from ssdaq import sslogger
 
 from ssdaq import BasicSubscriber
 import logging
-
+import os
 
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
@@ -30,6 +30,7 @@ class SSFileWriter(Thread):
         port: int,
         folder: str = "",
         file_enumerator: str = None,
+        filesize_lim: int = None
     ):
 
         Thread.__init__(self)
@@ -43,6 +44,7 @@ class SSFileWriter(Thread):
         self.running = False
         self.readout_counter = 0
         self.file_counter = 1
+        self.filesize_lim = filesize_lim*1024**2
         self._open_file()
 
     def _open_file(self):
@@ -62,7 +64,7 @@ class SSFileWriter(Thread):
         self.log.info("Opened new file, will write events to file: %s" % self.filename)
 
     def _close_file(self):
-        import os
+
         from ssdaq.utils.file_size import convert_size
 
         self.log.info("Closing file %s" % self.filename)
@@ -86,7 +88,7 @@ class SSFileWriter(Thread):
         self._readout_subscriber.start()
         self.running = True
         while self.running:
-            readout = self._readout_subscriber.get_readout()
+            readout = self._readout_subscriber.get_data()
             if readout == None:
                 continue
             # Start a new file if we get
@@ -95,6 +97,11 @@ class SSFileWriter(Thread):
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()
+            elif self.filesize_lim is not None:
+                if self.readout_counter%100 == 0 and os.stat(self.filename).st_size>self.filesize_lim:
+                    self._close_file()
+                    self.file_counter += 1
+                    self._open_file()
 
             self._writer.write_readout(readout)
             self.readout_counter += 1
