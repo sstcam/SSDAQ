@@ -8,6 +8,7 @@ from ssdaq import BasicSubscriber
 import logging
 import os
 
+
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(
@@ -30,7 +31,7 @@ class SSFileWriter(Thread):
         port: int,
         folder: str = "",
         file_enumerator: str = None,
-        filesize_lim: int = None
+        filesize_lim: int = None,
     ):
 
         Thread.__init__(self)
@@ -44,7 +45,7 @@ class SSFileWriter(Thread):
         self.running = False
         self.readout_counter = 0
         self.file_counter = 1
-        self.filesize_lim = filesize_lim*1024**2
+        self.filesize_lim = filesize_lim * 1024 ** 2
         self._open_file()
 
     def _open_file(self):
@@ -98,7 +99,10 @@ class SSFileWriter(Thread):
                 self.file_counter += 1
                 self._open_file()
             elif self.filesize_lim is not None:
-                if self.readout_counter%100 == 0 and os.stat(self.filename).st_size>self.filesize_lim:
+                if (
+                    self.readout_counter % 100 == 0
+                    and os.stat(self.filename).st_size > self.filesize_lim
+                ):
                     self._close_file()
                     self.file_counter += 1
                     self._open_file()

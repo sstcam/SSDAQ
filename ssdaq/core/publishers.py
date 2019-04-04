@@ -11,7 +11,7 @@ class Publisher:
 
 
 class RawWriter(Publisher):
-    def __init__(self, file_name,name='RawWriter'):
+    def __init__(self, file_name, name="RawWriter"):
         super().__init__(name)
         self.file_name = file_name
         self.file = open(self.file_name, "wb")

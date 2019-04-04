@@ -92,7 +92,6 @@ class BasicSubscriber(Thread):
 
             if self.sock in socks:
                 data = self.sock.recv()
-
                 self._data_buffer.put(self.unpack(data))
             else:
                 self.log.info("Stopping")

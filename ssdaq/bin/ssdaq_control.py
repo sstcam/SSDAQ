@@ -3,6 +3,7 @@ from ssdaq.utils import daemon
 import ssdaq
 from ssdaq.core import publishers
 
+
 class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
     def __init__(
         self,
@@ -36,8 +37,8 @@ class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
         i = 1
         for epname, epconf in self.kwargs["Publishers"].items():
             epconf["name"] = epname
-            pubclass = getattr(publishers, epconf['class'])
-            del epconf['class']
+            pubclass = getattr(publishers, epconf["class"])
+            del epconf["class"]
             eps.append(pubclass(**epconf))
             i += 1
         roa = SSReadoutAssembler(publishers=eps, **self.kwargs["SSReadoutAssembler"])
