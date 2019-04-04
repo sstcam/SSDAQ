@@ -29,11 +29,11 @@ ReadoutAssembler:
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
       ip: 127.0.0.101
       port: 5555
-    Dumper: #name
-      class: RawWriter #class
-      file_name: 'bindump.dat'
-
-    # ZMQReadoutPublisherOutbound:
+    # Dumper: #name
+    #   class: RawWriter #class
+    #   file_name: 'bindump.dat'
+    # ZMQReadoutPublisherOutbound: #name
+    #   class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
     #   ip: 141.34.29.161
     #   port: 9999
     #   mode: outbound
