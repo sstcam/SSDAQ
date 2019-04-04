@@ -257,7 +257,7 @@ class SSDataReader(object):
 
         data = []
         for r in self.read():
-            amps = r.flatten()#self.data.flatten()
+            amps = r.flatten()  # self.data.flatten()
             for i in range(2048):
                 data.append(
                     {

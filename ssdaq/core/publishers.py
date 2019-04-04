@@ -1,5 +1,6 @@
 class Publisher:
-    def __init__(self):
+    def __init__(self, name: str):
+        self.name = name
         self.loop = None
 
     def publish(self, packet):
@@ -10,9 +11,10 @@ class Publisher:
 
 
 class RawWriter(Publisher):
-    def __init__(self, file_name):
+    def __init__(self, file_name,name='RawWriter'):
+        super().__init__(name)
         self.file_name = file_name
-        self.file = open("file_name", "wb")
+        self.file = open(self.file_name, "wb")
 
     def publish(self, packet):
         self.file.write(packet)
@@ -54,6 +56,7 @@ class ZMQTCPPublisher(Publisher):
         """Slow signal readout publisher
         """
 
+        super().__init__(name)
         import zmq
         import logging
 

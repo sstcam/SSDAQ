@@ -111,7 +111,7 @@ class SSReadoutAssembler:
         listen_port: int = 2009,
         buffer_length: int = 1000,
         buffer_time: float = 10 * 1e9,
-        publishers: list = None if publishers is not None else [],
+        publishers: list = None,
         packet_debug_stream_file: str = None,
     ):
         from ssdaq import sslogger
