@@ -6,7 +6,7 @@ from ssdaq import sslogger
 
 from ssdaq import BasicSubscriber
 import logging
-
+import os
 
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
@@ -48,7 +48,6 @@ class SSFileWriter(Thread):
         self._open_file()
 
     def _open_file(self):
-        import os
         from datetime import datetime
 
         self.file_readout_counter = 0
