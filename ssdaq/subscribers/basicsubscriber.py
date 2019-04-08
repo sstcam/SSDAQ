@@ -103,9 +103,9 @@ class BasicSubscriber(Thread):
 from ssdaq.core.triggers import data as tdata
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
-        super().__init__(ip=ip, port=port, unpack=data.TriggerPacketData.unpack)
+        super().__init__(ip=ip, port=port, unpack=tdata.TriggerPacketData.unpack)
 
 import pickle
-class BasicLogSubsrciber(BasicSubscriber):
+class BasicLogSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=pickle.loads)
