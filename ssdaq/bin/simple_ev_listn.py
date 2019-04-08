@@ -18,11 +18,7 @@ def main():
     )
 
     parser.add_argument(
-        "-l",
-        dest="listen_port",
-        type=int,
-        default=5555,
-        help="Subscription port",
+        "-l", dest="listen_port", type=int, default=5555, help="Subscription port"
     )
     parser.add_argument(
         "-i",

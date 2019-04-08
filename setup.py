@@ -51,6 +51,7 @@ setup(
             "ssdatawriter = ssdaq.bin.ssdatawriter:main",
             "ss-example-listener = ssdaq.bin.simple_ev_listn:main",
             "control-ssdaq=ssdaq.bin.ssdaq_control:main",
+            "chec-triggsubsc=ssdaq.bin.basic_trigg_subscr:main",
         ]
     },
 )
