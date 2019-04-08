@@ -1,6 +1,5 @@
 import asyncio
 import pickle
-import struct
 import logging
 import logging.handlers
 from signal import SIGTERM, SIGQUIT, SIGINT
@@ -19,7 +18,6 @@ class LogReceiverProtocol(asyncio.Protocol):
         self.log.info("Connection from {}".format(self.peername))
 
     def data_received(self, data):
-        # print(struct.unpack('>L',data[:4]))
         record = logging.makeLogRecord(pickle.loads(data[4:]))
         self.loop.create_task(self.server.receive_log(record))
 
@@ -40,8 +38,6 @@ class LoggReceiver(ReceiverServer):
         )
 
     async def receive_log(self, record):
-        import pickle
-
         await self.publish(pickle.dumps(record))
 
 
