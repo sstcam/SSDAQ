@@ -10,6 +10,7 @@ install_requires = [
     "matplotlib",
     "pyyaml",
     "click",
+    "bitarray"
 ]
 
 #

@@ -34,7 +34,7 @@ if __name__ == "__main__":
     from ssdaq.core import publishers
 
     trpl = TriggerPacketReceiver(
-        port=2009,
+        port=8307,
         ip="0.0.0.0",
         publishers=[publishers.ZMQTCPPublisher(ip="127.0.0.101", port=5555)],
     )
