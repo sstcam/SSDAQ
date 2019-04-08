@@ -96,6 +96,8 @@ class PartialReadout:
 from ssdaq import SSReadout
 
 from ssdaq.core.receiver_server import ReceiverServer
+
+
 class SSReadoutAssembler(ReceiverServer):
     """
     Slow signal readout assembler. Constructs
@@ -117,12 +119,14 @@ class SSReadoutAssembler(ReceiverServer):
         super().__init__(listen_ip, listen_port, publishers, "SSReadoutAssembler")
 
         self.relaxed_ip_range = relaxed_ip_range
-        self.transport, self.ss_data_protocol = self.setup_udp(lambda: SlowSignalDataProtocol(
+        self.transport, self.ss_data_protocol = self.setup_udp(
+            lambda: SlowSignalDataProtocol(
                 self.loop,
                 self.log,
                 self.relaxed_ip_range,
                 packet_debug_stream_file=packet_debug_stream_file,
-            ))
+            )
+        )
 
         # settings
         self.readout_tw = int(readout_tw)
@@ -143,7 +147,6 @@ class SSReadoutAssembler(ReceiverServer):
         # buffers
         self.inter_buff = []
         self.partial_ro_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
-
 
     def cmd_reset_ro_count(self, arg):
         self.log.info("Readout count has been reset")

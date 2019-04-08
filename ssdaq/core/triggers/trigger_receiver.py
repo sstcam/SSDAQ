@@ -1,5 +1,7 @@
 import asyncio
 from ssdaq.core.receiver_server import ReceiverServer
+
+
 class TriggerPacketProtocol(asyncio.Protocol):
     def __init__(self, loop, log):
         self.buffer = asyncio.Queue()
@@ -17,8 +19,11 @@ class TriggerPacketProtocol(asyncio.Protocol):
 class TriggerPacketReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list):
         super().__init__(ip, port, publishers, "TriggerPacketReceiver")
-        self.trans, self.tpp = self.setup_udp(lambda: TriggerPacketProtocol(self.loop,self.log,))
+        self.trans, self.tpp = self.setup_udp(
+            lambda: TriggerPacketProtocol(self.loop, self.log)
+        )
         self.running = True
+
     async def ct_relay(self):
         while self.running:
             packet = await self.tpp.buffer.get()

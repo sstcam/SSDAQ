@@ -28,6 +28,8 @@ class LogReceiverProtocol(asyncio.Protocol):
 
 
 from ssdaq.core.receiver_server import ReceiverServer
+
+
 class LoggReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list, name: str = "LogReceiver"):
         self.loop = asyncio.get_event_loop()
@@ -38,6 +40,7 @@ class LoggReceiver(ReceiverServer):
 
     async def receive_log(self, record):
         import pickle
+
         await self.publish(pickle.dumps(record))
 
 
