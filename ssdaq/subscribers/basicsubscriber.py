@@ -21,7 +21,7 @@ class BasicSubscriber(Thread):
     def __init__(self, ip: str, port: int, unpack, logger: logging.Logger = None):
         Thread.__init__(self)
         BasicSubscriber.id_counter += 1
-        if logger == None:
+        if logger is None:
             self.log = logging.getLogger(
                 "ssdaq.BasicSubscriber%d" % BasicSubscriber.id_counter
             )
@@ -98,3 +98,14 @@ class BasicSubscriber(Thread):
                 self._data_buffer.put(None)
                 break
         self.running = False
+
+
+from ssdaq.core.triggers import data as tdata
+class BasicTriggerSubscriber(BasicSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None):
+        super().__init__(ip=ip, port=port, unpack=data.TriggerPacketData.unpack)
+
+import pickle
+class BasicLogSubsrciber(BasicSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None):
+        super().__init__(ip=ip, port=port, unpack=pickle.loads)

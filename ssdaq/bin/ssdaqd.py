@@ -32,18 +32,6 @@ def main():
     )
 
     parser.add_argument(
-        "-V",
-        "--verbosity",
-        nargs="?",
-        const="DEBUG",
-        default="INFO",
-        dest="verbose",
-        type=str,
-        help="Set log level",
-        choices=["DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
-    )
-
-    parser.add_argument(
         "-r",
         "--relaxed-ip",
         action="store_true",
@@ -52,6 +40,7 @@ def main():
         " ip addresses will map to the same TM. Use this option with cause.",
     )
     cargs.version(parser)
+    cargs.verbosity(parser)
     from ssdaq import sslogger
 
     args = parser.parse_args()

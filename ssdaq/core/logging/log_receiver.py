@@ -19,6 +19,7 @@ class LogReceiverProtocol(asyncio.Protocol):
         self.log.info("Connection from {}".format(self.peername))
 
     def data_received(self, data):
+        # print(struct.unpack('>L',data[:4]))
         record = logging.makeLogRecord(pickle.loads(data[4:]))
         self.loop.create_task(self.server.receive_log(record))
 

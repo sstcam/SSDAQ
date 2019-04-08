@@ -22,14 +22,14 @@ def main():
         dest="listen_port",
         type=int,
         default=5555,
-        help="port for incoming readout data",
+        help="Subscription port",
     )
     parser.add_argument(
         "-i",
         dest="ip_addr",
         type=str,
         default="127.0.0.101",
-        help="The ip/interface which the listener should listen too",
+        help="The ip/interface to subscribe to",
     )
     parser.add_argument(
         "-t",
@@ -39,24 +39,13 @@ def main():
         help="Set target module number for which SS data is printed out",
     )
     parser.add_argument(
-        "-V",
-        "--verbosity",
-        nargs="?",
-        const="DEBUG",
-        default="INFO",
-        dest="verbose",
-        type=str,
-        help="Set log level",
-        choices=["DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
-    )
-
-    parser.add_argument(
         "-n",
         dest="n_readouts",
         type=int,
         default=None,
         help="the number of readouts to listen to before exiting (if not set there is no limit",
     )
+    cargs.verbosity(parser)
     cargs.version(parser)
 
     args = parser.parse_args()
