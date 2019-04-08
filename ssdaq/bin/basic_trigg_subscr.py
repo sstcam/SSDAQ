@@ -13,7 +13,7 @@ from datetime import datetime
 def main():
 
     parser = argparse.ArgumentParser(
-        description="Start a simple Slow Signal readout listener.",
+        description="Subcribe to a published trigger packet stream.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
