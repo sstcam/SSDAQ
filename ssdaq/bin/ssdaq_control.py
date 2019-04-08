@@ -2,6 +2,10 @@ from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
 from ssdaq.utils import daemon
 import ssdaq
 from ssdaq.core import publishers
+from ssdaq import sslogger
+from logging.handlers import SocketHandler
+
+sslogger.addHandler(SocketHandler("127.0.0.1", 10001))
 
 
 class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
@@ -22,9 +26,9 @@ class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
         self.set_taskset = set_taskset
         self.core_id = str(core_id)
         import logging
-        from ssdaq import sslogger
 
         eval("sslogger.setLevel(logging.%s)" % log_level)
+        sslogger.info("Set logging level to {}".format(log_level))
 
     def run(self):
         from subprocess import call

@@ -9,7 +9,7 @@ if LooseVersion("17") > LooseVersion(zmq.__version__):
 
 
 class TriggerPacketProtocol(asyncio.Protocol):
-    def __init__(self, loop, log, packet_debug_stream_file=None):
+    def __init__(self, loop, log):
         self.buffer = asyncio.Queue()
         self.loop = loop
         self.log = log.getChild("TriggerPacketProtocol")
@@ -21,44 +21,16 @@ class TriggerPacketProtocol(asyncio.Protocol):
     def datagram_received(self, data, addr):
         self.buffer.put_nowait((data, addr))
 
-
-class TriggerPacketReceiver:
+from ssdaq.core.receiver_server import ReceiverServer
+class TriggerPacketReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list):
-        self.loop = asyncio.get_event_loop()
-        self.log = sslogger.getChild("TriggerPacketReceiver")
+        super().__init__(ip, port, publishers, "TriggerPacketReceiver")
+        self.trans, self.tpp = self.setup_udp(lambda: TriggerPacketProtocol(self.loop,self.log,))
         self.running = True
-        self.publishers = publishers
-        self.listen_addr = (ip, port)
-        self.corrs = [self.relay()]
-        self.loop = asyncio.get_event_loop()
-        for p in self.publishers:
-            p.set_loop(self.loop)
-
-    def run(self):
-        self.log.info("Settting up listener at %s:%d" % (tuple(self.listen_addr)))
-        listen = self.loop.create_datagram_endpoint(
-            lambda: TriggerPacketProtocol(self.loop, self.log),
-            local_addr=self.listen_addr,
-        )
-
-        transport, protocol = self.loop.run_until_complete(listen)
-        self.tpp = protocol
-        self.transport = transport
-        self.ss_data_protocol = protocol
-        self.log.info("Number of publishers registered %d" % len(self.publishers))
-        for c in self.corrs:
-            self.loop.create_task(c)
-        try:
-            self.loop.run_forever()
-        except:
-            pass
-        self.loop.close()
-
-    async def relay(self):
+    async def ct_relay(self):
         while self.running:
             packet = await self.tpp.buffer.get()
-            for pub in self.publishers:
-                pub.publish(packet[0])
+            await self.publish(packet[0])
 
 
 if __name__ == "__main__":

@@ -95,8 +95,8 @@ class PartialReadout:
 
 from ssdaq import SSReadout
 
-
-class SSReadoutAssembler:
+from ssdaq.core.receiver_server import ReceiverServer
+class SSReadoutAssembler(ReceiverServer):
     """
     Slow signal readout assembler. Constructs
     slow signal readouts from data packets recieved from
@@ -114,24 +114,21 @@ class SSReadoutAssembler:
         publishers: list = None,
         packet_debug_stream_file: str = None,
     ):
-        from ssdaq import sslogger
-        import zmq
-        import zmq.asyncio
-        from distutils.version import LooseVersion
+        super().__init__(listen_ip, listen_port, publishers, "SSReadoutAssembler")
 
-        if LooseVersion("17") > LooseVersion(zmq.__version__):
-            zmq.asyncio.install()
-        import inspect
-
-        self.log = sslogger.getChild("SSReadoutAssembler")
         self.relaxed_ip_range = relaxed_ip_range
+        self.transport, self.ss_data_protocol = self.setup_udp(lambda: SlowSignalDataProtocol(
+                self.loop,
+                self.log,
+                self.relaxed_ip_range,
+                packet_debug_stream_file=packet_debug_stream_file,
+            ))
 
         # settings
         self.readout_tw = int(readout_tw)
         self.listen_addr = (listen_ip, listen_port)
         self.buffer_len = buffer_length
         self.buffer_time = buffer_time
-        self.packet_debug_stream_file = packet_debug_stream_file
 
         # counters
         self.nprocessed_packets = 0
@@ -140,9 +137,6 @@ class SSReadoutAssembler:
         self.packet_counter = {}
         self.readout_counter = {}
 
-        self.loop = asyncio.get_event_loop()
-        self.corrs = [self.assembler(), self.handle_commands()]
-
         # controlers
         self.publish_readouts = True
 
@@ -150,47 +144,6 @@ class SSReadoutAssembler:
         self.inter_buff = []
         self.partial_ro_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
 
-        self.publishers = publishers if publishers is not None else []
-        # Giving the readout loop to the publishers
-        for p in self.publishers:
-            p.set_loop(self.loop)
-
-        # setting up communications socket
-        self.context = zmq.asyncio.Context()
-        self.com_sock = self.context.socket(zmq.REP)
-        self.com_sock.bind("ipc:///tmp/ssdaq-control")
-
-        # Introspecting to find all methods that
-        # handle commands
-        method_list = inspect.getmembers(self, predicate=inspect.ismethod)
-        self.cmds = {}
-        for method in method_list:
-            if method[0][:4] == "cmd_":
-                self.cmds[method[0][4:]] = method[1]
-
-    def run(self):
-        self.log.info("Settting up listener at %s:%d" % (tuple(self.listen_addr)))
-        listen = self.loop.create_datagram_endpoint(
-            lambda: SlowSignalDataProtocol(
-                self.loop,
-                self.log,
-                self.relaxed_ip_range,
-                packet_debug_stream_file=self.packet_debug_stream_file,
-            ),
-            local_addr=self.listen_addr,
-        )
-
-        transport, protocol = self.loop.run_until_complete(listen)
-        self.ss_data_protocol = protocol
-        self.log.info("Number of publishers registered %d" % len(self.publishers))
-        for c in self.corrs:
-            self.loop.create_task(c)
-
-        try:
-            self.loop.run_forever()
-        except:
-            pass
-        self.loop.close()
 
     def cmd_reset_ro_count(self, arg):
         self.log.info("Readout count has been reset")
@@ -215,23 +168,7 @@ class SSReadoutAssembler:
                 % arg[0]
             ).encode("ascii")
 
-    async def handle_commands(self):
-        """
-        This is the server part of the readout assembler that handles
-        incomming control commands
-        """
-        while True:
-            cmd = await self.com_sock.recv()
-            self.log.info("Handling incoming command %s" % cmd.decode("ascii"))
-            cmd = cmd.decode("ascii").split(" ")
-            if cmd[0] in self.cmds.keys():
-                reply = self.cmds[cmd[0]](cmd[1:])
-            else:
-                reply = b"Error, No command `%s` found." % (cmd[0])
-                self.log.info("Incomming command `%s` not recognized")
-            self.com_sock.send(reply)
-
-    async def assembler(self):
+    async def ct_assembler(self):
         n_packets = 0
         self.log.info("Empty socket buffer before starting readout building")
         packet = await self.ss_data_protocol._buffer.get()
@@ -348,9 +285,7 @@ class SSReadoutAssembler:
                     # self.log.info('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
                     self.log.info("Buffer lenght %d" % (len(self.partial_ro_buff)))
                 # self.log.debug('Built readout %d'%self.nconstructed_readouts)
-                if self.publish_readouts:
-                    for pub in self.publishers:
-                        pub.publish(readout.pack())
+                await self.publish(readout.pack())
 
     def assemble_readout(self, pro):
         # construct readout

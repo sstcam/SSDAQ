@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 def main():
     from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
     import argparse

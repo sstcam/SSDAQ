@@ -6,6 +6,9 @@ class Publisher:
     def publish(self, packet):
         raise NotImplementedError
 
+    async def apublish(self, packet):
+        raise NotImplementedError
+
     def set_loop(self, loop):
         self.loop = loop
 
@@ -16,7 +19,10 @@ class RawWriter(Publisher):
         self.file_name = file_name
         self.file = open(self.file_name, "wb")
 
-    def publish(self, packet):
+    async def apublish(self, packet: bytes):
+        self.file.write(packet)
+
+    def publish(self, packet: bytes):
         self.file.write(packet)
 
 
@@ -78,6 +84,9 @@ class ZMQTCPPublisher(Publisher):
             "Initialized readout publisher with a %s connection on: %s"
             % (mode, con_str)
         )
+
+    async def apublish(self, packet: bytes):
+        self.sock.send(packet)
 
     def publish(self, packet: bytes):
         self.sock.send(packet)

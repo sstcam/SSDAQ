@@ -8,11 +8,10 @@ from ssdaq import BasicSubscriber
 import logging
 import os
 
+
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
-        super().__init__(
-            ip=ip, port=port, unpack=SSReadout.from_bytes
-        )
+        super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes)
 
 
 class SSFileWriter(Thread):
