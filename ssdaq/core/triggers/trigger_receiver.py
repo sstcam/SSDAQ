@@ -1,13 +1,5 @@
 import asyncio
-import zmq
-import zmq.asyncio
-from distutils.version import LooseVersion
-from ssdaq import sslogger
-
-if LooseVersion("17") > LooseVersion(zmq.__version__):
-    zmq.asyncio.install()
-
-
+from ssdaq.core.receiver_server import ReceiverServer
 class TriggerPacketProtocol(asyncio.Protocol):
     def __init__(self, loop, log):
         self.buffer = asyncio.Queue()
@@ -21,7 +13,7 @@ class TriggerPacketProtocol(asyncio.Protocol):
     def datagram_received(self, data, addr):
         self.buffer.put_nowait((data, addr))
 
-from ssdaq.core.receiver_server import ReceiverServer
+
 class TriggerPacketReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list):
         super().__init__(ip, port, publishers, "TriggerPacketReceiver")
