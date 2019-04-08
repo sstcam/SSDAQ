@@ -59,6 +59,8 @@ def main():
             print("##################################")
             print("#Trigger: {}".format(trigger.__class__.__name__))
             for name, value in trigger._asdict().items():
+                # if name == "trigg":
+                    # print()
                 print("#    {}: {}".format(name, value))
             print("##################################")
 
