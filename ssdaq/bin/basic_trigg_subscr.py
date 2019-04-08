@@ -43,9 +43,6 @@ def main():
     sub = basicsubscriber.BasicTriggerSubscriber(port=args.listen_port, ip=args.ip_addr)
     sub.start()
 
-    readout_counter = np.zeros(32)
-    n_modules_per_readout = []
-    n = 0
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
     last_uc_ev = 0
@@ -58,17 +55,13 @@ def main():
             sub.close()
             break
         if trigger is not None:
-            missed = False
             if(last_uc_ev!=0 and last_uc_ev+1!=trigger.uc_ev):
-                missed = True
                 missed_counter +=1
             print("##################################")
             print("#Trigger: {}".format(trigger.__class__.__name__))
             for name, value in trigger._asdict().items():
-                # if name == "trigg":
-                    # print()
                 print("#    {}: {}".format(name, value))
-            print("#    Missed: {}".format(missed_counter))#"yes" if missed else 'No'))
+            print("#    Missed: {}".format(missed_counter))
             print("##################################")
             last_uc_ev = trigger.uc_ev
     sub.close()
