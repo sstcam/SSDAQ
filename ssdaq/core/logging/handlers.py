@@ -22,7 +22,7 @@ def parseprotb2log(data:bytes)-> log_pb2.LogData:
     log.ParseFromString(data)
     return log
 
-def protb2logrecord(proto:log_pb2.LogData)->loggin.LogRecord:
+def protb2logrecord(proto:log_pb2.LogData)->logging.LogRecord:
     record = logging.LogRecord(name=proto.sender,
                             level= proto.severity,
                             pathname=proto.sourceFile,
