@@ -29,7 +29,7 @@ class ReceiverServer:
     def setup_stream(self, recv_protocol):
         self._setup = True
         self.log.info(
-            "Settting up TCP receiver connection at %s:%d" % (tuple(self.listen_addr))
+            "Settting up TCP receiver socket at %s:%d" % (tuple(self.listen_addr))
         )
         listen = self.loop.create_server(
             recv_protocol, host=self.listen_addr[0], port=self.listen_addr[1]
@@ -39,7 +39,7 @@ class ReceiverServer:
     def setup_udp(self, recv_protocol):
         self._setup = True
         self.log.info(
-            "Settting up UDP receiver connection at %s:%d" % (tuple(self.listen_addr))
+            "Settting up UDP receiver socket at %s:%d" % (tuple(self.listen_addr))
         )
         listen = self.loop.create_datagram_endpoint(
             recv_protocol, local_addr=self.listen_addr

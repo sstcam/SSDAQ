@@ -18,8 +18,7 @@ class LogReceiverProtocol(asyncio.Protocol):
         self.log.info("Connection from {}".format(self.peername))
 
     def data_received(self, data):
-        record = logging.makeLogRecord(pickle.loads(data[4:]))
-        self.loop.create_task(self.server.receive_log(record))
+        self.loop.create_task(self.server.receive_log(data))
 
     def connection_lost(self, exc):
         self.log.info("Lost connection of {}".format(self.peername))
@@ -28,6 +27,7 @@ class LogReceiverProtocol(asyncio.Protocol):
 
 from ssdaq.core.receiver_server import ReceiverServer
 
+from collections import deque
 
 class LoggReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list, name: str = "LogReceiver"):
@@ -36,9 +36,12 @@ class LoggReceiver(ReceiverServer):
         self.receiver = self.setup_stream(
             lambda: LogReceiverProtocol(self, self.loop, self.log)
         )
+        self.log_buffer = deque([],maxlen=100)
+
 
     async def receive_log(self, record):
-        await self.publish(pickle.dumps(record))
+        self.log_buffer.append(record)
+        await self.publish(record)
 
 
 if __name__ == "__main__":

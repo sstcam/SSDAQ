@@ -18,7 +18,7 @@ class BasicSubscriber(Thread):
 
     id_counter = 0
 
-    def __init__(self, ip: str, port: int, unpack, logger: logging.Logger = None):
+    def __init__(self, ip: str, port: int, unpack = None, logger: logging.Logger = None):
         Thread.__init__(self)
         BasicSubscriber.id_counter += 1
         if logger is None:
@@ -44,7 +44,7 @@ class BasicSubscriber(Thread):
         self.inproc_sock_name = "SSdataListener%d" % (self.id_counter)
         self.close_sock = self.context.socket(zmq.PAIR)
         self.close_sock.bind("inproc://" + self.inproc_sock_name)
-        self.unpack = unpack
+        self.unpack = (lambda x: x) if unpack is None else unpack
 
     def close(self):
         """ Closes listener thread and empties the data buffer to unblock the
@@ -108,9 +108,9 @@ class BasicTriggerSubscriber(BasicSubscriber):
         super().__init__(ip=ip, port=port, unpack=tdata.TriggerPacketData.unpack)
 
 
-import pickle
 
-
+from ssdaq.core.logging import handlers
+logunpack = lambda x : handlers.protb2logrecord(handlers.parseprotb2log(x))
 class BasicLogSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
-        super().__init__(ip=ip, port=port, unpack=pickle.loads)
+        super().__init__(ip=ip, port=port, unpack=logunpack)

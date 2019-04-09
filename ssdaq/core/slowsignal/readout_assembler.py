@@ -266,16 +266,16 @@ class SSReadoutAssembler(ReceiverServer):
                 if self.nconstructed_readouts % 10 == 0:
                     # for d in self.partial_ro_buff:
                     # print(d.timestamp*1e-9,d.timestamp,d.readout_number, d.tm_parts)
-                    self.log.info("Built readout %d" % self.nconstructed_readouts)
-                    self.log.info(
+                    self.log.debug("Built readout %d" % self.nconstructed_readouts)
+                    self.log.debug(
                         "Newest readout timestamp %f"
                         % (self.partial_ro_buff[-1].timestamp * 1e-9)
                     )
-                    self.log.info(
+                    self.log.debug(
                         "Next readout timestamp %f"
                         % (self.partial_ro_buff[0].timestamp * 1e-9)
                     )
-                    self.log.info(
+                    self.log.debug(
                         "Last timestamp dt %f"
                         % (
                             (
@@ -285,8 +285,8 @@ class SSReadoutAssembler(ReceiverServer):
                             * 1e-9
                         )
                     )
-                    # self.log.info('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
-                    self.log.info("Buffer lenght %d" % (len(self.partial_ro_buff)))
+                    # self.log.debug('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
+                    self.log.debug("Buffer lenght %d" % (len(self.partial_ro_buff)))
                 # self.log.debug('Built readout %d'%self.nconstructed_readouts)
                 await self.publish(readout.pack())
 

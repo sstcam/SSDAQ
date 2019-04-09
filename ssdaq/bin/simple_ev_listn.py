@@ -1,4 +1,4 @@
-from ssdaq import SSReadoutListener
+from ssdaq import SSReadoutSubscriber
 from ssdaq.utils import common_args as cargs
 from ssdaq import sslogger
 import logging
@@ -47,7 +47,7 @@ def main():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    ev_list = SSReadoutListener(port=args.listen_port, ip=args.ip_addr)
+    ev_list = SSReadoutSubscriber(port=args.listen_port, ip=args.ip_addr)
     ev_list.start()
 
     readout_counter = np.zeros(32)
