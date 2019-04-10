@@ -8,7 +8,7 @@ import argparse
 
 import signal
 from datetime import datetime
-
+import time
 
 def main():
 
@@ -47,6 +47,8 @@ def main():
     print("Press `ctrl-C` to stop")
     last_uc_ev = 0
     missed_counter = 0
+    time1 = time.time()
+    time2 = time.time()
     while True:
         try:
             trigger = sub.get_data()
@@ -54,15 +56,23 @@ def main():
             print("\nClosing listener")
             sub.close()
             break
+
         if trigger is not None:
             if(last_uc_ev!=0 and last_uc_ev+1!=trigger.uc_ev):
                 missed_counter +=1
+
             print("##################################")
-            print("#Trigger: {}".format(trigger.__class__.__name__))
+            print("#Data: {}".format(trigger.__class__.__name__))
             for name, value in trigger._asdict().items():
                 print("#    {}: {}".format(name, value))
             print("#    Missed: {}".format(missed_counter))
+            print("#    Frequency: {} Hz".format(1.0/((time2-time1)+1e-7)))
+            print("#    dt: {} s".format(time2-time1))
+            # print("#    t: {} {} s".format(time2,time1))
             print("##################################")
+            time1 = time2
+            time2 = time.time()
+
             last_uc_ev = trigger.uc_ev
     sub.close()
     sub.join()

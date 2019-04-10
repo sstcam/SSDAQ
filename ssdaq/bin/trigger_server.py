@@ -34,14 +34,14 @@ def main():
     cargs.version(parser)
     cargs.verbosity(parser)
     from ssdaq import sslogger
-
+    import logging
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
     pub = ZMQTCPPublisher(port=args.publishing_port, ip=args.publishing_interface)
     trigserv = trigger_receiver.TriggerPacketReceiver(
-        listen_ip="0.0.0.0",
-        listen_port=args.listen_port,
+        ip="0.0.0.0",
+        port=args.listen_port,
         publishers=[pub],
     )
 
