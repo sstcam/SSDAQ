@@ -60,7 +60,8 @@ def main():
             sub.close()
             break
 
-        if tmsg is not None:
+        if tmsg is not None and tmsg.type==1:
+
             # if last_uc_ev != 0 and last_uc_ev + 1 != trigger.uc_ev:
             #     missed_counter += 1
 
