@@ -112,16 +112,21 @@ from ssdaq.core.logging import handlers
 
 logunpack = lambda x: handlers.protb2logrecord(handlers.parseprotb2log(x))
 
+
 class BasicLogSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=logunpack)
 
+
 from ssdaq.core.timestamps import CDTS_pb2
+
+
 def timeunpack(x):
     tmsg = CDTS_pb2.TriggerMessage()
     tmsg.ParseFromString(x)
     return tmsg
 
-class TimeStampSubscriber(BasicSubscriber):
+
+class BasicTimestampSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=timeunpack)

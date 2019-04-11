@@ -3,171 +3,171 @@
 # source: CDTS.proto
 
 import sys
-_b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+
+_b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode("latin1"))
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-
-
 DESCRIPTOR = _descriptor.FileDescriptor(
-  name='CDTS.proto',
-  package='CTA.ACTL.CDTS',
-  syntax='proto2',
-  serialized_options=None,
-  serialized_pb=_b('\n\nCDTS.proto\x12\rCTA.ACTL.CDTS\"\x8e\x01\n\tTimeStamp\x12\x0f\n\x07seconds\x18\x01 \x01(\x04\x12\x14\n\x0cpico_seconds\x18\x02 \x01(\x04\x12\r\n\x05index\x18\x03 \x01(\r\x12\x0e\n\x06tai_hi\x18\x04 \x01(\r\x12\x0e\n\x06tai_lo\x18\x05 \x01(\r\x12\x0b\n\x03\x63yc\x18\x06 \x01(\r\x12\x0e\n\x06tdc_hi\x18\x07 \x01(\r\x12\x0e\n\x06tdc_lo\x18\x08 \x01(\r\"\x97\x02\n\x0eTriggerMessage\x12\x11\n\ttelescope\x18\x01 \x01(\r\x12\x15\n\revent_counter\x18\x02 \x01(\x04\x12\x13\n\x0bpps_counter\x18\x03 \x01(\x04\x12\x15\n\rclock_counter\x18\x04 \x01(\x04\x12&\n\x04time\x18\x05 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\x12\x38\n\x04type\x18\x06 \x01(\x0e\x32\x1a.CTA.ACTL.CDTS.TriggerType:\x0eReadoutTrigger\x12<\n\x06status\x18\x07 \x01(\x0e\x32 .CTA.ACTL.CDTS.WhiteRabbitStatus:\nTrackPhase\x12\x0f\n\x07pattern\x18\x08 \x01(\x06\"\x99\x01\n\x0cTriggerBunch\x12\x11\n\ttelescope\x18\x01 \x01(\r\x12\x15\n\rbunch_counter\x18\x02 \x01(\x04\x12/\n\x08triggers\x18\x03 \x03(\x0b\x32\x1d.CTA.ACTL.CDTS.TriggerMessage\x12.\n\x0c\x61rrival_time\x18\x04 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\"4\n\x0fSpeedTestConfig\x12\x0f\n\x07\x62unches\x18\x01 \x01(\x06\x12\x10\n\x08triggers\x18\x02 \x01(\x06\"!\n\x0e\x46IFOMonitoring\x12\x0f\n\x07invalid\x18\x01 \x01(\x04\"~\n\nMonitoring\x12\x13\n\x0bsend_errors\x18\x01 \x01(\x04\x12.\n\x07readout\x18\x02 \x01(\x0b\x32\x1d.CTA.ACTL.CDTS.FIFOMonitoring\x12+\n\x04\x62usy\x18\x03 \x01(\x0b\x32\x1d.CTA.ACTL.CDTS.FIFOMonitoring\"l\n\x12SimulationSettings\x12*\n\x04type\x18\x01 \x01(\x0e\x32\x1c.CTA.ACTL.CDTS.GeneratorType\x12\x17\n\x0f\x66requency_in_hz\x18\x02 \x01(\x01\x12\x11\n\trms_in_ps\x18\x03 \x01(\x01\"\x84\x01\n\x0c\x46IFOSettings\x12\x0e\n\x06\x61\x63tive\x18\x01 \x01(\x08\x12\r\n\x05reset\x18\x02 \x01(\x08\x12\r\n\x05purge\x18\x03 \x01(\x08\x12\x0f\n\x07verbose\x18\x04 \x01(\x08\x12\x35\n\nsimulation\x18\x05 \x01(\x0b\x32!.CTA.ACTL.CDTS.SimulationSettings\"S\n\x0eSenderSettings\x12\x0e\n\x06\x61\x63tive\x18\x01 \x01(\x08\x12\r\n\x05reset\x18\x02 \x01(\x08\x12\x0f\n\x07verbose\x18\x03 \x01(\x08\x12\x11\n\ttelescope\x18\x04 \x01(\x04\"\xb4\x01\n\x17\x45xternalTriggerSettings\x12\x1a\n\x12signal_width_in_ns\x18\x01 \x01(\r\x12.\n\x0ctrigger_time\x18\x02 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\x12\x30\n\x0etrigger_period\x18\x03 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\x12\x1b\n\x0cstop_trigger\x18\x04 \x01(\x08:\x05\x66\x61lse\"\xd0\x04\n\x05Query\x12,\n\x04type\x18\x01 \x03(\x0e\x32\x1e.CTA.ACTL.CDTS.Query.QueryType\x12\r\n\x05vuart\x18\x02 \x01(\t\x12@\n\x10\x65xternal_trigger\x18\x03 \x01(\x0b\x32&.CTA.ACTL.CDTS.ExternalTriggerSettings\x12-\n\nmonitoring\x18\x04 \x01(\x0b\x32\x19.CTA.ACTL.CDTS.Monitoring\x12-\n\x06sender\x18\x05 \x01(\x0b\x32\x1d.CTA.ACTL.CDTS.SenderSettings\x12,\n\x07readout\x18\x06 \x01(\x0b\x32\x1b.CTA.ACTL.CDTS.FIFOSettings\x12)\n\x04\x62usy\x18\x07 \x01(\x0b\x32\x1b.CTA.ACTL.CDTS.FIFOSettings\x12\x0b\n\x03led\x18\x08 \x01(\x08\x12,\n\x05\x63lock\x18\t \x01(\x0e\x32\x1d.CTA.ACTL.CDTS.ClockFrequency\x12\x0e\n\x05\x65rror\x18\x9a\x05 \x01(\t\"\xc5\x01\n\tQueryType\x12\t\n\x05VUART\x10\x01\x12\x13\n\x0f\x45xternalTrigger\x10\x02\x12\x0e\n\nMonitoring\x10\x03\x12\x0e\n\tTerminate\x10\x9a\x05\x12\x0b\n\x06Reboot\x10\x9b\x05\x12\n\n\x05Reset\x10\x9c\x05\x12\x0b\n\x06Sender\x10\x9d\x05\x12\x0c\n\x07Readout\x10\x9e\x05\x12\t\n\x04\x42usy\x10\x9f\x05\x12\x08\n\x03LED\x10\xa0\x05\x12\n\n\x05\x43lock\x10\xa1\x05\x12\x0b\n\x06Status\x10\xe5\x07\x12\n\n\x05\x41live\x10\xe6\x07\x12\n\n\x05\x45rror\x10\xe7\x07*\xa9\x01\n\x0bTriggerType\x12\x12\n\x0eReadoutTrigger\x10\x01\x12\x0f\n\x0b\x42usyTrigger\x10\x02\x12\x0f\n\x0bSoftTrigger\x10\x03\x12\x13\n\x0f\x45xternalTrigger\x10\x04\x12\x14\n\x10\x46latfieldTrigger\x10\x05\x12\x13\n\x0fSinglePeTrigger\x10\x06\x12\x13\n\x0fPedestalTrigger\x10\x07\x12\x0f\n\x0bMuonTrigger\x10\x08*v\n\x11WhiteRabbitStatus\x12\x11\n\rUninitialized\x10\x01\x12\x0c\n\x08SyncNsec\x10\x02\x12\x0b\n\x07SyncSec\x10\x03\x12\r\n\tSyncPhase\x10\x04\x12\x0e\n\nTrackPhase\x10\x05\x12\x14\n\x10WaitOffsetStable\x10\x06*B\n\rGeneratorType\x12\x08\n\x04None\x10\x01\x12\x0c\n\x08\x44isabled\x10\x02\x12\x0c\n\x08Gaussian\x10\x03\x12\x0b\n\x07Poisson\x10\x04*P\n\x0e\x43lockFrequency\x12\x0b\n\x07Unknown\x10\x01\x12\x0e\n\nClock10MHz\x10\x02\x12\x10\n\x0c\x43lock62_5MHz\x10\x03\x12\x0f\n\x0b\x43lock125MHz\x10\x04')
+    name="CDTS.proto",
+    package="CTA.ACTL.CDTS",
+    syntax="proto2",
+    serialized_options=None,
+    serialized_pb=_b(
+        '\n\nCDTS.proto\x12\rCTA.ACTL.CDTS"\x8e\x01\n\tTimeStamp\x12\x0f\n\x07seconds\x18\x01 \x01(\x04\x12\x14\n\x0cpico_seconds\x18\x02 \x01(\x04\x12\r\n\x05index\x18\x03 \x01(\r\x12\x0e\n\x06tai_hi\x18\x04 \x01(\r\x12\x0e\n\x06tai_lo\x18\x05 \x01(\r\x12\x0b\n\x03\x63yc\x18\x06 \x01(\r\x12\x0e\n\x06tdc_hi\x18\x07 \x01(\r\x12\x0e\n\x06tdc_lo\x18\x08 \x01(\r"\x97\x02\n\x0eTriggerMessage\x12\x11\n\ttelescope\x18\x01 \x01(\r\x12\x15\n\revent_counter\x18\x02 \x01(\x04\x12\x13\n\x0bpps_counter\x18\x03 \x01(\x04\x12\x15\n\rclock_counter\x18\x04 \x01(\x04\x12&\n\x04time\x18\x05 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\x12\x38\n\x04type\x18\x06 \x01(\x0e\x32\x1a.CTA.ACTL.CDTS.TriggerType:\x0eReadoutTrigger\x12<\n\x06status\x18\x07 \x01(\x0e\x32 .CTA.ACTL.CDTS.WhiteRabbitStatus:\nTrackPhase\x12\x0f\n\x07pattern\x18\x08 \x01(\x06"\x99\x01\n\x0cTriggerBunch\x12\x11\n\ttelescope\x18\x01 \x01(\r\x12\x15\n\rbunch_counter\x18\x02 \x01(\x04\x12/\n\x08triggers\x18\x03 \x03(\x0b\x32\x1d.CTA.ACTL.CDTS.TriggerMessage\x12.\n\x0c\x61rrival_time\x18\x04 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp"4\n\x0fSpeedTestConfig\x12\x0f\n\x07\x62unches\x18\x01 \x01(\x06\x12\x10\n\x08triggers\x18\x02 \x01(\x06"!\n\x0e\x46IFOMonitoring\x12\x0f\n\x07invalid\x18\x01 \x01(\x04"~\n\nMonitoring\x12\x13\n\x0bsend_errors\x18\x01 \x01(\x04\x12.\n\x07readout\x18\x02 \x01(\x0b\x32\x1d.CTA.ACTL.CDTS.FIFOMonitoring\x12+\n\x04\x62usy\x18\x03 \x01(\x0b\x32\x1d.CTA.ACTL.CDTS.FIFOMonitoring"l\n\x12SimulationSettings\x12*\n\x04type\x18\x01 \x01(\x0e\x32\x1c.CTA.ACTL.CDTS.GeneratorType\x12\x17\n\x0f\x66requency_in_hz\x18\x02 \x01(\x01\x12\x11\n\trms_in_ps\x18\x03 \x01(\x01"\x84\x01\n\x0c\x46IFOSettings\x12\x0e\n\x06\x61\x63tive\x18\x01 \x01(\x08\x12\r\n\x05reset\x18\x02 \x01(\x08\x12\r\n\x05purge\x18\x03 \x01(\x08\x12\x0f\n\x07verbose\x18\x04 \x01(\x08\x12\x35\n\nsimulation\x18\x05 \x01(\x0b\x32!.CTA.ACTL.CDTS.SimulationSettings"S\n\x0eSenderSettings\x12\x0e\n\x06\x61\x63tive\x18\x01 \x01(\x08\x12\r\n\x05reset\x18\x02 \x01(\x08\x12\x0f\n\x07verbose\x18\x03 \x01(\x08\x12\x11\n\ttelescope\x18\x04 \x01(\x04"\xb4\x01\n\x17\x45xternalTriggerSettings\x12\x1a\n\x12signal_width_in_ns\x18\x01 \x01(\r\x12.\n\x0ctrigger_time\x18\x02 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\x12\x30\n\x0etrigger_period\x18\x03 \x01(\x0b\x32\x18.CTA.ACTL.CDTS.TimeStamp\x12\x1b\n\x0cstop_trigger\x18\x04 \x01(\x08:\x05\x66\x61lse"\xd0\x04\n\x05Query\x12,\n\x04type\x18\x01 \x03(\x0e\x32\x1e.CTA.ACTL.CDTS.Query.QueryType\x12\r\n\x05vuart\x18\x02 \x01(\t\x12@\n\x10\x65xternal_trigger\x18\x03 \x01(\x0b\x32&.CTA.ACTL.CDTS.ExternalTriggerSettings\x12-\n\nmonitoring\x18\x04 \x01(\x0b\x32\x19.CTA.ACTL.CDTS.Monitoring\x12-\n\x06sender\x18\x05 \x01(\x0b\x32\x1d.CTA.ACTL.CDTS.SenderSettings\x12,\n\x07readout\x18\x06 \x01(\x0b\x32\x1b.CTA.ACTL.CDTS.FIFOSettings\x12)\n\x04\x62usy\x18\x07 \x01(\x0b\x32\x1b.CTA.ACTL.CDTS.FIFOSettings\x12\x0b\n\x03led\x18\x08 \x01(\x08\x12,\n\x05\x63lock\x18\t \x01(\x0e\x32\x1d.CTA.ACTL.CDTS.ClockFrequency\x12\x0e\n\x05\x65rror\x18\x9a\x05 \x01(\t"\xc5\x01\n\tQueryType\x12\t\n\x05VUART\x10\x01\x12\x13\n\x0f\x45xternalTrigger\x10\x02\x12\x0e\n\nMonitoring\x10\x03\x12\x0e\n\tTerminate\x10\x9a\x05\x12\x0b\n\x06Reboot\x10\x9b\x05\x12\n\n\x05Reset\x10\x9c\x05\x12\x0b\n\x06Sender\x10\x9d\x05\x12\x0c\n\x07Readout\x10\x9e\x05\x12\t\n\x04\x42usy\x10\x9f\x05\x12\x08\n\x03LED\x10\xa0\x05\x12\n\n\x05\x43lock\x10\xa1\x05\x12\x0b\n\x06Status\x10\xe5\x07\x12\n\n\x05\x41live\x10\xe6\x07\x12\n\n\x05\x45rror\x10\xe7\x07*\xa9\x01\n\x0bTriggerType\x12\x12\n\x0eReadoutTrigger\x10\x01\x12\x0f\n\x0b\x42usyTrigger\x10\x02\x12\x0f\n\x0bSoftTrigger\x10\x03\x12\x13\n\x0f\x45xternalTrigger\x10\x04\x12\x14\n\x10\x46latfieldTrigger\x10\x05\x12\x13\n\x0fSinglePeTrigger\x10\x06\x12\x13\n\x0fPedestalTrigger\x10\x07\x12\x0f\n\x0bMuonTrigger\x10\x08*v\n\x11WhiteRabbitStatus\x12\x11\n\rUninitialized\x10\x01\x12\x0c\n\x08SyncNsec\x10\x02\x12\x0b\n\x07SyncSec\x10\x03\x12\r\n\tSyncPhase\x10\x04\x12\x0e\n\nTrackPhase\x10\x05\x12\x14\n\x10WaitOffsetStable\x10\x06*E\n\rGeneratorType\x12\x0b\n\x07GenNone\x10\x01\x12\x0c\n\x08\x44isabled\x10\x02\x12\x0c\n\x08Gaussian\x10\x03\x12\x0b\n\x07Poisson\x10\x04*P\n\x0e\x43lockFrequency\x12\x0b\n\x07Unknown\x10\x01\x12\x0e\n\nClock10MHz\x10\x02\x12\x10\n\x0c\x43lock62_5MHz\x10\x03\x12\x0f\n\x0b\x43lock125MHz\x10\x04'
+    ),
 )
 
 _TRIGGERTYPE = _descriptor.EnumDescriptor(
-  name='TriggerType',
-  full_name='CTA.ACTL.CDTS.TriggerType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='ReadoutTrigger', index=0, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='BusyTrigger', index=1, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SoftTrigger', index=2, number=3,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='ExternalTrigger', index=3, number=4,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='FlatfieldTrigger', index=4, number=5,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SinglePeTrigger', index=5, number=6,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='PedestalTrigger', index=6, number=7,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='MuonTrigger', index=7, number=8,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=1938,
-  serialized_end=2107,
+    name="TriggerType",
+    full_name="CTA.ACTL.CDTS.TriggerType",
+    filename=None,
+    file=DESCRIPTOR,
+    values=[
+        _descriptor.EnumValueDescriptor(
+            name="ReadoutTrigger", index=0, number=1, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="BusyTrigger", index=1, number=2, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="SoftTrigger", index=2, number=3, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="ExternalTrigger",
+            index=3,
+            number=4,
+            serialized_options=None,
+            type=None,
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="FlatfieldTrigger",
+            index=4,
+            number=5,
+            serialized_options=None,
+            type=None,
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="SinglePeTrigger",
+            index=5,
+            number=6,
+            serialized_options=None,
+            type=None,
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="PedestalTrigger",
+            index=6,
+            number=7,
+            serialized_options=None,
+            type=None,
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="MuonTrigger", index=7, number=8, serialized_options=None, type=None
+        ),
+    ],
+    containing_type=None,
+    serialized_options=None,
+    serialized_start=1938,
+    serialized_end=2107,
 )
 _sym_db.RegisterEnumDescriptor(_TRIGGERTYPE)
 
 TriggerType = enum_type_wrapper.EnumTypeWrapper(_TRIGGERTYPE)
 _WHITERABBITSTATUS = _descriptor.EnumDescriptor(
-  name='WhiteRabbitStatus',
-  full_name='CTA.ACTL.CDTS.WhiteRabbitStatus',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='Uninitialized', index=0, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SyncNsec', index=1, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SyncSec', index=2, number=3,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SyncPhase', index=3, number=4,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='TrackPhase', index=4, number=5,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='WaitOffsetStable', index=5, number=6,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=2109,
-  serialized_end=2227,
+    name="WhiteRabbitStatus",
+    full_name="CTA.ACTL.CDTS.WhiteRabbitStatus",
+    filename=None,
+    file=DESCRIPTOR,
+    values=[
+        _descriptor.EnumValueDescriptor(
+            name="Uninitialized", index=0, number=1, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="SyncNsec", index=1, number=2, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="SyncSec", index=2, number=3, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="SyncPhase", index=3, number=4, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="TrackPhase", index=4, number=5, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="WaitOffsetStable",
+            index=5,
+            number=6,
+            serialized_options=None,
+            type=None,
+        ),
+    ],
+    containing_type=None,
+    serialized_options=None,
+    serialized_start=2109,
+    serialized_end=2227,
 )
 _sym_db.RegisterEnumDescriptor(_WHITERABBITSTATUS)
 
 WhiteRabbitStatus = enum_type_wrapper.EnumTypeWrapper(_WHITERABBITSTATUS)
 _GENERATORTYPE = _descriptor.EnumDescriptor(
-  name='GeneratorType',
-  full_name='CTA.ACTL.CDTS.GeneratorType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='None', index=0, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Disabled', index=1, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Gaussian', index=2, number=3,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Poisson', index=3, number=4,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=2229,
-  serialized_end=2295,
+    name="GeneratorType",
+    full_name="CTA.ACTL.CDTS.GeneratorType",
+    filename=None,
+    file=DESCRIPTOR,
+    values=[
+        _descriptor.EnumValueDescriptor(
+            name="GenNone", index=0, number=1, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Disabled", index=1, number=2, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Gaussian", index=2, number=3, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Poisson", index=3, number=4, serialized_options=None, type=None
+        ),
+    ],
+    containing_type=None,
+    serialized_options=None,
+    serialized_start=2229,
+    serialized_end=2298,
 )
 _sym_db.RegisterEnumDescriptor(_GENERATORTYPE)
 
 GeneratorType = enum_type_wrapper.EnumTypeWrapper(_GENERATORTYPE)
 _CLOCKFREQUENCY = _descriptor.EnumDescriptor(
-  name='ClockFrequency',
-  full_name='CTA.ACTL.CDTS.ClockFrequency',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='Unknown', index=0, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Clock10MHz', index=1, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Clock62_5MHz', index=2, number=3,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Clock125MHz', index=3, number=4,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=2297,
-  serialized_end=2377,
+    name="ClockFrequency",
+    full_name="CTA.ACTL.CDTS.ClockFrequency",
+    filename=None,
+    file=DESCRIPTOR,
+    values=[
+        _descriptor.EnumValueDescriptor(
+            name="Unknown", index=0, number=1, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Clock10MHz", index=1, number=2, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Clock62_5MHz", index=2, number=3, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Clock125MHz", index=3, number=4, serialized_options=None, type=None
+        ),
+    ],
+    containing_type=None,
+    serialized_options=None,
+    serialized_start=2300,
+    serialized_end=2380,
 )
 _sym_db.RegisterEnumDescriptor(_CLOCKFREQUENCY)
 
@@ -186,7 +186,7 @@ SyncSec = 3
 SyncPhase = 4
 TrackPhase = 5
 WaitOffsetStable = 6
-None = 1
+GenNone = 1
 Disabled = 2
 Gaussian = 3
 Poisson = 4
@@ -197,815 +197,1387 @@ Clock125MHz = 4
 
 
 _QUERY_QUERYTYPE = _descriptor.EnumDescriptor(
-  name='QueryType',
-  full_name='CTA.ACTL.CDTS.Query.QueryType',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='VUART', index=0, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='ExternalTrigger', index=1, number=2,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Monitoring', index=2, number=3,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Terminate', index=3, number=666,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Reboot', index=4, number=667,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Reset', index=5, number=668,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Sender', index=6, number=669,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Readout', index=7, number=670,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Busy', index=8, number=671,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='LED', index=9, number=672,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Clock', index=10, number=673,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Status', index=11, number=997,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Alive', index=12, number=998,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='Error', index=13, number=999,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=1738,
-  serialized_end=1935,
+    name="QueryType",
+    full_name="CTA.ACTL.CDTS.Query.QueryType",
+    filename=None,
+    file=DESCRIPTOR,
+    values=[
+        _descriptor.EnumValueDescriptor(
+            name="VUART", index=0, number=1, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="ExternalTrigger",
+            index=1,
+            number=2,
+            serialized_options=None,
+            type=None,
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Monitoring", index=2, number=3, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Terminate", index=3, number=666, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Reboot", index=4, number=667, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Reset", index=5, number=668, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Sender", index=6, number=669, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Readout", index=7, number=670, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Busy", index=8, number=671, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="LED", index=9, number=672, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Clock", index=10, number=673, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Status", index=11, number=997, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Alive", index=12, number=998, serialized_options=None, type=None
+        ),
+        _descriptor.EnumValueDescriptor(
+            name="Error", index=13, number=999, serialized_options=None, type=None
+        ),
+    ],
+    containing_type=None,
+    serialized_options=None,
+    serialized_start=1738,
+    serialized_end=1935,
 )
 _sym_db.RegisterEnumDescriptor(_QUERY_QUERYTYPE)
 
 
 _TIMESTAMP = _descriptor.Descriptor(
-  name='TimeStamp',
-  full_name='CTA.ACTL.CDTS.TimeStamp',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='seconds', full_name='CTA.ACTL.CDTS.TimeStamp.seconds', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='pico_seconds', full_name='CTA.ACTL.CDTS.TimeStamp.pico_seconds', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='index', full_name='CTA.ACTL.CDTS.TimeStamp.index', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tai_hi', full_name='CTA.ACTL.CDTS.TimeStamp.tai_hi', index=3,
-      number=4, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tai_lo', full_name='CTA.ACTL.CDTS.TimeStamp.tai_lo', index=4,
-      number=5, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='cyc', full_name='CTA.ACTL.CDTS.TimeStamp.cyc', index=5,
-      number=6, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tdc_hi', full_name='CTA.ACTL.CDTS.TimeStamp.tdc_hi', index=6,
-      number=7, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tdc_lo', full_name='CTA.ACTL.CDTS.TimeStamp.tdc_lo', index=7,
-      number=8, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=30,
-  serialized_end=172,
+    name="TimeStamp",
+    full_name="CTA.ACTL.CDTS.TimeStamp",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="seconds",
+            full_name="CTA.ACTL.CDTS.TimeStamp.seconds",
+            index=0,
+            number=1,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="pico_seconds",
+            full_name="CTA.ACTL.CDTS.TimeStamp.pico_seconds",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="index",
+            full_name="CTA.ACTL.CDTS.TimeStamp.index",
+            index=2,
+            number=3,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="tai_hi",
+            full_name="CTA.ACTL.CDTS.TimeStamp.tai_hi",
+            index=3,
+            number=4,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="tai_lo",
+            full_name="CTA.ACTL.CDTS.TimeStamp.tai_lo",
+            index=4,
+            number=5,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="cyc",
+            full_name="CTA.ACTL.CDTS.TimeStamp.cyc",
+            index=5,
+            number=6,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="tdc_hi",
+            full_name="CTA.ACTL.CDTS.TimeStamp.tdc_hi",
+            index=6,
+            number=7,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="tdc_lo",
+            full_name="CTA.ACTL.CDTS.TimeStamp.tdc_lo",
+            index=7,
+            number=8,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=30,
+    serialized_end=172,
 )
 
 
 _TRIGGERMESSAGE = _descriptor.Descriptor(
-  name='TriggerMessage',
-  full_name='CTA.ACTL.CDTS.TriggerMessage',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='telescope', full_name='CTA.ACTL.CDTS.TriggerMessage.telescope', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='event_counter', full_name='CTA.ACTL.CDTS.TriggerMessage.event_counter', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='pps_counter', full_name='CTA.ACTL.CDTS.TriggerMessage.pps_counter', index=2,
-      number=3, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='clock_counter', full_name='CTA.ACTL.CDTS.TriggerMessage.clock_counter', index=3,
-      number=4, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='time', full_name='CTA.ACTL.CDTS.TriggerMessage.time', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='type', full_name='CTA.ACTL.CDTS.TriggerMessage.type', index=5,
-      number=6, type=14, cpp_type=8, label=1,
-      has_default_value=True, default_value=1,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='status', full_name='CTA.ACTL.CDTS.TriggerMessage.status', index=6,
-      number=7, type=14, cpp_type=8, label=1,
-      has_default_value=True, default_value=5,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='pattern', full_name='CTA.ACTL.CDTS.TriggerMessage.pattern', index=7,
-      number=8, type=6, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=175,
-  serialized_end=454,
+    name="TriggerMessage",
+    full_name="CTA.ACTL.CDTS.TriggerMessage",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="telescope",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.telescope",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="event_counter",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.event_counter",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="pps_counter",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.pps_counter",
+            index=2,
+            number=3,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="clock_counter",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.clock_counter",
+            index=3,
+            number=4,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="time",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.time",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="type",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.type",
+            index=5,
+            number=6,
+            type=14,
+            cpp_type=8,
+            label=1,
+            has_default_value=True,
+            default_value=1,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="status",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.status",
+            index=6,
+            number=7,
+            type=14,
+            cpp_type=8,
+            label=1,
+            has_default_value=True,
+            default_value=5,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="pattern",
+            full_name="CTA.ACTL.CDTS.TriggerMessage.pattern",
+            index=7,
+            number=8,
+            type=6,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=175,
+    serialized_end=454,
 )
 
 
 _TRIGGERBUNCH = _descriptor.Descriptor(
-  name='TriggerBunch',
-  full_name='CTA.ACTL.CDTS.TriggerBunch',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='telescope', full_name='CTA.ACTL.CDTS.TriggerBunch.telescope', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='bunch_counter', full_name='CTA.ACTL.CDTS.TriggerBunch.bunch_counter', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='triggers', full_name='CTA.ACTL.CDTS.TriggerBunch.triggers', index=2,
-      number=3, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='arrival_time', full_name='CTA.ACTL.CDTS.TriggerBunch.arrival_time', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=457,
-  serialized_end=610,
+    name="TriggerBunch",
+    full_name="CTA.ACTL.CDTS.TriggerBunch",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="telescope",
+            full_name="CTA.ACTL.CDTS.TriggerBunch.telescope",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="bunch_counter",
+            full_name="CTA.ACTL.CDTS.TriggerBunch.bunch_counter",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="triggers",
+            full_name="CTA.ACTL.CDTS.TriggerBunch.triggers",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="arrival_time",
+            full_name="CTA.ACTL.CDTS.TriggerBunch.arrival_time",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=457,
+    serialized_end=610,
 )
 
 
 _SPEEDTESTCONFIG = _descriptor.Descriptor(
-  name='SpeedTestConfig',
-  full_name='CTA.ACTL.CDTS.SpeedTestConfig',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='bunches', full_name='CTA.ACTL.CDTS.SpeedTestConfig.bunches', index=0,
-      number=1, type=6, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='triggers', full_name='CTA.ACTL.CDTS.SpeedTestConfig.triggers', index=1,
-      number=2, type=6, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=612,
-  serialized_end=664,
+    name="SpeedTestConfig",
+    full_name="CTA.ACTL.CDTS.SpeedTestConfig",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="bunches",
+            full_name="CTA.ACTL.CDTS.SpeedTestConfig.bunches",
+            index=0,
+            number=1,
+            type=6,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="triggers",
+            full_name="CTA.ACTL.CDTS.SpeedTestConfig.triggers",
+            index=1,
+            number=2,
+            type=6,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=612,
+    serialized_end=664,
 )
 
 
 _FIFOMONITORING = _descriptor.Descriptor(
-  name='FIFOMonitoring',
-  full_name='CTA.ACTL.CDTS.FIFOMonitoring',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='invalid', full_name='CTA.ACTL.CDTS.FIFOMonitoring.invalid', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=666,
-  serialized_end=699,
+    name="FIFOMonitoring",
+    full_name="CTA.ACTL.CDTS.FIFOMonitoring",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="invalid",
+            full_name="CTA.ACTL.CDTS.FIFOMonitoring.invalid",
+            index=0,
+            number=1,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        )
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=666,
+    serialized_end=699,
 )
 
 
 _MONITORING = _descriptor.Descriptor(
-  name='Monitoring',
-  full_name='CTA.ACTL.CDTS.Monitoring',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='send_errors', full_name='CTA.ACTL.CDTS.Monitoring.send_errors', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='readout', full_name='CTA.ACTL.CDTS.Monitoring.readout', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='busy', full_name='CTA.ACTL.CDTS.Monitoring.busy', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=701,
-  serialized_end=827,
+    name="Monitoring",
+    full_name="CTA.ACTL.CDTS.Monitoring",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="send_errors",
+            full_name="CTA.ACTL.CDTS.Monitoring.send_errors",
+            index=0,
+            number=1,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="readout",
+            full_name="CTA.ACTL.CDTS.Monitoring.readout",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="busy",
+            full_name="CTA.ACTL.CDTS.Monitoring.busy",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=701,
+    serialized_end=827,
 )
 
 
 _SIMULATIONSETTINGS = _descriptor.Descriptor(
-  name='SimulationSettings',
-  full_name='CTA.ACTL.CDTS.SimulationSettings',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='type', full_name='CTA.ACTL.CDTS.SimulationSettings.type', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=1,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='frequency_in_hz', full_name='CTA.ACTL.CDTS.SimulationSettings.frequency_in_hz', index=1,
-      number=2, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='rms_in_ps', full_name='CTA.ACTL.CDTS.SimulationSettings.rms_in_ps', index=2,
-      number=3, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=829,
-  serialized_end=937,
+    name="SimulationSettings",
+    full_name="CTA.ACTL.CDTS.SimulationSettings",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="type",
+            full_name="CTA.ACTL.CDTS.SimulationSettings.type",
+            index=0,
+            number=1,
+            type=14,
+            cpp_type=8,
+            label=1,
+            has_default_value=False,
+            default_value=1,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="frequency_in_hz",
+            full_name="CTA.ACTL.CDTS.SimulationSettings.frequency_in_hz",
+            index=1,
+            number=2,
+            type=1,
+            cpp_type=5,
+            label=1,
+            has_default_value=False,
+            default_value=float(0),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="rms_in_ps",
+            full_name="CTA.ACTL.CDTS.SimulationSettings.rms_in_ps",
+            index=2,
+            number=3,
+            type=1,
+            cpp_type=5,
+            label=1,
+            has_default_value=False,
+            default_value=float(0),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=829,
+    serialized_end=937,
 )
 
 
 _FIFOSETTINGS = _descriptor.Descriptor(
-  name='FIFOSettings',
-  full_name='CTA.ACTL.CDTS.FIFOSettings',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='active', full_name='CTA.ACTL.CDTS.FIFOSettings.active', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='reset', full_name='CTA.ACTL.CDTS.FIFOSettings.reset', index=1,
-      number=2, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='purge', full_name='CTA.ACTL.CDTS.FIFOSettings.purge', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='verbose', full_name='CTA.ACTL.CDTS.FIFOSettings.verbose', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='simulation', full_name='CTA.ACTL.CDTS.FIFOSettings.simulation', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=940,
-  serialized_end=1072,
+    name="FIFOSettings",
+    full_name="CTA.ACTL.CDTS.FIFOSettings",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="active",
+            full_name="CTA.ACTL.CDTS.FIFOSettings.active",
+            index=0,
+            number=1,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="reset",
+            full_name="CTA.ACTL.CDTS.FIFOSettings.reset",
+            index=1,
+            number=2,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="purge",
+            full_name="CTA.ACTL.CDTS.FIFOSettings.purge",
+            index=2,
+            number=3,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="verbose",
+            full_name="CTA.ACTL.CDTS.FIFOSettings.verbose",
+            index=3,
+            number=4,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="simulation",
+            full_name="CTA.ACTL.CDTS.FIFOSettings.simulation",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=940,
+    serialized_end=1072,
 )
 
 
 _SENDERSETTINGS = _descriptor.Descriptor(
-  name='SenderSettings',
-  full_name='CTA.ACTL.CDTS.SenderSettings',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='active', full_name='CTA.ACTL.CDTS.SenderSettings.active', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='reset', full_name='CTA.ACTL.CDTS.SenderSettings.reset', index=1,
-      number=2, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='verbose', full_name='CTA.ACTL.CDTS.SenderSettings.verbose', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='telescope', full_name='CTA.ACTL.CDTS.SenderSettings.telescope', index=3,
-      number=4, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1074,
-  serialized_end=1157,
+    name="SenderSettings",
+    full_name="CTA.ACTL.CDTS.SenderSettings",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="active",
+            full_name="CTA.ACTL.CDTS.SenderSettings.active",
+            index=0,
+            number=1,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="reset",
+            full_name="CTA.ACTL.CDTS.SenderSettings.reset",
+            index=1,
+            number=2,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="verbose",
+            full_name="CTA.ACTL.CDTS.SenderSettings.verbose",
+            index=2,
+            number=3,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="telescope",
+            full_name="CTA.ACTL.CDTS.SenderSettings.telescope",
+            index=3,
+            number=4,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1074,
+    serialized_end=1157,
 )
 
 
 _EXTERNALTRIGGERSETTINGS = _descriptor.Descriptor(
-  name='ExternalTriggerSettings',
-  full_name='CTA.ACTL.CDTS.ExternalTriggerSettings',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='signal_width_in_ns', full_name='CTA.ACTL.CDTS.ExternalTriggerSettings.signal_width_in_ns', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='trigger_time', full_name='CTA.ACTL.CDTS.ExternalTriggerSettings.trigger_time', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='trigger_period', full_name='CTA.ACTL.CDTS.ExternalTriggerSettings.trigger_period', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='stop_trigger', full_name='CTA.ACTL.CDTS.ExternalTriggerSettings.stop_trigger', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=True, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1160,
-  serialized_end=1340,
+    name="ExternalTriggerSettings",
+    full_name="CTA.ACTL.CDTS.ExternalTriggerSettings",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="signal_width_in_ns",
+            full_name="CTA.ACTL.CDTS.ExternalTriggerSettings.signal_width_in_ns",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="trigger_time",
+            full_name="CTA.ACTL.CDTS.ExternalTriggerSettings.trigger_time",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="trigger_period",
+            full_name="CTA.ACTL.CDTS.ExternalTriggerSettings.trigger_period",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="stop_trigger",
+            full_name="CTA.ACTL.CDTS.ExternalTriggerSettings.stop_trigger",
+            index=3,
+            number=4,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=True,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1160,
+    serialized_end=1340,
 )
 
 
 _QUERY = _descriptor.Descriptor(
-  name='Query',
-  full_name='CTA.ACTL.CDTS.Query',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='type', full_name='CTA.ACTL.CDTS.Query.type', index=0,
-      number=1, type=14, cpp_type=8, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='vuart', full_name='CTA.ACTL.CDTS.Query.vuart', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='external_trigger', full_name='CTA.ACTL.CDTS.Query.external_trigger', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='monitoring', full_name='CTA.ACTL.CDTS.Query.monitoring', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='sender', full_name='CTA.ACTL.CDTS.Query.sender', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='readout', full_name='CTA.ACTL.CDTS.Query.readout', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='busy', full_name='CTA.ACTL.CDTS.Query.busy', index=6,
-      number=7, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='led', full_name='CTA.ACTL.CDTS.Query.led', index=7,
-      number=8, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='clock', full_name='CTA.ACTL.CDTS.Query.clock', index=8,
-      number=9, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=1,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='error', full_name='CTA.ACTL.CDTS.Query.error', index=9,
-      number=666, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-    _QUERY_QUERYTYPE,
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto2',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1343,
-  serialized_end=1935,
+    name="Query",
+    full_name="CTA.ACTL.CDTS.Query",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="type",
+            full_name="CTA.ACTL.CDTS.Query.type",
+            index=0,
+            number=1,
+            type=14,
+            cpp_type=8,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="vuart",
+            full_name="CTA.ACTL.CDTS.Query.vuart",
+            index=1,
+            number=2,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b("").decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="external_trigger",
+            full_name="CTA.ACTL.CDTS.Query.external_trigger",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="monitoring",
+            full_name="CTA.ACTL.CDTS.Query.monitoring",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="sender",
+            full_name="CTA.ACTL.CDTS.Query.sender",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="readout",
+            full_name="CTA.ACTL.CDTS.Query.readout",
+            index=5,
+            number=6,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="busy",
+            full_name="CTA.ACTL.CDTS.Query.busy",
+            index=6,
+            number=7,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="led",
+            full_name="CTA.ACTL.CDTS.Query.led",
+            index=7,
+            number=8,
+            type=8,
+            cpp_type=7,
+            label=1,
+            has_default_value=False,
+            default_value=False,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="clock",
+            full_name="CTA.ACTL.CDTS.Query.clock",
+            index=8,
+            number=9,
+            type=14,
+            cpp_type=8,
+            label=1,
+            has_default_value=False,
+            default_value=1,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="error",
+            full_name="CTA.ACTL.CDTS.Query.error",
+            index=9,
+            number=666,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b("").decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[_QUERY_QUERYTYPE],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto2",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1343,
+    serialized_end=1935,
 )
 
-_TRIGGERMESSAGE.fields_by_name['time'].message_type = _TIMESTAMP
-_TRIGGERMESSAGE.fields_by_name['type'].enum_type = _TRIGGERTYPE
-_TRIGGERMESSAGE.fields_by_name['status'].enum_type = _WHITERABBITSTATUS
-_TRIGGERBUNCH.fields_by_name['triggers'].message_type = _TRIGGERMESSAGE
-_TRIGGERBUNCH.fields_by_name['arrival_time'].message_type = _TIMESTAMP
-_MONITORING.fields_by_name['readout'].message_type = _FIFOMONITORING
-_MONITORING.fields_by_name['busy'].message_type = _FIFOMONITORING
-_SIMULATIONSETTINGS.fields_by_name['type'].enum_type = _GENERATORTYPE
-_FIFOSETTINGS.fields_by_name['simulation'].message_type = _SIMULATIONSETTINGS
-_EXTERNALTRIGGERSETTINGS.fields_by_name['trigger_time'].message_type = _TIMESTAMP
-_EXTERNALTRIGGERSETTINGS.fields_by_name['trigger_period'].message_type = _TIMESTAMP
-_QUERY.fields_by_name['type'].enum_type = _QUERY_QUERYTYPE
-_QUERY.fields_by_name['external_trigger'].message_type = _EXTERNALTRIGGERSETTINGS
-_QUERY.fields_by_name['monitoring'].message_type = _MONITORING
-_QUERY.fields_by_name['sender'].message_type = _SENDERSETTINGS
-_QUERY.fields_by_name['readout'].message_type = _FIFOSETTINGS
-_QUERY.fields_by_name['busy'].message_type = _FIFOSETTINGS
-_QUERY.fields_by_name['clock'].enum_type = _CLOCKFREQUENCY
+_TRIGGERMESSAGE.fields_by_name["time"].message_type = _TIMESTAMP
+_TRIGGERMESSAGE.fields_by_name["type"].enum_type = _TRIGGERTYPE
+_TRIGGERMESSAGE.fields_by_name["status"].enum_type = _WHITERABBITSTATUS
+_TRIGGERBUNCH.fields_by_name["triggers"].message_type = _TRIGGERMESSAGE
+_TRIGGERBUNCH.fields_by_name["arrival_time"].message_type = _TIMESTAMP
+_MONITORING.fields_by_name["readout"].message_type = _FIFOMONITORING
+_MONITORING.fields_by_name["busy"].message_type = _FIFOMONITORING
+_SIMULATIONSETTINGS.fields_by_name["type"].enum_type = _GENERATORTYPE
+_FIFOSETTINGS.fields_by_name["simulation"].message_type = _SIMULATIONSETTINGS
+_EXTERNALTRIGGERSETTINGS.fields_by_name["trigger_time"].message_type = _TIMESTAMP
+_EXTERNALTRIGGERSETTINGS.fields_by_name["trigger_period"].message_type = _TIMESTAMP
+_QUERY.fields_by_name["type"].enum_type = _QUERY_QUERYTYPE
+_QUERY.fields_by_name["external_trigger"].message_type = _EXTERNALTRIGGERSETTINGS
+_QUERY.fields_by_name["monitoring"].message_type = _MONITORING
+_QUERY.fields_by_name["sender"].message_type = _SENDERSETTINGS
+_QUERY.fields_by_name["readout"].message_type = _FIFOSETTINGS
+_QUERY.fields_by_name["busy"].message_type = _FIFOSETTINGS
+_QUERY.fields_by_name["clock"].enum_type = _CLOCKFREQUENCY
 _QUERY_QUERYTYPE.containing_type = _QUERY
-DESCRIPTOR.message_types_by_name['TimeStamp'] = _TIMESTAMP
-DESCRIPTOR.message_types_by_name['TriggerMessage'] = _TRIGGERMESSAGE
-DESCRIPTOR.message_types_by_name['TriggerBunch'] = _TRIGGERBUNCH
-DESCRIPTOR.message_types_by_name['SpeedTestConfig'] = _SPEEDTESTCONFIG
-DESCRIPTOR.message_types_by_name['FIFOMonitoring'] = _FIFOMONITORING
-DESCRIPTOR.message_types_by_name['Monitoring'] = _MONITORING
-DESCRIPTOR.message_types_by_name['SimulationSettings'] = _SIMULATIONSETTINGS
-DESCRIPTOR.message_types_by_name['FIFOSettings'] = _FIFOSETTINGS
-DESCRIPTOR.message_types_by_name['SenderSettings'] = _SENDERSETTINGS
-DESCRIPTOR.message_types_by_name['ExternalTriggerSettings'] = _EXTERNALTRIGGERSETTINGS
-DESCRIPTOR.message_types_by_name['Query'] = _QUERY
-DESCRIPTOR.enum_types_by_name['TriggerType'] = _TRIGGERTYPE
-DESCRIPTOR.enum_types_by_name['WhiteRabbitStatus'] = _WHITERABBITSTATUS
-DESCRIPTOR.enum_types_by_name['GeneratorType'] = _GENERATORTYPE
-DESCRIPTOR.enum_types_by_name['ClockFrequency'] = _CLOCKFREQUENCY
+DESCRIPTOR.message_types_by_name["TimeStamp"] = _TIMESTAMP
+DESCRIPTOR.message_types_by_name["TriggerMessage"] = _TRIGGERMESSAGE
+DESCRIPTOR.message_types_by_name["TriggerBunch"] = _TRIGGERBUNCH
+DESCRIPTOR.message_types_by_name["SpeedTestConfig"] = _SPEEDTESTCONFIG
+DESCRIPTOR.message_types_by_name["FIFOMonitoring"] = _FIFOMONITORING
+DESCRIPTOR.message_types_by_name["Monitoring"] = _MONITORING
+DESCRIPTOR.message_types_by_name["SimulationSettings"] = _SIMULATIONSETTINGS
+DESCRIPTOR.message_types_by_name["FIFOSettings"] = _FIFOSETTINGS
+DESCRIPTOR.message_types_by_name["SenderSettings"] = _SENDERSETTINGS
+DESCRIPTOR.message_types_by_name["ExternalTriggerSettings"] = _EXTERNALTRIGGERSETTINGS
+DESCRIPTOR.message_types_by_name["Query"] = _QUERY
+DESCRIPTOR.enum_types_by_name["TriggerType"] = _TRIGGERTYPE
+DESCRIPTOR.enum_types_by_name["WhiteRabbitStatus"] = _WHITERABBITSTATUS
+DESCRIPTOR.enum_types_by_name["GeneratorType"] = _GENERATORTYPE
+DESCRIPTOR.enum_types_by_name["ClockFrequency"] = _CLOCKFREQUENCY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-TimeStamp = _reflection.GeneratedProtocolMessageType('TimeStamp', (_message.Message,), dict(
-  DESCRIPTOR = _TIMESTAMP,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.TimeStamp)
-  ))
+TimeStamp = _reflection.GeneratedProtocolMessageType(
+    "TimeStamp",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_TIMESTAMP,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.TimeStamp)
+    ),
+)
 _sym_db.RegisterMessage(TimeStamp)
 
-TriggerMessage = _reflection.GeneratedProtocolMessageType('TriggerMessage', (_message.Message,), dict(
-  DESCRIPTOR = _TRIGGERMESSAGE,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.TriggerMessage)
-  ))
+TriggerMessage = _reflection.GeneratedProtocolMessageType(
+    "TriggerMessage",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_TRIGGERMESSAGE,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.TriggerMessage)
+    ),
+)
 _sym_db.RegisterMessage(TriggerMessage)
 
-TriggerBunch = _reflection.GeneratedProtocolMessageType('TriggerBunch', (_message.Message,), dict(
-  DESCRIPTOR = _TRIGGERBUNCH,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.TriggerBunch)
-  ))
+TriggerBunch = _reflection.GeneratedProtocolMessageType(
+    "TriggerBunch",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_TRIGGERBUNCH,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.TriggerBunch)
+    ),
+)
 _sym_db.RegisterMessage(TriggerBunch)
 
-SpeedTestConfig = _reflection.GeneratedProtocolMessageType('SpeedTestConfig', (_message.Message,), dict(
-  DESCRIPTOR = _SPEEDTESTCONFIG,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.SpeedTestConfig)
-  ))
+SpeedTestConfig = _reflection.GeneratedProtocolMessageType(
+    "SpeedTestConfig",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_SPEEDTESTCONFIG,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.SpeedTestConfig)
+    ),
+)
 _sym_db.RegisterMessage(SpeedTestConfig)
 
-FIFOMonitoring = _reflection.GeneratedProtocolMessageType('FIFOMonitoring', (_message.Message,), dict(
-  DESCRIPTOR = _FIFOMONITORING,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.FIFOMonitoring)
-  ))
+FIFOMonitoring = _reflection.GeneratedProtocolMessageType(
+    "FIFOMonitoring",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_FIFOMONITORING,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.FIFOMonitoring)
+    ),
+)
 _sym_db.RegisterMessage(FIFOMonitoring)
 
-Monitoring = _reflection.GeneratedProtocolMessageType('Monitoring', (_message.Message,), dict(
-  DESCRIPTOR = _MONITORING,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.Monitoring)
-  ))
+Monitoring = _reflection.GeneratedProtocolMessageType(
+    "Monitoring",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_MONITORING,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.Monitoring)
+    ),
+)
 _sym_db.RegisterMessage(Monitoring)
 
-SimulationSettings = _reflection.GeneratedProtocolMessageType('SimulationSettings', (_message.Message,), dict(
-  DESCRIPTOR = _SIMULATIONSETTINGS,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.SimulationSettings)
-  ))
+SimulationSettings = _reflection.GeneratedProtocolMessageType(
+    "SimulationSettings",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_SIMULATIONSETTINGS,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.SimulationSettings)
+    ),
+)
 _sym_db.RegisterMessage(SimulationSettings)
 
-FIFOSettings = _reflection.GeneratedProtocolMessageType('FIFOSettings', (_message.Message,), dict(
-  DESCRIPTOR = _FIFOSETTINGS,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.FIFOSettings)
-  ))
+FIFOSettings = _reflection.GeneratedProtocolMessageType(
+    "FIFOSettings",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_FIFOSETTINGS,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.FIFOSettings)
+    ),
+)
 _sym_db.RegisterMessage(FIFOSettings)
 
-SenderSettings = _reflection.GeneratedProtocolMessageType('SenderSettings', (_message.Message,), dict(
-  DESCRIPTOR = _SENDERSETTINGS,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.SenderSettings)
-  ))
+SenderSettings = _reflection.GeneratedProtocolMessageType(
+    "SenderSettings",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_SENDERSETTINGS,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.SenderSettings)
+    ),
+)
 _sym_db.RegisterMessage(SenderSettings)
 
-ExternalTriggerSettings = _reflection.GeneratedProtocolMessageType('ExternalTriggerSettings', (_message.Message,), dict(
-  DESCRIPTOR = _EXTERNALTRIGGERSETTINGS,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.ExternalTriggerSettings)
-  ))
+ExternalTriggerSettings = _reflection.GeneratedProtocolMessageType(
+    "ExternalTriggerSettings",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_EXTERNALTRIGGERSETTINGS,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.ExternalTriggerSettings)
+    ),
+)
 _sym_db.RegisterMessage(ExternalTriggerSettings)
 
-Query = _reflection.GeneratedProtocolMessageType('Query', (_message.Message,), dict(
-  DESCRIPTOR = _QUERY,
-  __module__ = 'CDTS_pb2'
-  # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.Query)
-  ))
+Query = _reflection.GeneratedProtocolMessageType(
+    "Query",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_QUERY,
+        __module__="CDTS_pb2"
+        # @@protoc_insertion_point(class_scope:CTA.ACTL.CDTS.Query)
+    ),
+)
 _sym_db.RegisterMessage(Query)
 
 
