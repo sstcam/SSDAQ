@@ -7,7 +7,9 @@ from logging.handlers import SocketHandler
 
 # sslogger.addHandler(SocketHandler("127.0.0.1", 10001))
 from ssdaq.core.logging import handlers
+
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
+
 
 class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
     def __init__(

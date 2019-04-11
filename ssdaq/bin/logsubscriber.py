@@ -16,6 +16,8 @@ COLOR_FORMAT = handlers.formatter_message(FORMAT, True)
 color_formatter = handlers.ColoredFormatter(COLOR_FORMAT)
 
 sh.setFormatter(color_formatter)
+
+
 def handle_log_record(log_record):
     """ Handles the incoming log record """
 
@@ -25,6 +27,7 @@ def handle_log_record(log_record):
     for h in logger.handlers:
         h.setFormatter(color_formatter)
     logger.handle(log_record)
+
 
 def main():
 
@@ -70,7 +73,7 @@ def main():
             print("\nClosing listener")
             sub.close()
             break
-        if(record is not None):
+        if record is not None:
             handle_log_record(record)
     sub.close()
 

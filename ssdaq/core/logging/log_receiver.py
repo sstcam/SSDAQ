@@ -29,6 +29,7 @@ from ssdaq.core.receiver_server import ReceiverServer
 
 from collections import deque
 
+
 class LoggReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list, name: str = "LogReceiver"):
         self.loop = asyncio.get_event_loop()
@@ -36,8 +37,7 @@ class LoggReceiver(ReceiverServer):
         self.receiver = self.setup_stream(
             lambda: LogReceiverProtocol(self, self.loop, self.log)
         )
-        self.log_buffer = deque([],maxlen=100)
-
+        self.log_buffer = deque([], maxlen=100)
 
     async def receive_log(self, record):
         self.log_buffer.append(record)

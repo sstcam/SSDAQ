@@ -81,8 +81,7 @@ class ZMQTCPPublisher(Publisher):
         else:
             self.log = logger.getChild(name)
         self.log.info(
-            "Initialized a(n) %s TCP publisher socket on port: %s"
-            % (mode, con_str)
+            "Initialized a(n) %s TCP publisher socket on port: %s" % (mode, con_str)
         )
 
     async def apublish(self, packet: bytes):

@@ -18,7 +18,7 @@ class BasicSubscriber(Thread):
 
     id_counter = 0
 
-    def __init__(self, ip: str, port: int, unpack = None, logger: logging.Logger = None):
+    def __init__(self, ip: str, port: int, unpack=None, logger: logging.Logger = None):
         Thread.__init__(self)
         BasicSubscriber.id_counter += 1
         if logger is None:
@@ -108,9 +108,20 @@ class BasicTriggerSubscriber(BasicSubscriber):
         super().__init__(ip=ip, port=port, unpack=tdata.TriggerPacketData.unpack)
 
 
-
 from ssdaq.core.logging import handlers
-logunpack = lambda x : handlers.protb2logrecord(handlers.parseprotb2log(x))
+
+logunpack = lambda x: handlers.protb2logrecord(handlers.parseprotb2log(x))
+
 class BasicLogSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=logunpack)
+
+from ssdaq.core.timestamps import CDTS_pb2
+def timeunpack(x):
+    tmsg = CDTS_pb2.TriggerMessage()
+    tmsg.ParseFromString(x)
+    return tmsg
+
+class TimeStampSubscriber(BasicSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None):
+        super().__init__(ip=ip, port=port, unpack=timeunpack)
