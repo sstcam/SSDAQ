@@ -180,3 +180,27 @@ class TimestampWriter(WriterSubscriber):
             file_enumerator=file_enumerator,
             filesize_lim=filesize_lim,
         )
+
+from ssdaq.subscribers.basicsubscriber import BasicTriggerSubscriber
+class TriggerWriter(WriterSubscriber):
+    def __init__(
+        self,
+        file_prefix: str,
+        ip: str,
+        port: int,
+        folder: str = "",
+        file_enumerator: str = None,
+        filesize_lim: int = None,
+    ):
+        super().__init__(
+            file_prefix=file_prefix,
+            ip=ip,
+            port=port,
+            subscriber=BasicTriggerSubscriber,
+            writer=protobuf_io.TriggerWriter,
+            file_ext=".prt",
+            name="TriggerWriter",
+            folder=folder,
+            file_enumerator=file_enumerator,
+            filesize_lim=filesize_lim,
+        )

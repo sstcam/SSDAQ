@@ -54,6 +54,9 @@ setup(
             "ss-example-listener = ssdaq.bin.simple_ev_listn:main",
             "control-ssdaq=ssdaq.bin.ssdaq_control:main",
             "chec-triggsubsc=ssdaq.bin.basic_trigg_subscr:main",
+            "chec-timestamp-writer=ssdaq.bin.writers:timestampwriter",
+            "chec-trigger-writer=ssdaq.bin.writers:triggerwriter",
+            "chec-log-writer=ssdaq.bin.writers:logwriter"
         ]
     },
 )
