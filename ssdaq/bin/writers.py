@@ -10,7 +10,7 @@ def logwriter():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    cargs.subport(parser,default=5559)
+    cargs.subport(parser, default=5559)
     cargs.subaddr(parser)
     cargs.filename(parser)
     cargs.version(parser)
@@ -41,7 +41,7 @@ def timestampwriter():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    cargs.subport(parser,default=5559)
+    cargs.subport(parser, default=5559)
     cargs.subaddr(parser)
     cargs.filename(parser)
     cargs.version(parser)
@@ -63,6 +63,7 @@ def timestampwriter():
             running = False
     data_writer.close()
 
+
 def triggerwriter():
     import argparse
 
@@ -71,7 +72,7 @@ def triggerwriter():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    cargs.subport(parser,default=5559)
+    cargs.subport(parser, default=5559)
     cargs.subaddr(parser)
     cargs.filename(parser)
     cargs.version(parser)
@@ -92,6 +93,7 @@ def triggerwriter():
         if ans == "yes":
             running = False
     data_writer.close()
+
 
 if __name__ == "__main__":
     logwriter()

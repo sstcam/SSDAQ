@@ -2,6 +2,10 @@ from threading import Thread
 import zmq
 from queue import Queue
 import logging
+from ssdaq import SSReadout
+from ssdaq.core.triggers import data as tdata
+from ssdaq.core.logging import handlers
+from ssdaq.core.timestamps import CDTS_pb2
 
 
 class BasicSubscriber(Thread):
@@ -100,15 +104,9 @@ class BasicSubscriber(Thread):
         self.running = False
 
 
-from ssdaq import SSReadout
-
-
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes)
-
-
-from ssdaq.core.triggers import data as tdata
 
 
 class BasicTriggerSubscriber(BasicSubscriber):
@@ -116,17 +114,12 @@ class BasicTriggerSubscriber(BasicSubscriber):
         super().__init__(ip=ip, port=port, unpack=tdata.TriggerPacketData.unpack)
 
 
-from ssdaq.core.logging import handlers
-
 logunpack = lambda x: handlers.protb2logrecord(handlers.parseprotb2log(x))
 
 
 class BasicLogSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=logunpack)
-
-
-from ssdaq.core.timestamps import CDTS_pb2
 
 
 def timeunpack(x):

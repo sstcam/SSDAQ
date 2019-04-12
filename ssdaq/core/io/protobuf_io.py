@@ -17,6 +17,7 @@ class RawObjectWriterBase:
         self.filename = filename
         self.file = open(self.filename, "wb")
         self.data_counter = 0
+
     def __enter__(self):
         return self
 
@@ -29,8 +30,10 @@ class RawObjectWriterBase:
         self.file.write(_chunk_header.pack(len(data), binascii.crc32(data)))
         self.file.write(data)
         self.data_counter += 1
+
     def close(self):
         self.file.close()
+
 
 class RawObjectReaderBase:
     """
@@ -74,6 +77,7 @@ class RawObjectReaderBase:
     def close(self):
         self.file.close()
 
+
 ###End of Raw object IO classes#####
 
 ### Specialization to different protobuf protocols#####
@@ -94,6 +98,8 @@ class LogReader(RawObjectReaderBase):
 
 
 from ssdaq.core.timestamps import CDTS_pb2
+
+
 class TimestampWriter(RawObjectWriterBase):
     def write(self, timestamp):
         super().write(timestamp.SerializeToString())
@@ -109,14 +115,18 @@ class TimestampReader(RawObjectReaderBase):
 
 from ssdaq.core.triggers import data
 
+
 class TriggerWriter(RawObjectWriterBase):
     def write(self, trigg):
-        super().write(data.NominalTriggerDataEncode.pack(trigg.TACK,
-                                                    trigg.trigg,
-                                                    trigg.uc_ev,
-                                                    trigg.uc_pps,
-                                                    trigg.uc_clock,
-                                                    trigg.type)
+        super().write(
+            data.NominalTriggerDataEncode.pack(
+                trigg.TACK,
+                trigg.trigg,
+                trigg.uc_ev,
+                trigg.uc_pps,
+                trigg.uc_clock,
+                trigg.type,
+            )
         )
 
 

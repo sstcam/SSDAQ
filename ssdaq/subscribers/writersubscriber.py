@@ -7,6 +7,12 @@ from ssdaq import sslogger
 from ssdaq import BasicSubscriber
 import logging
 import os
+from ssdaq.core.logging import handlers
+from ssdaq.core.io import protobuf_io
+from ssdaq.subscribers.basicsubscriber import (
+    BasicTimestampSubscriber,
+    BasicTriggerSubscriber,
+)
 
 
 class WriterSubscriber(Thread):
@@ -123,9 +129,6 @@ class WriterSubscriber(Thread):
         )
 
 
-from ssdaq.core.logging import handlers
-from ssdaq.core.io import protobuf_io
-
 logprotounpack = lambda x: handlers.parseprotb2log(x)
 
 
@@ -157,7 +160,7 @@ class LogWriter(WriterSubscriber):
             filesize_lim=filesize_lim,
         )
 
-from ssdaq.subscribers.basicsubscriber import BasicTimestampSubscriber
+
 class TimestampWriter(WriterSubscriber):
     def __init__(
         self,
@@ -181,7 +184,7 @@ class TimestampWriter(WriterSubscriber):
             filesize_lim=filesize_lim,
         )
 
-from ssdaq.subscribers.basicsubscriber import BasicTriggerSubscriber
+
 class TriggerWriter(WriterSubscriber):
     def __init__(
         self,

@@ -11,7 +11,7 @@ install_requires = [
     "pyyaml",
     "click",
     "bitarray",
-    "protobuf"
+    "protobuf",
 ]
 
 #
@@ -56,7 +56,7 @@ setup(
             "chec-triggsubsc=ssdaq.bin.basic_trigg_subscr:main",
             "chec-timestamp-writer=ssdaq.bin.writers:timestampwriter",
             "chec-trigger-writer=ssdaq.bin.writers:triggerwriter",
-            "chec-log-writer=ssdaq.bin.writers:logwriter"
+            "chec-log-writer=ssdaq.bin.writers:logwriter",
         ]
     },
 )
