@@ -5,13 +5,9 @@ from threading import Thread
 from ssdaq import sslogger
 
 from ssdaq import BasicSubscriber
+from ssdaq.subscribers import basicsubscriber
 import logging
 import os
-
-
-class SSReadoutSubscriber(BasicSubscriber):
-    def __init__(self, ip: str, port: int, logger: logging.Logger = None):
-        super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes)
 
 
 class SSFileWriter(Thread):
@@ -37,7 +33,7 @@ class SSFileWriter(Thread):
         self.folder = folder
         self.file_prefix = file_prefix
         self.log = sslogger.getChild("SSFileWriter")
-        self._readout_subscriber = SSReadoutSubscriber(
+        self._readout_subscriber = basicsubscriber.SSReadoutSubscriber(
             logger=self.log.getChild("Subscriber"), ip=ip, port=port
         )
         self.running = False

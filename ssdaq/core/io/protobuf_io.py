@@ -1,9 +1,9 @@
 import struct
 import binascii
 
-header = struct.Struct("2I")
+_chunk_header = struct.Struct("2I")
 
-###Raw object IO
+###Raw object IO classes#####
 
 
 class RawObjectWriterBase:
@@ -16,6 +16,7 @@ class RawObjectWriterBase:
     def __init__(self, filename):
         self.filename = filename
         self.file = open(self.filename, "wb")
+        self.data_counter = 0
 
     def __enter__(self):
         return self
@@ -26,8 +27,12 @@ class RawObjectWriterBase:
     def write(self, data: bytes):
         """
         """
-        self.file.write(header.pack(len(data), binascii.crc32(data)))
+        self.file.write(_chunk_header.pack(len(data), binascii.crc32(data)))
         self.file.write(data)
+        self.data_counter += 1
+
+    def close(self):
+        self.file.close()
 
 
 class RawObjectReaderBase:
@@ -53,23 +58,29 @@ class RawObjectReaderBase:
         fp = 0
         while True:
             fh.seek(fp)
-            rd = fh.read(header.size)
+            rd = fh.read(_chunk_header.size)
             if rd == b"":
                 break
             self.fpos.append(fp)
-            offset, crc = header.unpack(rd)
+            offset, crc = _chunk_header.unpack(rd)
             self.n_entries += 1
             fp = fh.tell() + offset
         self.file.seek(0)
 
     def read(self) -> bytes:
-        sized = self.file.read(header.size)
+        sized = self.file.read(_chunk_header.size)
         if sized == b"":
             return None
-        size, crc = sizeform.unpack(sized)[0]
+        size, crc = _chunk_header.unpack(sized)
         return self.file.read(size)
 
+    def close(self):
+        self.file.close()
 
+
+###End of Raw object IO classes#####
+
+### Specialization to different protobuf protocols#####
 from ssdaq.core.logging import log_pb2
 
 
@@ -84,3 +95,19 @@ class LogReader(RawObjectReaderBase):
         data = super().read()
         log.ParseFromString(data)
         return log
+
+
+from ssdaq.core.timestamps import CDTS_pb2
+
+
+class TimestampWriter(RawObjectWriterBase):
+    def write(self, timestamp):
+        super().write(timestamp.SerializeToString())
+
+
+class TimestampReader(RawObjectReaderBase):
+    def read(self):
+        timestamp = CDTS_pb2.TriggerMessage()
+        data = super().read()
+        timestamp.ParseFromString(data)
+        return timestamp
