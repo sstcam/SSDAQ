@@ -111,15 +111,15 @@ from ssdaq.core.triggers import data
 
 class TriggerWriter(RawObjectWriterBase):
     def write(self, trigg):
-        super().write(NominalTriggerDataEncode.pack(trigg.tack,
-                                                    trigg.trigg_pat,
+        super().write(data.NominalTriggerDataEncode.pack(trigg.TACK,
+                                                    trigg.trigg,
                                                     trigg.uc_ev,
                                                     trigg.uc_pps,
                                                     trigg.uc_clock,
-                                                    trigg.ttype)
+                                                    trigg.type)
         )
 
 
 class TriggerReader(RawObjectReaderBase):
     def read(self):
-        return TriggerPacketData.unpack(super().read())
+        return data.TriggerPacketData.unpack(super().read())
