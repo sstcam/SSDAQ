@@ -22,10 +22,8 @@ class TimestampReceiver(ReceiverServer):
         self._setup = True
 
     async def ct_subscribe(self):
-        print("Running")
         while self.running:
             packet = await self.receiver.recv()
-            print("Packet received")
             tb = CDTS_pb2.TriggerBunch()
             tb.ParseFromString(packet)
             for tm in tb.triggers:
