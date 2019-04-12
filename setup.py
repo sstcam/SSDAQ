@@ -11,6 +11,7 @@ install_requires = [
     "pyyaml",
     "click",
     "bitarray",
+    "protobuf"
 ]
 
 #
