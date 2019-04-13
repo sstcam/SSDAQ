@@ -34,7 +34,7 @@ def slowsignaldump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    rsub = SSReadoutSubscriber(port=args.listen_port, ip=args.ip_addr)
+    rsub = SSReadoutSubscriber(port=args.sub_port, ip=args.sub_ip)
     rsub.start()
 
     readout_counter = np.zeros(32)
@@ -96,7 +96,7 @@ def timestampdump():
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
     sub = basicsubscriber.BasicTimestampSubscriber(
-        port=args.listen_port, ip=args.ip_addr
+        port=args.sub_port, ip=args.sub_ip
     )
     sub.start()
 
@@ -150,7 +150,7 @@ def triggerdump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicTriggerSubscriber(port=args.listen_port, ip=args.ip_addr)
+    sub = basicsubscriber.BasicTriggerSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)
@@ -223,7 +223,7 @@ def logdump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicLogSubscriber(port=args.listen_port, ip=args.ip_addr)
+    sub = basicsubscriber.BasicLogSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)

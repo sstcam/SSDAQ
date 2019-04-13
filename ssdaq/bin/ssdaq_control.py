@@ -119,7 +119,7 @@ def cli(ctx):
 
     from pkg_resources import resource_stream, resource_string, resource_listdir
 
-    ctx.obj["CONFIG"] = yaml.load(
+    ctx.obj["CONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-config.yaml")
     )
     pass
@@ -143,7 +143,7 @@ def roa(ctx, daemon, config):
     if daemon:
         print("Run as deamon")
     if config:
-        ctx.obj["CONFIG"] = yaml.load(open(config, "r"))
+        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
     config = ctx.obj["CONFIG"]
     readout_assembler = ReadoutAssemblerDaemonWrapper(
         **config["ReadoutAssemblerDaemon"], **config["ReadoutAssembler"]
@@ -173,7 +173,7 @@ def dw(ctx, filename_prefix, output_folder, daemon, config):
     if daemon:
         print("Run as deamon")
     if config:
-        ctx.obj["CONFIG"] = yaml.load(open(config, "r"))
+        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
     config = ctx.obj["CONFIG"]
 
     if filename_prefix:

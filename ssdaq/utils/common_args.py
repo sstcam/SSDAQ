@@ -23,14 +23,14 @@ def version(parser):
 
 def subport(parser, default=5555):
     parser.add_argument(
-        "-l", dest="listen_port", type=int, default=default, help="subscription port"
+        "-l", dest="sub_port", type=int, default=default, help="subscription port"
     )
 
 
 def subaddr(parser, default="127.0.0.101"):
     parser.add_argument(
         "-i",
-        dest="listen_interface",
+        dest="sub_ip",
         type=str,
         default=default,
         help="subscription address/interface",

@@ -20,8 +20,8 @@ def writerfactory(descr, defaultport, writer_cls):
         data_writer = writer_cls(
             args.filename,
             file_enumerator="date",
-            port=args.listen_port,
-            ip=args.listen_interface,
+            port=args.sub_port,
+            ip=args.sub_ip,
         )
 
         data_writer.start()
