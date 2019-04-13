@@ -17,7 +17,7 @@ def verbosity(parser):
 
 def version(parser):
     parser.add_argument(
-        "-v", "--version", action="version", version="%(prog)s " + ssdaq.__version__
+        "-v", "--version", action="version", version="%(prog)s SSDAQ v" + ssdaq.__version__
     )
 
 
