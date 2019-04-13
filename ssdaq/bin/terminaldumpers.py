@@ -81,7 +81,6 @@ def slowsignaldump():
     rsub.join()
 
 
-
 def timestampdump():
 
     parser = argparse.ArgumentParser(
@@ -188,6 +187,7 @@ def triggerdump():
     sub.close()
     sub.join()
 
+
 from ssdaq.core.logging import handlers
 
 sh = logging.StreamHandler()
@@ -196,6 +196,8 @@ COLOR_FORMAT = handlers.formatter_message(FORMAT, True)
 color_formatter = handlers.ColoredFormatter(COLOR_FORMAT)
 
 sh.setFormatter(color_formatter)
+
+
 def handle_log_record(log_record):
     """ Handles the incoming log record """
 
