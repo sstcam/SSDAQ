@@ -81,6 +81,51 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         data_writer.start()
 
 
+
+
+class RecieverDaemonWrapper(daemon.Daemon):
+    def __init__(
+        self,
+        receiver_cls,
+        stdout="/dev/null",
+        stderr="/dev/null",
+        set_taskset=False,
+        core_id=0,
+        log_level="INFO",
+        **kwargs
+    ):
+        # Deamonizing the server
+        daemon.Daemon.__init__(
+            self, "/tmp/{}_daemon.pid".format(receiver_cls.__name__), stdout=stdout, stderr=stderr
+        )
+        self.receiver_cls = receiver_cls
+        self.kwargs = kwargs
+        self.set_taskset = set_taskset
+        self.core_id = str(core_id)
+        import logging
+
+        eval("sslogger.setLevel(logging.%s)" % log_level)
+        sslogger.info("Set logging level to {}".format(log_level))
+
+    def run(self):
+        from subprocess import call
+        import os
+
+        if self.set_taskset:
+            # forces the process to one particular CPU core
+            call(["taskset", "-cp", self.core_id, "%s" % (str(os.getpid()))])
+        eps = []
+        i = 1
+        for epname, epconf in self.kwargs["Publishers"].items():
+            epconf["name"] = epname
+            pubclass = getattr(publishers, epconf["class"])
+            del epconf["class"]
+            eps.append(pubclass(**epconf))
+            i += 1
+        reciever = self.receiver_cls(publishers=eps, **self.kwargs["Receiver"])
+        reciever.run()
+
+
 import yaml
 import click
 
@@ -276,10 +321,48 @@ def restart_pub(ctx):
     sock.send(b"set_publish_readouts True")
     print(sock.recv().decode("ascii"))
 
+from multiprocessing import Process
+from ssdaq import receivers
+
+def f(receiver,comp_config):
+    receiver = RecieverDaemonWrapper(receiver,**comp_config["Daemon"], **comp_config)
+    receiver.start(daemon)
+
+@start.command()
+@click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
+@click.argument("config", required=False)
+@click.pass_context
+def config(ctx, config,daemon):
+    """Start daemons from CONFIG file"""
+    # print("Starting readout writer...")
+    if daemon:
+        print("Run as deamon")
+
+    if config:
+        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
+    config = ctx.obj["CONFIG"]
+    for component, comp_config in config.items():
+        receiver = getattr(receivers, comp_config["Receiver"]['class'])
+        del comp_config["Receiver"]['class']
+        print("Starting {} ....".format(component))
+        p = Process(target=f, args=(receiver,comp_config))
+        p.start()
+        p.join()
+
+    # readout_writer = ReadoutFileWriterDaemonWrapper(
+    #     **config["ReadoutFileWriterDaemon"], **config["SSFileWriter"]
+    # )
+    # readout_writer.start(daemon)
+
+
+
+
+
 
 cli.add_command(start)
 cli.add_command(stop)
 cli.add_command(roa_ctrl)
+
 
 
 def main():

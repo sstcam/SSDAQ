@@ -1,0 +1,33 @@
+// See README.txt for information and build instructions.
+
+// NOTE!!!! By any mean, do not give names for messages as in the thrift declaration file
+
+package chec;
+
+// ****** Logging Data Definition, valid for all subsystems
+message LogData
+{
+    enum Severity
+    {
+        NOTSET  = 0;
+        DEBUG   = 10;
+        INFO    = 20;
+        WARNING = 30;
+        ERROR   = 40;
+        FATAL   = 50;
+    }
+
+    required int32 systemType = 1; // System type (use types.h types everywhere)
+    required Severity severity = 2;
+    required string sender  = 3;
+    required string message = 4;
+    required int64 time = 5;
+    required int32 pid          = 6;
+    required string sourceFile  = 7;
+    required int32  line        = 8;
+    optional string position = 9; // optional position id for drawers (coordinate string)
+    optional string geoid = 10; // optional position id for drawers (coordinate string)
+    optional int32 seqid = 11; // optional sequential id for drawers
+    optional int64 cameraPcTime = 12; // additional timestamp from camera pc
+
+}

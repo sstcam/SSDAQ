@@ -30,7 +30,7 @@ from ssdaq.core.receiver_server import ReceiverServer
 from collections import deque
 
 
-class LoggReceiver(ReceiverServer):
+class LogReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list, name: str = "LogReceiver"):
         self.loop = asyncio.get_event_loop()
         super().__init__(ip, port, publishers, name, self.loop)
@@ -47,7 +47,7 @@ class LoggReceiver(ReceiverServer):
 if __name__ == "__main__":
     from ssdaq.core import publishers
 
-    trpl = LoggReceiver(
+    trpl = LogReceiver(
         port=10001,
         ip="0.0.0.0",
         publishers=[publishers.ZMQTCPPublisher(ip="127.0.0.101", port=5559)],

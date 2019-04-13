@@ -1,0 +1,137 @@
+package CTA.ACTL.CDTS;
+
+enum TriggerType {
+    ReadoutTrigger = 1;
+    BusyTrigger = 2;
+    SoftTrigger = 3;
+    ExternalTrigger = 4;
+    FlatfieldTrigger = 5;
+    SinglePeTrigger = 6;
+    PedestalTrigger = 7;
+    MuonTrigger = 8;
+}
+
+enum WhiteRabbitStatus {
+    Uninitialized = 1;
+    SyncNsec = 2;
+    SyncSec = 3;
+    SyncPhase = 4;
+    TrackPhase = 5;
+    WaitOffsetStable = 6;
+}
+
+message TimeStamp {
+    optional uint64 seconds = 1;
+    optional uint64 pico_seconds = 2;
+    optional uint32 index = 3;
+    optional uint32 tai_hi = 4;
+    optional uint32 tai_lo = 5;
+    optional uint32 cyc = 6;
+    optional uint32 tdc_hi = 7;
+    optional uint32 tdc_lo = 8;
+}
+
+message TriggerMessage {
+    optional uint32 telescope = 1;
+    optional uint64 event_counter = 2;
+    optional uint64 pps_counter = 3;
+    optional uint64 clock_counter = 4;
+    optional TimeStamp time = 5;
+    optional TriggerType type = 6 [default = ReadoutTrigger];
+    optional WhiteRabbitStatus status = 7 [default = TrackPhase];
+    optional fixed64 pattern = 8;
+}
+
+message TriggerBunch {
+    optional uint32 telescope = 1;
+    optional uint64 bunch_counter = 2;
+    repeated TriggerMessage triggers = 3;
+    optional TimeStamp arrival_time = 4;
+}
+
+message SpeedTestConfig {
+    optional fixed64 bunches = 1;
+    optional fixed64 triggers = 2;
+}
+
+message FIFOMonitoring {
+    optional uint64 invalid = 1;
+}
+
+message Monitoring {
+    optional uint64 send_errors = 1;
+    optional FIFOMonitoring readout = 2;
+    optional FIFOMonitoring busy = 3;
+}
+
+enum GeneratorType {
+    GenNone = 1;
+    Disabled = 2;
+    Gaussian = 3;
+    Poisson = 4;
+}
+
+message SimulationSettings {
+    optional GeneratorType type = 1;
+    optional double frequency_in_hz = 2;
+    optional double rms_in_ps = 3;
+}
+
+message FIFOSettings {
+    optional bool active = 1;
+    optional bool reset = 2;
+    optional bool purge = 3;
+    optional bool verbose = 4;
+    optional SimulationSettings simulation = 5;
+}
+
+message SenderSettings {
+    optional bool active = 1;
+    optional bool reset = 2;
+    optional bool verbose = 3;
+    optional uint64 telescope = 4;
+}
+
+message ExternalTriggerSettings {
+    optional uint32 signal_width_in_ns = 1;
+    optional TimeStamp trigger_time = 2;
+    optional TimeStamp trigger_period = 3;
+    optional bool stop_trigger = 4 [default = false];
+}
+
+enum ClockFrequency {
+    Unknown = 1;
+    Clock10MHz = 2;
+    Clock62_5MHz = 3;
+    Clock125MHz = 4;
+}
+
+message Query {
+    enum QueryType {
+        VUART = 1;
+        ExternalTrigger = 2;
+        Monitoring = 3;
+        Terminate = 666;
+        Reboot = 667;
+        Reset = 668;
+        Sender = 669;
+        Readout = 670;
+        Busy = 671;
+        LED = 672;
+        Clock = 673;
+        Status = 997;
+        Alive = 998;
+        Error = 999;
+    }
+
+    repeated QueryType type = 1;
+    optional string vuart = 2;
+    optional ExternalTriggerSettings external_trigger = 3;
+    optional Monitoring monitoring = 4;
+    optional SenderSettings sender = 5;
+    optional FIFOSettings readout = 6;
+    optional FIFOSettings busy = 7;
+    optional bool led = 8;
+    optional ClockFrequency clock = 9;
+    optional string error = 666;
+}
