@@ -14,7 +14,7 @@ class TriggerPacketData:
         magic_mark, mtype, mlen = TriggerPacketHeader.unpack(raw_packet[:4])
 
         if magic_mark != 0xCAFE:
-            log.error("Message magic marker malformed")
+            log.error("Message magic marker malformed got %x instead of %x"%(magic_mark,0xCAFE))
             return None
         return NominalTriggerDataEncode.unpack(raw_packet[4:])
 

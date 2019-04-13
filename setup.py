@@ -51,9 +51,11 @@ setup(
         "console_scripts": [
             "ssdaq = ssdaq.bin.ssdaqd:main",
             "ssdatawriter = ssdaq.bin.ssdatawriter:main",
-            "ss-example-listener = ssdaq.bin.simple_ev_listn:main",
             "control-ssdaq=ssdaq.bin.ssdaq_control:main",
-            "chec-triggsubsc=ssdaq.bin.basic_trigg_subscr:main",
+            "chec-slowsig-dumper=ssdaq.bin.terminaldumpers:slowsignaldump",
+            "chec-trigger-dumper=ssdaq.bin.terminaldumpers:triggerdump",
+            "chec-timestamp-dumper=ssdaq.bin.terminaldumpers:timestampdump",
+            "chec-log-dumper=ssdaq.bin.terminaldumpers:logdump",
             "chec-timestamp-writer=ssdaq.bin.writers:timestampwriter",
             "chec-trigger-writer=ssdaq.bin.writers:triggerwriter",
             "chec-log-writer=ssdaq.bin.writers:logwriter",
