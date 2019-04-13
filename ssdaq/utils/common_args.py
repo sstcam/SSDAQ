@@ -36,7 +36,7 @@ def subaddr(parser, default="127.0.0.101"):
         help="subscription address/interface",
     )
 
-def n_outputs(parser)
+def n_outputs(parser):
     parser.add_argument(
         "-n",
         dest="n_outputs",

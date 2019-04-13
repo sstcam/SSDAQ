@@ -50,7 +50,6 @@ setup(
     entry_points={
         "console_scripts": [
             "ssdaq = ssdaq.bin.ssdaqd:main",
-            "ssdatawriter = ssdaq.bin.ssdatawriter:main",
             "control-ssdaq=ssdaq.bin.ssdaq_control:main",
             "chec-slowsig-dumper=ssdaq.bin.terminaldumpers:slowsignaldump",
             "chec-trigger-dumper=ssdaq.bin.terminaldumpers:triggerdump",
@@ -59,6 +58,7 @@ setup(
             "chec-timestamp-writer=ssdaq.bin.writers:timestampwriter",
             "chec-trigger-writer=ssdaq.bin.writers:triggerwriter",
             "chec-log-writer=ssdaq.bin.writers:logwriter",
+            "chec-slowsig-writer=ssdaq.bin.writers:slowsignal",
         ]
     },
 )
