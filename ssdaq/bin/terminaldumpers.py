@@ -17,7 +17,7 @@ def slowsignaldump():
         description="Start a simple Slow Signal readout listener.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
+    cargs.n_outputs(parser)
     cargs.subport(parser, default=5559)
     cargs.subaddr(parser)
     parser.add_argument(
@@ -27,13 +27,7 @@ def slowsignaldump():
         type=int,
         help="Set target module number for which SS data is printed out",
     )
-    parser.add_argument(
-        "-n",
-        dest="n_readouts",
-        type=int,
-        default=None,
-        help="the number of readouts to listen to before exiting (if not set there is no limit",
-    )
+
     cargs.verbosity(parser)
     cargs.version(parser)
 
@@ -72,7 +66,7 @@ def slowsignaldump():
         if args.tm_numb:
             print(readout.data[args.tm_numb])
         n += 1
-        if args.n_readouts != None and n >= args.n_readouts:
+        if args.n_outputs != None and n >= args.n_outputs:
             break
 
     try:
@@ -96,13 +90,6 @@ def timestampdump():
     )
     cargs.subport(parser, default=5559)
     cargs.subaddr(parser)
-    parser.add_argument(
-        "-n",
-        dest="n_readouts",
-        type=int,
-        default=None,
-        help="the number of readouts to listen to before exiting (if not set there is no limit",
-    )
     cargs.verbosity(parser)
     cargs.version(parser)
 
@@ -158,13 +145,6 @@ def triggerdump():
     )
     cargs.subport(parser, default=5559)
     cargs.subaddr(parser)
-    parser.add_argument(
-        "-n",
-        dest="n_readouts",
-        type=int,
-        default=None,
-        help="the number of readouts to listen to before exiting (if not set there is no limit",
-    )
     cargs.verbosity(parser)
     cargs.version(parser)
 

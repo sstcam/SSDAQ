@@ -10,21 +10,8 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    parser.add_argument(
-        "-l",
-        dest="listen_port",
-        type=str,
-        default="5555",
-        help="port for incoming event data",
-    )
-
-    parser.add_argument(
-        "-i",
-        dest="listen_interface",
-        type=str,
-        default="127.0.0.101",
-        help="port for incoming event data",
-    )
+    cargs.subport(parser, default=5559)
+    cargs.subaddr(parser)
 
     parser.add_argument("filename", type=str, default="5555", help="Output file name")
 
