@@ -10,6 +10,23 @@
 #     ip: 127.0.0.101
 #     port: 5555
 #     filesize_lim: 10
+LogReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/logrec.log'
+    stderr: '/tmp/logrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: LogReceiver
+    ip: 0.0.0.0
+    port: 10001
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9001
+
 
 ReadoutAssembler:
   Daemon:
@@ -40,22 +57,7 @@ ReadoutAssembler:
     #   port: 9999
     #   mode: outbound
 
-LogReceiver:
-  Daemon:
-    #redirection of output (should be /dev/null when logging is fully configurable)
-    stdout: '/tmp/logrec.log'
-    stderr: '/tmp/logrec.log'
-    set_taskset: true #Using task set to force kernel not to swap cores
-    core_id: 0 #which cpu core to use with taskset
-  Receiver:
-    class: LogReceiver
-    ip: 0.0.0.0
-    port: 10001
-  Publishers: #Listing publishers
-    ZMQReadoutPublisherLocal: #name
-      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
-      ip: 127.0.0.101
-      port: 9001
+
 
 TriggerReceiver:
   Daemon:
@@ -89,4 +91,4 @@ TimestampReceiver:
     ZMQReadoutPublisherLocal: #name
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
       ip: 127.0.0.101
-      port: 9002
+      port: 9003

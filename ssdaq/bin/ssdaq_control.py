@@ -323,14 +323,14 @@ def restart_pub(ctx):
 
 from multiprocessing import Process
 from ssdaq import receivers
-
+import time
 def f(receiver,comp_config):
     receiver = RecieverDaemonWrapper(receiver,**comp_config["Daemon"], **comp_config)
     receiver.start(daemon)
 
 @start.command()
 @click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
-@click.argument("config", required=False)
+@click.argument("config")
 @click.pass_context
 def config(ctx, config,daemon):
     """Start daemons from CONFIG file"""
@@ -348,12 +348,26 @@ def config(ctx, config,daemon):
         p = Process(target=f, args=(receiver,comp_config))
         p.start()
         p.join()
+        time.sleep(1)
 
-    # readout_writer = ReadoutFileWriterDaemonWrapper(
-    #     **config["ReadoutFileWriterDaemon"], **config["SSFileWriter"]
-    # )
-    # readout_writer.start(daemon)
+@stop.command()
+@click.argument("config")
+@click.pass_context
+def config(ctx,config):
+    """Start daemons from CONFIG file"""
+    # print("Starting readout writer...")
+    if daemon:
+        print("Run as deamon")
 
+    if config:
+        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
+    config = ctx.obj["CONFIG"]
+    for component, comp_config in config.items():
+        receiver = getattr(receivers, comp_config["Receiver"]['class'])
+        del comp_config["Receiver"]['class']
+        print("Stoping {} ....".format(component))
+        receiver = RecieverDaemonWrapper(receiver,**comp_config["Daemon"], **comp_config)
+        receiver.stop()
 
 
 
