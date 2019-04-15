@@ -9,7 +9,7 @@ import argparse
 
 import signal
 from datetime import datetime
-
+import time
 
 def slowsignaldump():
 
@@ -18,7 +18,7 @@ def slowsignaldump():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     cargs.n_outputs(parser)
-    cargs.subport(parser, default=5559)
+    cargs.subport(parser, default=9004)
     cargs.subaddr(parser)
     parser.add_argument(
         "-t",
@@ -87,7 +87,7 @@ def timestampdump():
         description="Subcribe to a published timestamp stream.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cargs.subport(parser, default=5559)
+    cargs.subport(parser, default=9003)
     cargs.subaddr(parser)
     cargs.verbosity(parser)
     cargs.version(parser)
@@ -142,7 +142,7 @@ def triggerdump():
         description="Subcribe to a published trigger packet stream.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cargs.subport(parser, default=5559)
+    cargs.subport(parser, default=9002)
     cargs.subaddr(parser)
     cargs.verbosity(parser)
     cargs.version(parser)
@@ -215,7 +215,7 @@ def logdump():
         description="Subcribe to a published log stream.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cargs.subport(parser, default=5559)
+    cargs.subport(parser, default=9001)
     cargs.subaddr(parser)
     cargs.verbosity(parser)
     cargs.version(parser)
