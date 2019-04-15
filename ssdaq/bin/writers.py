@@ -36,13 +36,13 @@ def writerfactory(descr, defaultport, writer_cls):
     return writer
 
 
-slowsignal = writerfactory("Start a simple slow signal writer.", 9996, SSFileWriter)
+slowsignal = writerfactory("Start a simple slow signal writer.", 9004, SSFileWriter)
 logwriter = writerfactory(
-    "Start a simple log data writer.", 9998, writersubscriber.LogWriter
+    "Start a simple log data writer.", 9001, writersubscriber.LogWriter
 )
 timestampwriter = writerfactory(
-    "Start a simple timestamp data writer.", 9999, writersubscriber.TimestampWriter
+    "Start a simple timestamp data writer.", 9003, writersubscriber.TimestampWriter
 )
 triggerwriter = writerfactory(
-    "Start a simple trigger data writer.", 9997, writersubscriber.TriggerWriter
+    "Start a simple trigger data writer.", 9002, writersubscriber.TriggerWriter
 )
