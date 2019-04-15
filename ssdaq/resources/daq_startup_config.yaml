@@ -47,7 +47,7 @@ ReadoutAssembler:
     ZMQReadoutPublisherLocal: #name
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
       ip: 127.0.0.101
-      port: 5555
+      port: 9004
     # Dumper: #name
     #   class: RawWriter #class
     #   file_name: 'bindump.dat'

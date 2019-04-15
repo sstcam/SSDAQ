@@ -24,6 +24,10 @@ class ReceiverServer:
         self._context = zmq.asyncio.Context()
         self._com_sock = self._context.socket(zmq.REP)
         self._com_sock.bind("ipc:///tmp/{}".format(self._name))
+        #monitoring socket
+        self._monitor_sock = self._context.socket(zmq.PUSH)
+        self._monitor_sock.connect("tcp://127.0.0.101:10002")
+
         self._setup = False
 
     def setup_stream(self, recv_protocol):
