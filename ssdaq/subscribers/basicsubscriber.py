@@ -6,7 +6,7 @@ from ssdaq import SSReadout
 from ssdaq.core.triggers import data as tdata
 from ssdaq.core.logging import handlers
 from ssdaq.core.timestamps import CDTS_pb2
-
+from ssdaq.core.monitor import monitor_pb2
 
 class BasicSubscriber(Thread):
     """ A convinience class to subscribe to a published data stream from a reciver.
@@ -131,3 +131,13 @@ def timeunpack(x):
 class BasicTimestampSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=timeunpack)
+
+
+def monunpack(x):
+    monmsg = monitor_pb2.MonitorData()
+    monmsg.ParseFromString(x)
+    return monmsg
+
+class BasicMonSubscriber(BasicSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None):
+        super().__init__(ip=ip, port=port, unpack=monunpack)

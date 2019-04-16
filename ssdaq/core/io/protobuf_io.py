@@ -1,5 +1,7 @@
 import struct
 import binascii
+from numba import jit
+
 
 _chunk_header = struct.Struct("2I")
 
@@ -42,6 +44,7 @@ class RawObjectReaderBase:
     def __init__(self, filename: str):
         self.filename = filename
         self.file = open(self.filename, "rb")
+        self._chunk_header = struct.Struct("2I")
         self._scan_file()
 
     def __enter__(self):
@@ -50,6 +53,11 @@ class RawObjectReaderBase:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.file.close()
 
+    def reload(self):
+        self.file.seek(0)
+        self._scan_file()
+
+    # @jit(nopython=False)
     def _scan_file(self):
         offset = 0
         fh = self.file
@@ -58,11 +66,11 @@ class RawObjectReaderBase:
         fp = 0
         while True:
             fh.seek(fp)
-            rd = fh.read(_chunk_header.size)
+            rd = fh.read(self._chunk_header.size)
             if rd == b"":
                 break
             self.fpos.append(fp)
-            offset, crc = _chunk_header.unpack(rd)
+            offset, crc = self._chunk_header.unpack(rd)
             self.n_entries += 1
             fp = fh.tell() + offset
         self.file.seek(0)

@@ -240,3 +240,36 @@ def logdump():
         if record is not None:
             handle_log_record(record)
     sub.close()
+
+
+def mondumper():
+
+    parser = argparse.ArgumentParser(
+        description="Subcribe to a published log stream.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    cargs.subport(parser, default=9005)
+    cargs.subaddr(parser)
+    cargs.verbosity(parser)
+    cargs.version(parser)
+
+    args = parser.parse_args()
+    eval("sslogger.setLevel(logging.%s)" % args.verbose)
+
+    sub = basicsubscriber.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub.start()
+
+    signal.alarm(0)
+    print("Press `ctrl-C` to stop")
+    last_uc_ev = 0
+    missed_counter = 0
+    while True:
+        try:
+            mon = sub.get_data()
+        except KeyboardInterrupt:
+            print("\nClosing listener")
+            sub.close()
+            break
+        if mon is not None:
+            print(mon)
+    sub.close()

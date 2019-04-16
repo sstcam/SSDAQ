@@ -3,6 +3,8 @@ import struct
 import numpy as np
 from datetime import datetime, timedelta
 from . import data as dc
+from ssdaq import SSReadout
+from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
 
 READOUT_LENGTH = (
     dc.N_TM_PIX * 2 + 2 * 8
@@ -10,11 +12,12 @@ READOUT_LENGTH = (
 
 
 class SlowSignalDataProtocol(asyncio.Protocol):
-    def __init__(self, loop, log, relaxed_ip_range, packet_debug_stream_file=None):
+    def __init__(self, loop, log, relaxed_ip_range,mon, packet_debug_stream_file=None):
         self._buffer = asyncio.Queue()
         self.loop = loop
         self.log = log.getChild("SlowSignalDataProtocol")
         self.relaxed_ip_range = relaxed_ip_range
+        self.mon = mon
         if packet_debug_stream_file != None:
             self.log.info(
                 "Opening a packet_debug_stream_file at %s" % packet_debug_stream_file
@@ -32,6 +35,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
 
     def datagram_received(self, data, addr):
         cpu_time = datetime.utcnow()
+        self.mon.register_data_packet()
         if len(data) % (READOUT_LENGTH) != 0:
             self.log.warn("Got unsuported packet size, skipping packet")
             self.log.info("Bad package came from %s:%d" % tuple(data[0]))
@@ -93,9 +97,7 @@ class PartialReadout:
         self.cpu_time.append(cpu_t)
 
 
-from ssdaq import SSReadout
 
-from ssdaq.core.receiver_server import ReceiverServer
 
 
 class SSReadoutAssembler(ReceiverServer):
@@ -117,13 +119,13 @@ class SSReadoutAssembler(ReceiverServer):
         packet_debug_stream_file: str = None,
     ):
         super().__init__(listen_ip, listen_port, publishers, "SSReadoutAssembler")
-
         self.relaxed_ip_range = relaxed_ip_range
         self.transport, self.ss_data_protocol = self.setup_udp(
             lambda: SlowSignalDataProtocol(
                 self.loop,
                 self.log,
                 self.relaxed_ip_range,
+                ReceiverMonSender("SSReadoutAssembler",self.loop,self._context),
                 packet_debug_stream_file=packet_debug_stream_file,
             )
         )

@@ -52,6 +52,7 @@ setup(
             "ssdaq = ssdaq.bin.ssdaqd:main",
             "control-ssdaq=ssdaq.bin.ssdaq_control:main",
             "chec-slowsig-dumper=ssdaq.bin.terminaldumpers:slowsignaldump",
+            "chec-mon-dumper=ssdaq.bin.terminaldumpers:mondumper",
             "chec-trigger-dumper=ssdaq.bin.terminaldumpers:triggerdump",
             "chec-timestamp-dumper=ssdaq.bin.terminaldumpers:timestampdump",
             "chec-log-dumper=ssdaq.bin.terminaldumpers:logdump",
@@ -59,6 +60,7 @@ setup(
             "chec-trigger-writer=ssdaq.bin.writers:triggerwriter",
             "chec-log-writer=ssdaq.bin.writers:logwriter",
             "chec-slowsig-writer=ssdaq.bin.writers:slowsignal",
+
         ]
     },
 )

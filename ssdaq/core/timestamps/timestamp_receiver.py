@@ -1,5 +1,5 @@
 import asyncio
-from ssdaq.core.receiver_server import ReceiverServer
+from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
 
 import zmq
 
@@ -20,12 +20,13 @@ class TimestampReceiver(ReceiverServer):
         self.receiver.connect(connectionstr)
         self.receiver.setsockopt_string(zmq.SUBSCRIBE, "")
         self._setup = True
-
+        self.mon = ReceiverMonSender("TimestampReceiver",self.loop,self._context)
     async def ct_subscribe(self):
         while self.running:
             packet = await self.receiver.recv()
             tb = CDTS_pb2.TriggerBunch()
             tb.ParseFromString(packet)
+            self.mon.register_data_packet()
             for tm in tb.triggers:
                 await self.publish(tm.SerializeToString())
 
