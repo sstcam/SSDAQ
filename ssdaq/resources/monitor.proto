@@ -1,0 +1,27 @@
+package chec;
+
+
+message TimeUTC
+{
+    required int32 sec  = 1;
+    required int32 nsec = 2;
+}
+
+
+
+message MonitorData{
+    message Reciever{
+        required string name = 1;
+        optional int32 pid = 2;
+        optional bool recv_data = 3;
+        optional float data_rate = 4;
+        repeated uint32 from_tm = 5 [packed=true];
+    }
+    required TimeUTC time = 1;
+    optional Reciever reciver=16;
+}
+
+message MonitorFrame{
+    required TimeUTC time = 1;
+    repeated MonitorData mondata =2;
+}
