@@ -26,6 +26,8 @@ def mock_data_protocol():
     )
     mock_dp.packet_debug_stream = False
     mock_dp.packet_format = struct.Struct(">Q32HQ32H")
+    mock_dp.mon = Mock()
+    mock_dp.mon.register_data_packet = Mock()
     return mock_dp
 
 
