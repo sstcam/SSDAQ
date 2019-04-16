@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from . import data as dc
 from ssdaq import SSReadout
-from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
+from ssdaq.core.receiver_server import ReceiverServer, ReceiverMonSender
 
 READOUT_LENGTH = (
     dc.N_TM_PIX * 2 + 2 * 8
@@ -12,7 +12,7 @@ READOUT_LENGTH = (
 
 
 class SlowSignalDataProtocol(asyncio.Protocol):
-    def __init__(self, loop, log, relaxed_ip_range,mon, packet_debug_stream_file=None):
+    def __init__(self, loop, log, relaxed_ip_range, mon, packet_debug_stream_file=None):
         self._buffer = asyncio.Queue()
         self.loop = loop
         self.log = log.getChild("SlowSignalDataProtocol")
@@ -97,9 +97,6 @@ class PartialReadout:
         self.cpu_time.append(cpu_t)
 
 
-
-
-
 class SSReadoutAssembler(ReceiverServer):
     """
     Slow signal readout assembler. Constructs
@@ -125,7 +122,7 @@ class SSReadoutAssembler(ReceiverServer):
                 self.loop,
                 self.log,
                 self.relaxed_ip_range,
-                ReceiverMonSender("SSReadoutAssembler",self.loop,self._context),
+                ReceiverMonSender("SSReadoutAssembler", self.loop, self._context),
                 packet_debug_stream_file=packet_debug_stream_file,
             )
         )

@@ -8,6 +8,7 @@ from ssdaq.core.logging import handlers
 from ssdaq.core.timestamps import CDTS_pb2
 from ssdaq.core.monitor import monitor_pb2
 
+
 class BasicSubscriber(Thread):
     """ A convinience class to subscribe to a published data stream from a reciver.
         Data are retrived by the `get_data()` method once the listener has been started by the
@@ -137,6 +138,7 @@ def monunpack(x):
     monmsg = monitor_pb2.MonitorData()
     monmsg.ParseFromString(x)
     return monmsg
+
 
 class BasicMonSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):

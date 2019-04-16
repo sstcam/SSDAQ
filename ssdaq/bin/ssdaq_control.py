@@ -81,8 +81,6 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         data_writer.start()
 
 
-
-
 class RecieverDaemonWrapper(daemon.Daemon):
     def __init__(
         self,
@@ -96,7 +94,10 @@ class RecieverDaemonWrapper(daemon.Daemon):
     ):
         # Deamonizing the server
         daemon.Daemon.__init__(
-            self, "/tmp/{}_daemon.pid".format(receiver_cls.__name__), stdout=stdout, stderr=stderr
+            self,
+            "/tmp/{}_daemon.pid".format(receiver_cls.__name__),
+            stdout=stdout,
+            stderr=stderr,
         )
         self.receiver_cls = receiver_cls
         self.kwargs = kwargs
@@ -321,18 +322,22 @@ def restart_pub(ctx):
     sock.send(b"set_publish_readouts True")
     print(sock.recv().decode("ascii"))
 
+
 from multiprocessing import Process
 from ssdaq import receivers
 import time
-def f(receiver,comp_config):
-    receiver = RecieverDaemonWrapper(receiver,**comp_config["Daemon"], **comp_config)
+
+
+def f(receiver, comp_config):
+    receiver = RecieverDaemonWrapper(receiver, **comp_config["Daemon"], **comp_config)
     receiver.start(daemon)
+
 
 @start.command()
 @click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
 @click.argument("config")
 @click.pass_context
-def config(ctx, config,daemon):
+def config(ctx, config, daemon):
     """Start daemons from CONFIG file"""
     # print("Starting readout writer...")
     if daemon:
@@ -342,18 +347,19 @@ def config(ctx, config,daemon):
         ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
     config = ctx.obj["CONFIG"]
     for component, comp_config in config.items():
-        receiver = getattr(receivers, comp_config["Receiver"]['class'])
-        del comp_config["Receiver"]['class']
+        receiver = getattr(receivers, comp_config["Receiver"]["class"])
+        del comp_config["Receiver"]["class"]
         print("Starting {} ....".format(component))
-        p = Process(target=f, args=(receiver,comp_config))
+        p = Process(target=f, args=(receiver, comp_config))
         p.start()
         p.join()
         time.sleep(1)
 
+
 @stop.command()
 @click.argument("config")
 @click.pass_context
-def config(ctx,config):
+def config(ctx, config):
     """Start daemons from CONFIG file"""
     # print("Starting readout writer...")
     if daemon:
@@ -363,20 +369,18 @@ def config(ctx,config):
         ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
     config = ctx.obj["CONFIG"]
     for component, comp_config in config.items():
-        receiver = getattr(receivers, comp_config["Receiver"]['class'])
-        del comp_config["Receiver"]['class']
+        receiver = getattr(receivers, comp_config["Receiver"]["class"])
+        del comp_config["Receiver"]["class"]
         print("Stoping {} ....".format(component))
-        receiver = RecieverDaemonWrapper(receiver,**comp_config["Daemon"], **comp_config)
+        receiver = RecieverDaemonWrapper(
+            receiver, **comp_config["Daemon"], **comp_config
+        )
         receiver.stop()
-
-
-
 
 
 cli.add_command(start)
 cli.add_command(stop)
 cli.add_command(roa_ctrl)
-
 
 
 def main():

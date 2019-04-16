@@ -11,6 +11,7 @@ import signal
 from datetime import datetime
 import time
 
+
 def slowsignaldump():
 
     parser = argparse.ArgumentParser(
@@ -95,9 +96,7 @@ def timestampdump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicTimestampSubscriber(
-        port=args.sub_port, ip=args.sub_ip
-    )
+    sub = basicsubscriber.BasicTimestampSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)

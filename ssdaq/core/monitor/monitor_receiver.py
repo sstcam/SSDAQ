@@ -14,9 +14,7 @@ class MonitorReceiver(ReceiverServer):
         # The ReceiverServer already has a zmq context
         self.receiver = self._context.socket(zmq.PULL)
         connectionstr = "tcp://{}:{}".format(ip, port)
-        self.log.info(
-            "Setting up monitor zmq pull server at {}".format(connectionstr)
-        )
+        self.log.info("Setting up monitor zmq pull server at {}".format(connectionstr))
         self.receiver.bind(connectionstr)
         self._setup = True
 

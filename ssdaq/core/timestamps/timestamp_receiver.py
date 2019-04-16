@@ -1,5 +1,5 @@
 import asyncio
-from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
+from ssdaq.core.receiver_server import ReceiverServer, ReceiverMonSender
 
 import zmq
 
@@ -20,7 +20,8 @@ class TimestampReceiver(ReceiverServer):
         self.receiver.connect(connectionstr)
         self.receiver.setsockopt_string(zmq.SUBSCRIBE, "")
         self._setup = True
-        self.mon = ReceiverMonSender("TimestampReceiver",self.loop,self._context)
+        self.mon = ReceiverMonSender("TimestampReceiver", self.loop, self._context)
+
     async def ct_subscribe(self):
         while self.running:
             packet = await self.receiver.recv()

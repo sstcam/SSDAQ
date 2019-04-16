@@ -18,10 +18,7 @@ def writerfactory(descr, defaultport, writer_cls):
         args = parser.parse_args()
 
         data_writer = writer_cls(
-            args.filename,
-            file_enumerator="date",
-            port=args.sub_port,
-            ip=args.sub_ip,
+            args.filename, file_enumerator="date", port=args.sub_port, ip=args.sub_ip
         )
 
         data_writer.start()
