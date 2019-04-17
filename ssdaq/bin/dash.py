@@ -24,7 +24,7 @@ class ReceiverStatusDash:
     def render(self, mon):
         # print(mon.reciver.name,self.name,mon.reciver.name!=self.name)
 
-        if mon.reciver.name != self.name:
+        if mon is None or mon.reciver.name != self.name:
             if datetime.now().timestamp() - self.last_seen > 1.5:
                 mon = None
             else:
@@ -59,7 +59,7 @@ class ReceiverStatusDash:
             )
         self.counter += 1
 
-
+import queue
 def mondumper():
 
     parser = argparse.ArgumentParser(
@@ -93,15 +93,17 @@ def mondumper():
     with t.fullscreen():
         while True:
             try:
-                mon = sub.get_data()
+                mon = sub.get_data(timeout=1.0)
+            except queue.Empty:
+                mon =None
             except KeyboardInterrupt:
                 print("\nClosing listener")
                 sub.close()
                 break
-            if mon is not None:
+            # if mon is not None:
                 # print(mon)
-                for dash in dashes:
-                    dash.render(mon)
+            for dash in dashes:
+                dash.render(mon)
         sub.close()
 
 
