@@ -33,9 +33,9 @@ class ReceiverStatusDash:
         # print(mon.reciver.name,self.name)
 
         if mon is None:
-            status = self.terminal.bold_red("Offline")
+            status = self.terminal.bold_red("Offline  ")
         else:
-            status = self.terminal.bold_green("Online")
+            status = self.terminal.bold_green("Online  ")
 
         if mon is not None and mon.reciver.recv_data:
             data = self.terminal.bold_green("YES")
