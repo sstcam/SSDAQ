@@ -39,10 +39,10 @@ class ReceiverStatusDash:
 
         if mon is not None and mon.reciver.recv_data:
             data = self.terminal.bold_green("YES")
-            rate = "%.3g    " % mon.reciver.data_rate
+            rate = "%.3g     " % mon.reciver.data_rate
         else:
             data = self.terminal.bold_red("No ")
-            rate = "---"
+            rate = "---      "
 
         with self.terminal.location(self.loc[0], self.loc[1]):
             print(
