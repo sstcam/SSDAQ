@@ -11,7 +11,7 @@ LABEL version="1.3"
 LABEL description="Docker file for TM simulation."
 
 # setup working directory
-ADD SSUDPTMSimulator.py /app/
+ADD slowsignal_sim.py /app/
 WORKDIR /app
 
 # expose ports
@@ -19,5 +19,5 @@ EXPOSE 2009/udp
 EXPOSE 30001
 
 # start app
-#CMD [ "python3", "./SSUDPTMSimulator.py", "-d","2009" , "-i","172.17.0.1","-m","$MY_IP","-c","$COM_PORT","-t","$TM_ID" ]
-CMD python3 ./SSUDPTMSimulator.py -d 2009 -i 172.17.0.1 -m $MY_IP -c 30001 -t $TM_ID
+#CMD [ "python3", "./slowsignal_sim.py", "-d","2009" , "-i","172.17.0.1","-m","$MY_IP","-c","$COM_PORT","-t","$TM_ID" ]
+CMD python3 ./slowsignal_sim.py -d 2009 -i 172.17.0.1 -m $MY_IP -c 30001 -t $TM_ID

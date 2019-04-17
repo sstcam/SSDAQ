@@ -2,12 +2,13 @@
 
 
 def main():
-    from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
+    from ssdaq import ZMQTCPPublisher
+    from ssdaq.core.triggers import trigger_receiver
     import argparse
     from ssdaq.utils import common_args as cargs
 
     parser = argparse.ArgumentParser(
-        description="Start slow signal data acquisition.",
+        description="Star a triggerpacket receiver.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -30,31 +31,20 @@ def main():
         default="127.0.0.101",
         help="The publishing destination",
     )
-
-    parser.add_argument(
-        "-r",
-        "--relaxed-ip",
-        action="store_true",
-        help="The event builder relaxes the allowed ip range by mapping ip addesses with 2"
-        " last digits of the address being >32 to valid TM numbers. Note that several"
-        " ip addresses will map to the same TM. Use this option with cause.",
-    )
     cargs.version(parser)
     cargs.verbosity(parser)
     from ssdaq import sslogger
+    import logging
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    rop = ZMQTCPPublisher(port=args.publishing_port, ip=args.publishing_interface)
-    roa = SSReadoutAssembler(
-        relaxed_ip_range=args.relaxed_ip,
-        listen_ip="0.0.0.0",
-        listen_port=args.listen_port,
-        publishers=[rop],
+    pub = ZMQTCPPublisher(port=args.publishing_port, ip=args.publishing_interface)
+    trigserv = trigger_receiver.TriggerPacketReceiver(
+        ip="0.0.0.0", port=args.listen_port, publishers=[pub]
     )
 
-    roa.run()
+    trigserv.run()
 
 
 if __name__ == "__main__":

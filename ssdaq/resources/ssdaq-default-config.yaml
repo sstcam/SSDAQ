@@ -4,6 +4,7 @@ SSFileWriter:
   folder: /tmp/
   ip: 127.0.0.101
   port: 5555
+  filesize_lim: 10
 
 ReadoutFileWriterDaemon:
   #redirection of output (should be /dev/null when logging is fully configurable)
@@ -24,11 +25,16 @@ ReadoutAssembler:
     buffer_length: 1000
     readout_tw: !!float 1.e7 #nano seconds
     buffer_time: !!float 4e9
-  ReadoutPublishers:
-    ZMQReadoutPublisherLocal:
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
       ip: 127.0.0.101
       port: 5555
-    # ZMQReadoutPublisherOutbound:
+    # Dumper: #name
+    #   class: RawWriter #class
+    #   file_name: 'bindump.dat'
+    # ZMQReadoutPublisherOutbound: #name
+    #   class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
     #   ip: 141.34.29.161
     #   port: 9999
     #   mode: outbound
