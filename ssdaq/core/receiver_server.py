@@ -1,5 +1,4 @@
 import asyncio
-import socket
 import inspect
 import zmq
 import zmq.asyncio

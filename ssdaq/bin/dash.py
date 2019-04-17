@@ -1,13 +1,9 @@
 from ssdaq.utils import common_args as cargs
-from ssdaq import sslogger
-import logging
-import numpy as np
 
 import argparse
 
 import signal
 from datetime import datetime
-import time
 from blessed import Terminal
 from ssdaq import subscribers
 
@@ -84,8 +80,6 @@ def mondumper():
 
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
-    last_uc_ev = 0
-    missed_counter = 0
 
     rdash = ReceiverStatusDash(t, "SSReadoutAssembler", (0, 1))
     triggdash = ReceiverStatusDash(t, "TriggerPacketReceiver", (30, 1))

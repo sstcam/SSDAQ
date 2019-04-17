@@ -1,9 +1,7 @@
 import asyncio
-import pickle
-import logging
-import logging.handlers
-from signal import SIGTERM, SIGQUIT, SIGINT
-
+from ssdaq.core.receiver_server import ReceiverServer
+from .mon_sender import ReceiverMonSender
+from collections import deque
 
 class LogReceiverProtocol(asyncio.Protocol):
     def __init__(self, server, loop, log):
@@ -24,10 +22,6 @@ class LogReceiverProtocol(asyncio.Protocol):
         self.log.info("Lost connection of {}".format(self.peername))
         self.transport.close()
 
-
-from ssdaq.core.receiver_server import ReceiverServer
-from .mon_sender import ReceiverMonSender
-from collections import deque
 
 
 class LogReceiver(ReceiverServer):
