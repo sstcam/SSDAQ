@@ -1,6 +1,5 @@
 import struct
 import binascii
-from numba import jit
 
 
 _chunk_header = struct.Struct("2I")
@@ -57,7 +56,6 @@ class RawObjectReaderBase:
         self.file.seek(0)
         self._scan_file()
 
-    # @jit(nopython=False)
     def _scan_file(self):
         offset = 0
         fh = self.file
@@ -88,52 +86,3 @@ class RawObjectReaderBase:
 
 ###End of Raw object IO classes#####
 
-### Specialization to different protobuf protocols#####
-from ssdaq.core.data import LogData
-from ssdaq.core.data import TriggerMessage
-from ssdaq.core.data import TriggerPacketData, NominalTriggerDataEncode
-
-
-class LogWriter(RawObjectWriterBase):
-    def write(self, log: LogData):
-        super().write(log.SerializeToString())
-
-
-class LogReader(RawObjectReaderBase):
-    def read(self):
-        log = LogData()
-        data = super().read()
-        log.ParseFromString(data)
-        return log
-
-
-class TimestampWriter(RawObjectWriterBase):
-    def write(self, timestamp):
-        super().write(timestamp.SerializeToString())
-
-
-class TimestampReader(RawObjectReaderBase):
-    def read(self):
-        timestamp = TriggerMessage()
-        data = super().read()
-        timestamp.ParseFromString(data)
-        return timestamp
-
-
-class TriggerWriter(RawObjectWriterBase):
-    def write(self, trigg):
-        super().write(
-            NominalTriggerDataEncode.pack(
-                trigg.TACK,
-                trigg.trigg,
-                trigg.uc_ev,
-                trigg.uc_pps,
-                trigg.uc_clock,
-                trigg.type,
-            )
-        )
-
-
-class TriggerReader(RawObjectReaderBase):
-    def read(self):
-        return TriggerPacketData.unpack(super().read())

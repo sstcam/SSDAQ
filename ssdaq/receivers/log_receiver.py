@@ -25,8 +25,8 @@ class LogReceiverProtocol(asyncio.Protocol):
         self.transport.close()
 
 
-from ssdaq.core.receiver_server import ReceiverServer, ReceiverMonSender
-
+from ssdaq.core.receiver_server import ReceiverServer
+from .mon_sender import ReceiverMonSender
 from collections import deque
 
 

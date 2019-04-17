@@ -1,11 +1,12 @@
-from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
+from ssdaq.receivers import SSReadoutAssembler
+from ssdaq.core.publishers import ZMQTCPPublisher
 from ssdaq.utils import daemon
 import ssdaq
 from ssdaq.core import publishers
 from ssdaq import sslogger
 from logging.handlers import SocketHandler
 
-from ssdaq.core.logging import handlers
+from ssdaq import logging as handlers
 
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 
@@ -60,7 +61,7 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         self.kwargs = kwargs
 
     def run(self):
-        from ssdaq.subscribers.slowsignal import SSFileWriter
+        from ssdaq.subscribers import SSFileWriter
         import signal
         import sys
 

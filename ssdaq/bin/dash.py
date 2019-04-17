@@ -9,7 +9,7 @@ import signal
 from datetime import datetime
 import time
 from blessed import Terminal
-from ssdaq.subscribers import basicsubscriber
+from ssdaq import subscribers
 
 
 class ReceiverStatusDash:
@@ -79,7 +79,7 @@ def mondumper():
 
     t = Terminal()
 
-    sub = basicsubscriber.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub = subscribers.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)

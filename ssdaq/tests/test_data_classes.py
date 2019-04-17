@@ -1,5 +1,5 @@
 import pytest
-from ssdaq.core.data import SSReadout
+from ssdaq.data import SSReadout
 import numpy as np
 
 

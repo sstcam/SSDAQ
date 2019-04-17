@@ -1,6 +1,6 @@
 import logging
 import logging.handlers
-from ssdaq.core.data import log_pb2
+from ssdaq.data import log_pb2
 from datetime import datetime
 import os
 
