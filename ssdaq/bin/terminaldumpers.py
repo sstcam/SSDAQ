@@ -3,9 +3,7 @@ from ssdaq.utils import common_args as cargs
 from ssdaq import sslogger
 import logging
 import numpy as np
-
 import argparse
-
 import signal
 from datetime import datetime
 import time

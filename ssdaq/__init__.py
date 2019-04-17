@@ -13,11 +13,4 @@ _handler.setFormatter(_formatter)
 sslogger.addHandler(_handler)
 sslogger.setLevel(_logging.INFO)
 
-
-# from .core.slowsignal.data import SSReadout
-# from .core.io.slowsignal_io import SSDataReader, SSDataWriter
-# from .receivers import SSReadoutAssembler
-# from .core.publishers import ZMQTCPPublisher
-# from .subscribers.basicsubscriber import BasicSubscriber, SSReadoutSubscriber
-# from .subscribers.slowsignal import SSFileWriter
 from . import receivers,data,subscribers
