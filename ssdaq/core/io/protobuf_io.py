@@ -89,23 +89,22 @@ class RawObjectReaderBase:
 ###End of Raw object IO classes#####
 
 ### Specialization to different protobuf protocols#####
-from ssdaq.core.logging import log_pb2
+from ssdaq.core.data import LogData
+from ssdaq.core.data import TriggerMessage
+from ssdaq.core.data import TriggerPacketData, NominalTriggerDataEncode
 
 
 class LogWriter(RawObjectWriterBase):
-    def write(self, log: log_pb2.LogData):
+    def write(self, log: LogData):
         super().write(log.SerializeToString())
 
 
 class LogReader(RawObjectReaderBase):
     def read(self):
-        log = log_pb2.LogData()
+        log = LogData()
         data = super().read()
         log.ParseFromString(data)
         return log
-
-
-from ssdaq.core.timestamps import CDTS_pb2
 
 
 class TimestampWriter(RawObjectWriterBase):
@@ -115,19 +114,16 @@ class TimestampWriter(RawObjectWriterBase):
 
 class TimestampReader(RawObjectReaderBase):
     def read(self):
-        timestamp = CDTS_pb2.TriggerMessage()
+        timestamp = TriggerMessage()
         data = super().read()
         timestamp.ParseFromString(data)
         return timestamp
 
 
-from ssdaq.core.triggers import data
-
-
 class TriggerWriter(RawObjectWriterBase):
     def write(self, trigg):
         super().write(
-            data.NominalTriggerDataEncode.pack(
+            NominalTriggerDataEncode.pack(
                 trigg.TACK,
                 trigg.trigg,
                 trigg.uc_ev,
@@ -140,4 +136,4 @@ class TriggerWriter(RawObjectWriterBase):
 
 class TriggerReader(RawObjectReaderBase):
     def read(self):
-        return data.TriggerPacketData.unpack(super().read())
+        return TriggerPacketData.unpack(super().read())

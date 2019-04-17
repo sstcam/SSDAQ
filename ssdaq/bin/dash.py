@@ -59,7 +59,10 @@ class ReceiverStatusDash:
             )
         self.counter += 1
 
+
 import queue
+
+
 def mondumper():
 
     parser = argparse.ArgumentParser(
@@ -89,19 +92,18 @@ def mondumper():
     timedash = ReceiverStatusDash(t, "TimestampReceiver", (0, 6))
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 12))
-    dashes = [rdash, timedash, triggdash, logdash,mondash]
+    dashes = [rdash, timedash, triggdash, logdash, mondash]
     with t.fullscreen():
         while True:
             try:
                 mon = sub.get_data(timeout=1.0)
             except queue.Empty:
-                mon =None
+                mon = None
             except KeyboardInterrupt:
                 print("\nClosing listener")
                 sub.close()
                 break
-            # if mon is not None:
-                # print(mon)
+
             for dash in dashes:
                 dash.render(mon)
         sub.close()
@@ -109,30 +111,3 @@ def mondumper():
 
 if __name__ == "__main__":
     mondumper()
-#
-
-# sub = basicsubscriber.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
-
-
-#     with t.location(0, 1):
-#         print(t.bold("Hi there!"))
-#         print(t.bold_red_on_bright_green("It hurts my eyes!"))
-
-#     with t.location(0, t.height - 1):
-#         print(t.center(t.bold("press any key to continue.")))
-
-#     with t.cbreak():
-#         inp = t.inkey()
-
-#     # print('You pressed ' + repr(inp))
-#     # t.exit_fullscreen
-
-#     loop = asyncio.get_event_loop()
-#     loop.create_task(getinput(loop))
-#     loop.create_task(counter2(t, 0.0001))
-#     loop.create_task(counter(t, 1))
-
-#     try:
-#         loop.run_forever()
-#     except Exception as e:
-#         print(e)

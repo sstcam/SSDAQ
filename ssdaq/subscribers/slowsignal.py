@@ -1,6 +1,5 @@
-from ssdaq import SSReadout
-
-from ssdaq import SSDataWriter
+from ssdaq.core.data import SSReadout
+from ssdaq.core.io import SSDataWriter
 from threading import Thread
 from ssdaq import sslogger
 

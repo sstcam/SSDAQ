@@ -187,12 +187,12 @@ def triggerdump():
     sub.join()
 
 
-from ssdaq.core.logging import handlers
+from ssdaq.core import logging as ch_logging
 
 sh = logging.StreamHandler()
 FORMAT = "%(asctime)s [%(levelname)-18s](%(pid)d)[$BOLD%(name)-20s$RESET]  %(message)s ($BOLD%(filename)s$RESET:%(lineno)d)"
-COLOR_FORMAT = handlers.formatter_message(FORMAT, True)
-color_formatter = handlers.ColoredFormatter(COLOR_FORMAT)
+COLOR_FORMAT = ch_logging.formatter_message(FORMAT, True)
+color_formatter = ch_logging.ColoredFormatter(COLOR_FORMAT)
 
 sh.setFormatter(color_formatter)
 

@@ -1,5 +1,5 @@
 import pytest
-from ssdaq.core.slowsignal.readout_assembler import SlowSignalDataProtocol
+from ssdaq.receivers.readout_assembler import SlowSignalDataProtocol
 import numpy as np
 from unittest.mock import Mock
 import datetime

@@ -2,11 +2,11 @@ from threading import Thread
 import zmq
 from queue import Queue
 import logging
-from ssdaq import SSReadout
-from ssdaq.core.triggers import data as tdata
-from ssdaq.core.logging import handlers
-from ssdaq.core.timestamps import CDTS_pb2
-from ssdaq.core.monitor import monitor_pb2
+from ssdaq.core.data import SSReadout
+from ssdaq.core.data import TriggerPacketData
+from ssdaq.core import logging as handlers
+from ssdaq.core.data import CDTS_pb2
+from ssdaq.core.data import monitor_pb2
 
 
 class BasicSubscriber(Thread):
@@ -112,7 +112,7 @@ class SSReadoutSubscriber(BasicSubscriber):
 
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
-        super().__init__(ip=ip, port=port, unpack=tdata.TriggerPacketData.unpack)
+        super().__init__(ip=ip, port=port, unpack=TriggerPacketData.unpack)
 
 
 logunpack = lambda x: handlers.protb2logrecord(handlers.parseprotb2log(x))

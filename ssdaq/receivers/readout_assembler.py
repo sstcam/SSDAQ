@@ -2,8 +2,8 @@ import asyncio
 import struct
 import numpy as np
 from datetime import datetime, timedelta
-from . import data as dc
-from ssdaq import SSReadout
+from ssdaq.core.data import slowsignal_format as dc
+from ssdaq.core.data import SSReadout
 from ssdaq.core.receiver_server import ReceiverServer, ReceiverMonSender
 
 READOUT_LENGTH = (

@@ -4,7 +4,7 @@ from tables import IsDescription, UInt64Col, Float32Col, Float64Col
 from collections import namedtuple as _nt
 
 from ssdaq.version import get_version
-from ssdaq.core.slowsignal.data import SSReadout, N_TM_PIX, N_TM, ss_mappings
+from ssdaq.core.data.slowsignal_format import SSReadout, N_TM_PIX, N_TM, ss_mappings
 
 
 class TelData(IsDescription):

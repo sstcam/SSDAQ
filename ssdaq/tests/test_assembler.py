@@ -1,6 +1,6 @@
 import unittest
 
-from ssdaq import SSReadout, SSReadoutAssembler  # ,SSReadoutlowSignalDataProtocol
+# from ssdaq import SSReadout, SSReadoutAssembler  # ,SSReadoutlowSignalDataProtocol
 
 import socket
 from queue import Queue

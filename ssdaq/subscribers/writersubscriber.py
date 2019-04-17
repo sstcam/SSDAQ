@@ -7,7 +7,7 @@ from ssdaq import sslogger
 from ssdaq import BasicSubscriber
 import logging
 import os
-from ssdaq.core.logging import handlers
+from ssdaq.core import logging as handlers
 from ssdaq.core.io import protobuf_io
 from ssdaq.subscribers.basicsubscriber import (
     BasicTimestampSubscriber,

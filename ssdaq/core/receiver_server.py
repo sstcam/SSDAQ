@@ -11,7 +11,7 @@ import os
 if LooseVersion("17") > LooseVersion(zmq.__version__):
     zmq.asyncio.install()
 
-from ssdaq.core.monitor import monitor_pb2
+from ssdaq.core.data import monitor_pb2
 
 
 class ReceiverMonSender:
