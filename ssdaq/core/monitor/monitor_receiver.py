@@ -1,5 +1,5 @@
 import asyncio
-from ssdaq.core.receiver_server import ReceiverServer
+from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
 
 import zmq
 
@@ -17,10 +17,11 @@ class MonitorReceiver(ReceiverServer):
         self.log.info("Setting up monitor zmq pull server at {}".format(connectionstr))
         self.receiver.bind(connectionstr)
         self._setup = True
-
+        self.mon = ReceiverMonSender("MonitorReceiver", self.loop, self._context)
     async def ct_subscribe(self):
         while self.running:
             packet = await self.receiver.recv()
+            self.mon.register_data_packet()
             # for tm in tb.triggers:
             await self.publish(packet)
 
