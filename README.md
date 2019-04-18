@@ -1,10 +1,9 @@
 # SSDAQ
 [![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
 
-Disclaimer: This documentation is now outdated as this package covers almost all of the CHEC cameras pushed data data acquisition.
-Slow signal data acquisition and distribution for CHEC-S TARGET-C modules.
+Data acquisition and distribution for CHEC-S TARGET-C modules.
 
-This project contains a set of modules and scripts to receive slow signal data via UDP from TARGET-C modules (TM), build events from data recieved from multiple TMs and publish these  events on a tcp zmq PUB socket. There are also classes and scripts for receiving publishe slow signal readout data and writing them to disk.
+This project contains a set of modules and applications to receive and handle pushed data from the CHEC camera. The data is then published on TCP sockets that are subscribable. Subscribers for printing out the data or writing it to disk are provided as well. 
 
 
 ## Installation
@@ -22,41 +21,16 @@ If you are developing it is recommendended to do
 
 instead and adding the `--user` option if not installing in a conda env. This lets changes made to the project automatically propagate to the install without the need to reinstall.
 
-#### Prerequisites
-
-The project is written assuming it will be run with python3.5 or above. Additional dependencies to run the base part of the projects are listed here:
-
-*  python >= 3.5
-*  numpy
-*  zmq
-*  pytables
-*  pyparsing
-*  pyyaml
-
-Some receivers might have additional prerequesites not listed above. These dependencies might include:
-
-*  matplotlib
-*  docker
-*  urwid
-*  target_driver
-*  target_io
-*  target_calib
 
 ## Usage
-The SSDAQ software package contains applications for CHEC-S slow signal readout assembling and writing to disk, but can also be use as a python library to  write custom listeners as well as custom readout publishers that can be used by the readout assembler daemon.
+
+The SSDAQ software package contains applications for CHEC-S pushed data acqusition and writing that data to disk, but can also be use as a python library to write custom subscribers, and to read and write slow signal, trigger, timestamp, log or monitoring data.
 
 ### Applications
-Currently four applications are provided in the SSDAQ software package which are listed below
+A range of applications are provided in the SSDAQ software package and if the install is sucessful these should all be in your path. The majority of the applications are different types of subscribers and the executables are prefixed with `chec-<type>-<name>` where `<type>` is the type of subscriber which will be explained shortly and `<name>` refers to the data which it subscribes to. Currently there are three types of subscribers, `chec-dumpers` which dump the content they receive directly in the terminal std output, `chec-writer` are as the name suggests subscribers that write to file and lastly we have the `chec-daq-dash` (which does not follow the naming convention), a simple terminal dash showing monitoring data from the receivers.   
 
-*  `ssdaq`
-*  `ssdatawriter`
-*  `ss-example-listener`
-*  `control-ssdaq`
+Starting and stopping the receivers should be done with the `control-ssdaq` application which starts the receivers as deamons and configures the logging so that it is output on a dedicated port. More on how to use `control-ssdaq` follows in the next section.
 
-The `ssdaq` and `ssdaqwriter` applications directly starts a builder and a writer, respectively. However these applications don't expose all configurable settings of the builder and writer and are provided for quick tests and 1-off runs.
-
-The proper way of starting and controling the slow signal readout assembler is to use `control-ssdaq` together with configuration files, which also can start a file writer. This is explained more in the next section.
-The `ss-example-listener` provides a simple listener which outptus some fields of the published data.
 
 All the applications provide help options explaining the needed input.
 #### Using `control-ssdaq`
@@ -80,58 +54,125 @@ Commands:
  `control-ssdaq start roa -d`.
 
 In the example above the readout assembler was started with a default configuration provided in the `ssdaq/resources` folder in the porject.
+##### List of standard port numbers used
+
+| Port          | Usage              | Which application  |
+| ------------- |:------------------:| ------------------:|
+| 17000         | listen (UDP)       | ReadoutAssembler|
+| 8307          | listen (UDP)       | TriggerPacketReceiver |
+| 6666          | subcribe (TCP/ZMQ) | TimestampReceiver  |
+| 9001          | publish  (TCP/ZMQ) | LogReceiver  |
+| 9002          | publish  (TCP/ZMQ) | TriggerReceiver  |
+| 9003          | publish  (TCP/ZMQ) | TimestampReceiver  |
+| 9004          | publish  (TCP/ZMQ) | SSReadoutAssembler  |
+| 9004          | publish  (TCP/ZMQ) | MonitorReceiver  |
+| 10001         | listen  (TCP/ZMQ)  | LogReceiver  |
+| 10002         | pull  (TCP/ZMQ)    | MonitorReceiver  |
+
 ##### Configuration file for `control-ssdaq`
 
 This is an example configuration showing different aspects of the configuration possibilities.
 ```yaml
-# Configuration for the file writer class
-SSFileWriter:
-  file_enumerator: date #enumerates with timestamp (yr-mo-dy.H.M) or `order` which enumerates with numbers starting from 00001
-  file_prefix: SlowSignalData
-  folder: /tmp/
-  ip: 127.0.0.101
-  port: 5555
-# Configuration for the writer daemon wrapper
-ReadoutFileWriterDaemon:
-  #redirection of output (should be /dev/null when logging is fully configurable)
-  stdout: '/tmp/ssdaq_writer.log'
-  stderr: '/tmp/ssdaq_writer.log'
-
-# Configuration for the readout assembler daemon wrapper
-ReadoutAssemblerDaemon:
-  #redirection of output (should be /dev/null when logging is fully configurable)
-  stdout: '/tmp/ssdaq.log'
-  stderr: '/tmp/ssdaq.log'
-  set_taskset: true #Using task set to force kernel not to swap cores
-  core_id: 0 #which cpu core to use with taskset
-# Configuration of the readout assembler
-# Note that the readout assembler consists of the SSReadoutAssembler class
-# and some number of publisher instances
 ReadoutAssembler:
-  SSReadoutAssembler:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq.log'
+    stderr: '/tmp/ssdaq.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: SSReadoutAssembler
     listen_ip: 0.0.0.0
-    listen_port: 2009
+    listen_port: 17000
     relaxed_ip_range: false
     buffer_length: 1000
     readout_tw: !!float 1.e7 #nano seconds
     buffer_time: !!float 4e9
-  ReadoutPublishers:
-    #This publisher publishes events  on the local interface at port 5551
-    ZMQReadoutPublisherLocal: #Name of the publisher (must be unique)
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
       ip: 127.0.0.101
-      port: 5551
-    #This is an outbound publisher which remote clients can subscribe to
-    ZMQReadoutPublisherOutbound:
-      ip: 141.34.29.161 #the local, public interface at which events should be published
-      port: 9999
-      mode: outbound #the mode (by default set to local) determines how the sockets are configured
-    #This is a remote publisher that send events to a remote ip and publishes them there
-    ZMQReadoutPublisherRemote:
-      ip: 141.34.229.11 #the remote ip where the events should be published
-      port: 9999
-      mode: remote #the mode (by default set to local) determines how the sockets are configured
+      port: 9004
+    # Dumper: #name
+    #   class: RawWriter #class
+    #   file_name: 'bindump.dat'
+    # ZMQReadoutPublisherOutbound: #name
+    #   class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+    #   ip: 141.34.29.161
+    #   port: 9999
+    #   mode: outbound
+
+LogReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/logrec.log'
+    stderr: '/tmp/logrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: LogReceiver
+    ip: 0.0.0.0
+    port: 10001
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9001
+
+TriggerReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/triggrec.log'
+    stderr: '/tmp/triggrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: TriggerPacketReceiver
+    ip: 0.0.0.0
+    port: 8307
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9002
+
+TimestampReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/timerec.log'
+    stderr: '/tmp/timerec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: TimestampReceiver
+    ip: 192.168.101.102
+    port: 6666
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9003
+
+
+MonitorReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/monrec.log'
+    stderr: '/tmp/monrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: MonitorReceiver
+    ip: 0.0.0.0
+    port: 10002
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9005
 
 ```
+
 ###  SSDAQ python library
 The `ssdaq` python module provides tools for creating your own listeners or reading and writing slow signal data.
 
