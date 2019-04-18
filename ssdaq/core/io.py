@@ -1,10 +1,9 @@
 import struct
 import binascii
-from numba import jit
-
+from .utils import get_si_prefix
 
 _chunk_header = struct.Struct("2I")
-
+_file_header = struct.Struct("Q4I")
 ###Raw object IO classes#####
 
 
@@ -15,10 +14,12 @@ class RawObjectWriterBase:
         and a crc32 hash      (4 bytes)
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename: str, header: int = 0):
         self.filename = filename
         self.file = open(self.filename, "wb")
         self.data_counter = 0
+        self.version = 0
+        self.file.write(_file_header.pack(header, self.version, 0, 0, 0))
 
     def __enter__(self):
         return self
@@ -44,7 +45,11 @@ class RawObjectReaderBase:
     def __init__(self, filename: str):
         self.filename = filename
         self.file = open(self.filename, "rb")
-        self._chunk_header = struct.Struct("2I")
+        self._fhead = self.file.read(_file_header.size)
+        self.file.seek(0)
+        self.fhead = self._fhead[0]
+        self.version = self._fhead[1]
+        # self._chunk_header = struct.Struct("2I")
         self._scan_file()
 
     def __enter__(self):
@@ -57,23 +62,24 @@ class RawObjectReaderBase:
         self.file.seek(0)
         self._scan_file()
 
-    # @jit(nopython=False)
     def _scan_file(self):
-        offset = 0
+        self.file.seek(0)
         fh = self.file
         self.n_entries = 0
         self.fpos = []
-        fp = 0
+        # Skipping file header
+        fp = _file_header.size
         while True:
             fh.seek(fp)
-            rd = fh.read(self._chunk_header.size)
+            rd = fh.read(_chunk_header.size)
             if rd == b"":
                 break
             self.fpos.append(fp)
-            offset, crc = self._chunk_header.unpack(rd)
+            offset, crc = _chunk_header.unpack(rd)
             self.n_entries += 1
             fp = fh.tell() + offset
-        self.file.seek(0)
+        self.file.seek(_file_header.size)
+        self.filesize = self.fpos[-1] + offset
 
     def read(self) -> bytes:
         sized = self.file.read(_chunk_header.size)
@@ -85,59 +91,13 @@ class RawObjectReaderBase:
     def close(self):
         self.file.close()
 
+    def __str__(self):
+
+        s = "{}:\n".format(self.__class__.__name__)
+        s += "filename: {}\n".format(self.filename)
+        s += "n_entries: {}\n".format(self.n_entries)
+        s += "file size: {} {}B".format(*get_si_prefix(self.filesize))
+        return s
+
 
 ###End of Raw object IO classes#####
-
-### Specialization to different protobuf protocols#####
-from ssdaq.core.logging import log_pb2
-
-
-class LogWriter(RawObjectWriterBase):
-    def write(self, log: log_pb2.LogData):
-        super().write(log.SerializeToString())
-
-
-class LogReader(RawObjectReaderBase):
-    def read(self):
-        log = log_pb2.LogData()
-        data = super().read()
-        log.ParseFromString(data)
-        return log
-
-
-from ssdaq.core.timestamps import CDTS_pb2
-
-
-class TimestampWriter(RawObjectWriterBase):
-    def write(self, timestamp):
-        super().write(timestamp.SerializeToString())
-
-
-class TimestampReader(RawObjectReaderBase):
-    def read(self):
-        timestamp = CDTS_pb2.TriggerMessage()
-        data = super().read()
-        timestamp.ParseFromString(data)
-        return timestamp
-
-
-from ssdaq.core.triggers import data
-
-
-class TriggerWriter(RawObjectWriterBase):
-    def write(self, trigg):
-        super().write(
-            data.NominalTriggerDataEncode.pack(
-                trigg.TACK,
-                trigg.trigg,
-                trigg.uc_ev,
-                trigg.uc_pps,
-                trigg.uc_clock,
-                trigg.type,
-            )
-        )
-
-
-class TriggerReader(RawObjectReaderBase):
-    def read(self):
-        return data.TriggerPacketData.unpack(super().read())

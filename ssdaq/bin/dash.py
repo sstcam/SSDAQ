@@ -1,15 +1,13 @@
 from ssdaq.utils import common_args as cargs
-from ssdaq import sslogger
-import logging
-import numpy as np
 
 import argparse
 
 import signal
 from datetime import datetime
-import time
 from blessed import Terminal
-from ssdaq.subscribers import basicsubscriber
+from ssdaq import subscribers, sslogger
+import logging
+from ssdaq.core.utils import get_si_prefix
 
 
 class ReceiverStatusDash:
@@ -39,7 +37,8 @@ class ReceiverStatusDash:
 
         if mon is not None and mon.reciver.recv_data:
             data = self.terminal.bold_green("YES")
-            rate = "%.3g     " % mon.reciver.data_rate
+            val, p = get_si_prefix(mon.reciver.data_rate)
+            rate = "%.3g %sHz     " % (val, p)  # mon.reciver.data_rate
         else:
             data = self.terminal.bold_red("No ")
             rate = "---      "
@@ -59,7 +58,10 @@ class ReceiverStatusDash:
             )
         self.counter += 1
 
+
 import queue
+
+
 def mondumper():
 
     parser = argparse.ArgumentParser(
@@ -76,32 +78,29 @@ def mondumper():
 
     t = Terminal()
 
-    sub = basicsubscriber.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub = subscribers.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
-    last_uc_ev = 0
-    missed_counter = 0
 
     rdash = ReceiverStatusDash(t, "SSReadoutAssembler", (0, 1))
     triggdash = ReceiverStatusDash(t, "TriggerPacketReceiver", (30, 1))
     timedash = ReceiverStatusDash(t, "TimestampReceiver", (0, 6))
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 12))
-    dashes = [rdash, timedash, triggdash, logdash,mondash]
+    dashes = [rdash, timedash, triggdash, logdash, mondash]
     with t.fullscreen():
         while True:
             try:
                 mon = sub.get_data(timeout=1.0)
             except queue.Empty:
-                mon =None
+                mon = None
             except KeyboardInterrupt:
                 print("\nClosing listener")
                 sub.close()
                 break
-            # if mon is not None:
-                # print(mon)
+
             for dash in dashes:
                 dash.render(mon)
         sub.close()
@@ -109,30 +108,3 @@ def mondumper():
 
 if __name__ == "__main__":
     mondumper()
-#
-
-# sub = basicsubscriber.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
-
-
-#     with t.location(0, 1):
-#         print(t.bold("Hi there!"))
-#         print(t.bold_red_on_bright_green("It hurts my eyes!"))
-
-#     with t.location(0, t.height - 1):
-#         print(t.center(t.bold("press any key to continue.")))
-
-#     with t.cbreak():
-#         inp = t.inkey()
-
-#     # print('You pressed ' + repr(inp))
-#     # t.exit_fullscreen
-
-#     loop = asyncio.get_event_loop()
-#     loop.create_task(getinput(loop))
-#     loop.create_task(counter2(t, 0.0001))
-#     loop.create_task(counter(t, 1))
-
-#     try:
-#         loop.run_forever()
-#     except Exception as e:
-#         print(e)

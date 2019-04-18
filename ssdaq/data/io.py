@@ -1,10 +1,97 @@
+### Specialization to different protobuf protocols#####
+from . import LogData
+from . import TriggerMessage
+from . import TriggerPacketData, NominalTriggerDataEncode
+from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
+
+
+class LogWriter(RawObjectWriterBase):
+    def __init__(self, filename: str):
+        super().__init__(filename, header=1)
+
+    def write(self, log: LogData):
+        super().write(log.SerializeToString())
+
+
+class LogReader(RawObjectReaderBase):
+    def read(self):
+        log = LogData()
+        data = super().read()
+        log.ParseFromString(data)
+        return log
+
+
+class TimestampWriter(RawObjectWriterBase):
+    def __init__(self, filename: str):
+        super().__init__(filename, header=2)
+
+    def write(self, timestamp):
+        super().write(timestamp.SerializeToString())
+
+
+class TimestampReader(RawObjectReaderBase):
+    def read(self):
+        timestamp = TriggerMessage()
+        data = super().read()
+        timestamp.ParseFromString(data)
+        return timestamp
+
+
+class TriggerWriter(RawObjectWriterBase):
+    def __init__(self, filename: str):
+        super().__init__(filename, header=3)
+
+    def write(self, trigg):
+        super().write(
+            NominalTriggerDataEncode.pack(
+                trigg.TACK,
+                trigg.trigg,
+                trigg.uc_ev,
+                trigg.uc_pps,
+                trigg.uc_clock,
+                trigg.type,
+            )
+        )
+
+
+# Manually list unpackers for now
+class TriggerReader(RawObjectReaderBase):
+    def read(self):
+        return TriggerPacketData.unpack(super().read())
+
+
+def log_unpack(data):
+    log = LogData()
+    log.ParseFromString(data)
+    return log
+
+
+def timestamp_unpack(data):
+    timestamp = TriggerMessage()
+    timestamp.ParseFromString(data)
+    return timestamp
+
+
+_unpackers = [log_unpack, timestamp_unpack, TriggerPacketData.unpack]
+
+
+class DataReader(RawObjectReaderBase):
+    def __init__(self, filename):
+        super().__init__(filename)
+        if self.fhead == 0 or self.fhead > len(_unpackers):
+            raise ValueError("No compatible reader found for this file...")
+        self._unpack = _unpackers[self.fhead - 1]
+
+    def read(self):
+        return self._unpack(super().read())
+
+
 import numpy as np
 import tables
 from tables import IsDescription, UInt64Col, Float32Col, Float64Col
 from collections import namedtuple as _nt
-
 from ssdaq.version import get_version
-from ssdaq.core.slowsignal.data import SSReadout, N_TM_PIX, N_TM, ss_mappings
+from .slowsignal_format import SSReadout, N_TM_PIX, N_TM, ss_mappings
 
 
 class TelData(IsDescription):

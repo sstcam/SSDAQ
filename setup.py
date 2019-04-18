@@ -12,7 +12,7 @@ install_requires = [
     "click",
     "bitarray",
     "protobuf",
-    "blessed"
+    "blessed",
 ]
 
 #

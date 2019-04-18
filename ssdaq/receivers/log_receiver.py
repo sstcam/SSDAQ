@@ -1,8 +1,7 @@
 import asyncio
-import pickle
-import logging
-import logging.handlers
-from signal import SIGTERM, SIGQUIT, SIGINT
+from ssdaq.core.receiver_server import ReceiverServer
+from .mon_sender import ReceiverMonSender
+from collections import deque
 
 
 class LogReceiverProtocol(asyncio.Protocol):
@@ -25,11 +24,6 @@ class LogReceiverProtocol(asyncio.Protocol):
         self.transport.close()
 
 
-from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
-
-from collections import deque
-
-
 class LogReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list, name: str = "LogReceiver"):
         self.loop = asyncio.get_event_loop()
@@ -39,6 +33,7 @@ class LogReceiver(ReceiverServer):
         )
         self.log_buffer = deque([], maxlen=100)
         self.mon = ReceiverMonSender("LogReceiver", self.loop, self._context)
+
     async def receive_log(self, record):
         self.log_buffer.append(record)
         self.mon.register_data_packet()

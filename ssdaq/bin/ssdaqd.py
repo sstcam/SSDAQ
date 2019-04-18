@@ -2,7 +2,8 @@
 
 
 def main():
-    from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
+    from ssdaq.receivers import SSReadoutAssembler
+    from ssdaq.core.publishers import ZMQTCPPublisher
     import argparse
     from ssdaq.utils import common_args as cargs
 

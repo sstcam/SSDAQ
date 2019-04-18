@@ -1,9 +1,7 @@
 import asyncio
-from ssdaq.core.receiver_server import ReceiverServer,ReceiverMonSender
-
 import zmq
-
-from ssdaq.core.timestamps import CDTS_pb2
+from ssdaq.core.receiver_server import ReceiverServer
+from .mon_sender import ReceiverMonSender
 
 
 class MonitorReceiver(ReceiverServer):
@@ -18,6 +16,7 @@ class MonitorReceiver(ReceiverServer):
         self.receiver.bind(connectionstr)
         self._setup = True
         self.mon = ReceiverMonSender("MonitorReceiver", self.loop, self._context)
+
     async def ct_subscribe(self):
         while self.running:
             packet = await self.receiver.recv()

@@ -1,9 +1,9 @@
 import asyncio
-from ssdaq.core.receiver_server import ReceiverServer, ReceiverMonSender
-
+from ssdaq.core.receiver_server import ReceiverServer
+from .mon_sender import ReceiverMonSender
 import zmq
 
-from ssdaq.core.timestamps import CDTS_pb2
+from ssdaq.data import CDTS_pb2
 
 
 class TimestampReceiver(ReceiverServer):

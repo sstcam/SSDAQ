@@ -1,12 +1,9 @@
-from ssdaq import SSReadoutSubscriber
-from ssdaq.subscribers import basicsubscriber
+from ssdaq import subscribers
 from ssdaq.utils import common_args as cargs
 from ssdaq import sslogger
 import logging
 import numpy as np
-
 import argparse
-
 import signal
 from datetime import datetime
 import time
@@ -35,7 +32,7 @@ def slowsignaldump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    rsub = SSReadoutSubscriber(port=args.sub_port, ip=args.sub_ip)
+    rsub = subscribers.SSReadoutSubscriber(port=args.sub_port, ip=args.sub_ip)
     rsub.start()
 
     readout_counter = np.zeros(32)
@@ -96,7 +93,7 @@ def timestampdump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicTimestampSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub = subscribers.BasicTimestampSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)
@@ -149,7 +146,7 @@ def triggerdump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicTriggerSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub = subscribers.BasicTriggerSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)
@@ -187,12 +184,12 @@ def triggerdump():
     sub.join()
 
 
-from ssdaq.core.logging import handlers
+from ssdaq import logging as ch_logging
 
 sh = logging.StreamHandler()
 FORMAT = "%(asctime)s [%(levelname)-18s](%(pid)d)[$BOLD%(name)-20s$RESET]  %(message)s ($BOLD%(filename)s$RESET:%(lineno)d)"
-COLOR_FORMAT = handlers.formatter_message(FORMAT, True)
-color_formatter = handlers.ColoredFormatter(COLOR_FORMAT)
+COLOR_FORMAT = ch_logging.formatter_message(FORMAT, True)
+color_formatter = ch_logging.ColoredFormatter(COLOR_FORMAT)
 
 sh.setFormatter(color_formatter)
 
@@ -222,7 +219,7 @@ def logdump():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicLogSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub = subscribers.BasicLogSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)
@@ -255,7 +252,7 @@ def mondumper():
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
-    sub = basicsubscriber.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
+    sub = subscribers.BasicMonSubscriber(port=args.sub_port, ip=args.sub_ip)
     sub.start()
 
     signal.alarm(0)

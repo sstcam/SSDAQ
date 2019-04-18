@@ -1,11 +1,12 @@
-from ssdaq import SSReadoutAssembler, ZMQTCPPublisher
+from ssdaq.receivers import SSReadoutAssembler
+from ssdaq.core.publishers import ZMQTCPPublisher
 from ssdaq.utils import daemon
 import ssdaq
 from ssdaq.core import publishers
 from ssdaq import sslogger
 from logging.handlers import SocketHandler
 
-from ssdaq.core.logging import handlers
+from ssdaq import logging as handlers
 
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 
@@ -60,7 +61,7 @@ class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
         self.kwargs = kwargs
 
     def run(self):
-        from ssdaq.subscribers.slowsignal import SSFileWriter
+        from ssdaq.subscribers import SSFileWriter
         import signal
         import sys
 
@@ -292,7 +293,7 @@ def reset_count(ctx):
 
     zmqctx = zmq.Context()
     sock = zmqctx.socket(zmq.REQ)
-    sock.connect("ipc:///tmp/ssdaq-control")
+    sock.connect("ipc:///tmp/SSReadoutAssembler")
     sock.send(b"reset_ro_count 1")
     print(sock.recv())
 
@@ -305,7 +306,7 @@ def pause_pub(ctx):
 
     zmqctx = zmq.Context()
     sock = zmqctx.socket(zmq.REQ)
-    sock.connect("ipc:///tmp/ssdaq-control")
+    sock.connect("ipc:///tmp/SSReadoutAssembler")
     sock.send(b"set_publish_readouts False")
     print(sock.recv())
 
@@ -318,7 +319,7 @@ def restart_pub(ctx):
 
     zmqctx = zmq.Context()
     sock = zmqctx.socket(zmq.REQ)
-    sock.connect("ipc:///tmp/ssdaq-control")
+    sock.connect("ipc:///tmp/SSReadoutAssembler")
     sock.send(b"set_publish_readouts True")
     print(sock.recv().decode("ascii"))
 

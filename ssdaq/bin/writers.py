@@ -1,6 +1,5 @@
 from ssdaq.utils import common_args as cargs
-from ssdaq.subscribers.slowsignal import SSFileWriter
-from ssdaq.subscribers import writersubscriber
+from ssdaq import subscribers
 
 
 def writerfactory(descr, defaultport, writer_cls):
@@ -33,13 +32,15 @@ def writerfactory(descr, defaultport, writer_cls):
     return writer
 
 
-slowsignal = writerfactory("Start a simple slow signal writer.", 9004, SSFileWriter)
+slowsignal = writerfactory(
+    "Start a simple slow signal writer.", 9004, subscribers.SSFileWriter
+)
 logwriter = writerfactory(
-    "Start a simple log data writer.", 9001, writersubscriber.LogWriter
+    "Start a simple log data writer.", 9001, subscribers.LogWriter
 )
 timestampwriter = writerfactory(
-    "Start a simple timestamp data writer.", 9003, writersubscriber.TimestampWriter
+    "Start a simple timestamp data writer.", 9003, subscribers.TimestampWriter
 )
 triggerwriter = writerfactory(
-    "Start a simple trigger data writer.", 9002, writersubscriber.TriggerWriter
+    "Start a simple trigger data writer.", 9002, subscribers.TriggerWriter
 )
