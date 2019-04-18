@@ -31,34 +31,35 @@ A range of applications are provided in the SSDAQ software package and if the in
 
 Starting and stopping the receivers should be done with the `control-ssdaq` application which starts the receivers as deamons and configures the logging so that it is output on a dedicated port. More on how to use `control-ssdaq` follows in the next section.
 
-
 All the applications provide help options explaining the needed input.
+
 #### Using `control-ssdaq`
-The `control-ssdaq` application manages two daemons that can be started seperatley, namely the readout assembler and an data file writer daemon. The program consists of a number of commands and subcommands and each of the commands and subcommands provides a `--help -h` option and the top help message is shown here:
+The `control-ssdaq` application manages the receiver and file writer daemons. The program consists of a number of commands and subcommands and each of the commands and subcommands provides a `--help -h` option and the top help message is shown here:
 ```shell
 Usage: control-ssdaq [OPTIONS] COMMAND [ARGS]...
 
-  Start, stop and control ssdaq readout assembler and writer daemons
+  Start, stop and control receiver and writer daemons
 
 Options:
-  -h, --help  Show this message and exit.
+  -v, --version  Show version
+  -h, --help     Show this message and exit.
 
 Commands:
   roa-ctrl  Send control commands to a running readout assembler daemon
-  start    Start a readout assembler or writer
-  stop     Stop a running readout assembler or writer
+  start     Start receivers or data writers
+  stop      Stop a running receiver or writer daemon
 ```
 
- The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. The two daemons for readout assembling and data writing are referred to as `roa` and `dw`, respectively. Therefore, to start an readout assembler as a daemon one could run:
+ The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. The recommended way of starting the receivers is by using the command
+ 
+ ```control-ssdaq start config path/to/config```
 
- `control-ssdaq start roa -d`.
-
-In the example above the readout assembler was started with a default configuration provided in the `ssdaq/resources` folder in the porject.
+where the config file contains configuration for the receivers that should be started. They can be stopped in the same way by using the stop command instead. In one of the following sections a typical configuration file for starting receievers is shown. 
 ##### List of standard port numbers used
 
 | Port          | Usage              | Which application  |
 | ------------- |:------------------:| ------------------:|
-| 17000         | listen (UDP)       | ReadoutAssembler|
+| 17000         | listen (UDP)       | SSReadoutAssembler|
 | 8307          | listen (UDP)       | TriggerPacketReceiver |
 | 6666          | subcribe (TCP/ZMQ) | TimestampReceiver  |
 | 9001          | publish  (TCP/ZMQ) | LogReceiver  |
@@ -179,7 +180,7 @@ The `ssdaq` python module provides tools for creating your own listeners or read
 #### Reading and Writing Slow Signal data
 The easiest way to read slow signal data is to use the `SSDataReader` class. An example of this is shown below
 ```python
-from ssdaq import SSDataReader
+from ssdaq.data.io import SSDataReader
 import numpy as np
 reader = ssdaq.SSDataReader('path/to/ssdata.hdf5')
 print('This file has %d readouts'%reader.n_readouts)
@@ -192,7 +193,7 @@ reader.close_file()
 
 You can also write data if you want:
 ```python
-from ssdaq import SSDataReader
+from ssdaq.data.io import SSDataReader
 import numpy as np
 writer = ssdaq.SSDataWriter('path/to/ssdata.hdf5')
 for i in range(100):
