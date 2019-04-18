@@ -21,7 +21,7 @@ def get_si_prefix(value: float) -> tuple:
     ]
     i = int(math.floor(math.log10(value)))
     i = int(i / 3)
-    p = math.pow(10, i)
+    p = math.pow(1000, i)
     s = round(value / p, 2)
     ind = i + 6
     #  if ind<0:

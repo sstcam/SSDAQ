@@ -2,7 +2,7 @@ from threading import Thread
 import zmq
 from queue import Queue
 import logging
-
+from .utils import get_si_prefix
 
 class BasicSubscriber(Thread):
     """ A convinience class to subscribe to a published data stream from a reciver.
@@ -130,7 +130,7 @@ class WriterSubscriber(Thread):
         self.running = False
         self.data_counter = 0
         self.file_counter = 1
-        self.filesize_lim = None if filesize_lim is None else filesize_lim * 1024 ** 2
+        self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
         self._writercls = writer
         self.file_ext = file_ext
         self._open_file()
@@ -159,10 +159,10 @@ class WriterSubscriber(Thread):
         self.log.info("Closing file %s" % self.filename)
         self._writer.close()
         self.log.info(
-            "SSFileWriter has written %d events in %s bytes to file %s"
+            "SSFileWriter has written %d events in %g%sB to file %s"
             % (
                 self._writer.data_counter,
-                convert_size(os.stat(self.filename).st_size),
+                *get_si_prefix(os.stat(self.filename).st_size),
                 self.filename,
             )
         )
