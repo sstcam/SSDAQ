@@ -2,6 +2,8 @@ import asyncio
 import zmq
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
+
+
 class MonitorReceiver(ReceiverServer):
     def __init__(self, ip: str, port: int, publishers: list):
         super().__init__(ip, port, publishers, "MonitorReceiver")

@@ -6,6 +6,7 @@ from ssdaq.data import slowsignal_format as dc
 from ssdaq.data import SSReadout
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
+
 READOUT_LENGTH = (
     dc.N_TM_PIX * 2 + 2 * 8
 )  # 64 2-byte channel amplitudes and 2 8-byte timestamps

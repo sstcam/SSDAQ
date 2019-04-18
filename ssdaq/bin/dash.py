@@ -5,8 +5,9 @@ import argparse
 import signal
 from datetime import datetime
 from blessed import Terminal
-from ssdaq import subscribers,sslogger
+from ssdaq import subscribers, sslogger
 import logging
+from ssdaq.core.utils import get_si_prefix
 
 
 class ReceiverStatusDash:
@@ -36,7 +37,8 @@ class ReceiverStatusDash:
 
         if mon is not None and mon.reciver.recv_data:
             data = self.terminal.bold_green("YES")
-            rate = "%.3g     " % mon.reciver.data_rate
+            val, p = get_si_prefix(mon.reciver.data_rate)
+            rate = "%.3g %sHz     " % (val, p)  # mon.reciver.data_rate
         else:
             data = self.terminal.bold_red("No ")
             rate = "---      "

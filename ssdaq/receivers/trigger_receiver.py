@@ -2,6 +2,7 @@ import asyncio
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
 
+
 class TriggerPacketProtocol(asyncio.Protocol):
     def __init__(self, loop, log):
         self.buffer = asyncio.Queue()

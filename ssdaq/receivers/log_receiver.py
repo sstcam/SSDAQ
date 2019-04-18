@@ -3,6 +3,7 @@ from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
 from collections import deque
 
+
 class LogReceiverProtocol(asyncio.Protocol):
     def __init__(self, server, loop, log):
         self._buffer = asyncio.Queue()
@@ -21,7 +22,6 @@ class LogReceiverProtocol(asyncio.Protocol):
     def connection_lost(self, exc):
         self.log.info("Lost connection of {}".format(self.peername))
         self.transport.close()
-
 
 
 class LogReceiver(ReceiverServer):

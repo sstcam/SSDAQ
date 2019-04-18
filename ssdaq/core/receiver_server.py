@@ -8,9 +8,10 @@ from ssdaq import sslogger
 if LooseVersion("17") > LooseVersion(zmq.__version__):
     zmq.asyncio.install()
 
+
 class ReceiverServer:
     def __init__(self, ip: str, port: int, publishers: list, name: str, loop=None):
-        self.loop = asyncio.get_event_loop() if loop is None else loop
+        self.loop = loop or asyncio.get_event_loop()
         self.log = sslogger.getChild(name)
         self._name = name
         self.publishers = publishers

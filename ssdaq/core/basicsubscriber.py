@@ -21,12 +21,9 @@ class BasicSubscriber(Thread):
     def __init__(self, ip: str, port: int, unpack=None, logger: logging.Logger = None):
         Thread.__init__(self)
         BasicSubscriber.id_counter += 1
-        if logger is None:
-            self.log = logging.getLogger(
-                "ssdaq.BasicSubscriber%d" % BasicSubscriber.id_counter
-            )
-        else:
-            self.log = logger
+        self.log = logger or logging.getLogger(
+            "ssdaq.BasicSubscriber%d" % BasicSubscriber.id_counter
+        )
 
         self.context = zmq.Context()
         self.sock = self.context.socket(zmq.SUB)
@@ -212,5 +209,3 @@ class WriterSubscriber(Thread):
             "FileWriter has written a"
             " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
         )
-
-

@@ -184,7 +184,7 @@ def triggerdump():
     sub.join()
 
 
-from ssdaq.core import logging as ch_logging
+from ssdaq import logging as ch_logging
 
 sh = logging.StreamHandler()
 FORMAT = "%(asctime)s [%(levelname)-18s](%(pid)d)[$BOLD%(name)-20s$RESET]  %(message)s ($BOLD%(filename)s$RESET:%(lineno)d)"
