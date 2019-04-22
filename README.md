@@ -182,23 +182,29 @@ The easiest way to read slow signal data is to use the `SSDataReader` class. An 
 ```python
 from ssdaq.data.io import SSDataReader
 import numpy as np
-reader = ssdaq.SSDataReader('path/to/ssdata.hdf5')
+reader = SSDataReader('RandomSlowSignal10.hdf5')
 print('This file has %d readouts'%reader.n_readouts)
+print(reader)
 #loop over readouts
 for r in reader.read(start=0,stop=10):#the arguments are optional (loops over the whole file if omitted)
-	print(reader.readout_number,np.max(reader.data))
+	print(reader.iro,np.max(reader.data))
 
 reader.close_file()
 ```
 
 You can also write data if you want:
 ```python
-from ssdaq.data.io import SSDataReader
+from ssdaq.data.io import SSDataWriter
+from ssdaq.data import SSReadout
 import numpy as np
-writer = ssdaq.SSDataWriter('path/to/ssdata.hdf5')
+writer = SSDataWriter('RandomSlowSignal10.hdf5')
 for i in range(100):
-	ro = ssdaq.SSReadout(i*10,i,np.random((32,64)),np.random((32,2),dtype=np.uint64))
-	writer.write_readout(ro)
+    ro = SSReadout(timestamp=i*100,
+                   readout_number=i,
+                   cpu_t_s=i*10,
+                   cpu_t_ns=i*10000,
+                   data=np.random.random((32,64)),)
+    writer.write_readout(ro)
 writer.close_file()
 ```
 
