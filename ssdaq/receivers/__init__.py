@@ -1,4 +1,4 @@
-from .readout_assembler import SSReadoutAssembler
+from .readout_assembler import ReadoutAssembler
 from .timestamp_receiver import TimestampReceiver
 from .log_receiver import LogReceiver
 from .trigger_receiver import TriggerPacketReceiver

@@ -2,7 +2,7 @@
 
 
 def main():
-    from ssdaq.receivers import SSReadoutAssembler
+    from ssdaq.receivers import ReadoutAssembler
     from ssdaq.core.publishers import ZMQTCPPublisher
     import argparse
     from ssdaq.utils import common_args as cargs
@@ -48,7 +48,7 @@ def main():
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 
     rop = ZMQTCPPublisher(port=args.publishing_port, ip=args.publishing_interface)
-    roa = SSReadoutAssembler(
+    roa = ReadoutAssembler(
         relaxed_ip_range=args.relaxed_ip,
         listen_ip="0.0.0.0",
         listen_port=args.listen_port,
