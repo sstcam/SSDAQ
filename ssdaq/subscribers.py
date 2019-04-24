@@ -62,6 +62,11 @@ class LogProtoSubscriber(BasicSubscriber):
         super().__init__(ip=ip, port=port, unpack=logprotounpack)
 
 
+# These are locals in init that we want to skip
+# when creating the kwargs dict
+skip = ["self", "__class__"]
+
+
 class LogWriter(WriterSubscriber):
     def __init__(
         self,
@@ -73,16 +78,11 @@ class LogWriter(WriterSubscriber):
         filesize_lim: int = None,
     ):
         super().__init__(
-            file_prefix=file_prefix,
-            ip=ip,
-            port=port,
             subscriber=LogProtoSubscriber,
             writer=io.LogWriter,
             file_ext=".prt",
             name="LogWriter",
-            folder=folder,
-            file_enumerator=file_enumerator,
-            filesize_lim=filesize_lim,
+            **{k: v for k, v in locals().items() if k not in skip}
         )
 
 
@@ -96,18 +96,15 @@ class TimestampWriter(WriterSubscriber):
         file_enumerator: str = None,
         filesize_lim: int = None,
     ):
+
         super().__init__(
-            file_prefix=file_prefix,
-            ip=ip,
-            port=port,
             subscriber=BasicTimestampSubscriber,
             writer=io.TimestampWriter,
             file_ext=".prt",
             name="TimestampWriter",
-            folder=folder,
-            file_enumerator=file_enumerator,
-            filesize_lim=filesize_lim,
+            **{k: v for k, v in locals().items() if k not in skip}
         )
+        print(locals())
 
 
 class TriggerWriter(WriterSubscriber):
@@ -121,16 +118,11 @@ class TriggerWriter(WriterSubscriber):
         filesize_lim: int = None,
     ):
         super().__init__(
-            file_prefix=file_prefix,
-            ip=ip,
-            port=port,
             subscriber=BasicTriggerSubscriber,
             writer=io.TriggerWriter,
             file_ext=".prt",
             name="TriggerWriter",
-            folder=folder,
-            file_enumerator=file_enumerator,
-            filesize_lim=filesize_lim,
+            **{k: v for k, v in locals().items() if k not in skip}
         )
 
 

@@ -3,6 +3,9 @@ import zmq
 from queue import Queue
 import logging
 from .utils import get_si_prefix
+from ssdaq import sslogger
+from datetime import datetime
+import os
 
 
 class BasicSubscriber(Thread):
@@ -137,7 +140,6 @@ class WriterSubscriber(Thread):
         self._open_file()
 
     def _open_file(self):
-        from datetime import datetime
 
         self.file_data_counter = 0
         if self.file_enumerator == "date":
