@@ -98,7 +98,7 @@ class PartialReadout:
         self.cpu_time.append(cpu_t)
 
 
-class SSReadoutAssembler(ReceiverServer):
+class ReadoutAssembler(ReceiverServer):
     """
     Slow signal readout assembler. Constructs
     slow signal readouts from data packets recieved from
@@ -116,14 +116,14 @@ class SSReadoutAssembler(ReceiverServer):
         publishers: list = None,
         packet_debug_stream_file: str = None,
     ):
-        super().__init__(listen_ip, listen_port, publishers, "SSReadoutAssembler")
+        super().__init__(listen_ip, listen_port, publishers, "ReadoutAssembler")
         self.relaxed_ip_range = relaxed_ip_range
         self.transport, self.ss_data_protocol = self.setup_udp(
             lambda: SlowSignalDataProtocol(
                 self.loop,
                 self.log,
                 self.relaxed_ip_range,
-                ReceiverMonSender("SSReadoutAssembler", self.loop, self._context),
+                ReceiverMonSender("ReadoutAssembler", self.loop, self._context),
                 packet_debug_stream_file=packet_debug_stream_file,
             )
         )
@@ -331,5 +331,5 @@ if __name__ == "__main__":
     call(["taskset", "-cp", "0,4", "%s" % (str(os.getpid()))])
     sslogger.setLevel(logging.INFO)
     zmq_pub = ZMQTCPPublisher("127.0.0.101", 5555)
-    ro_assembler = SSReadoutAssembler(publishers=[zmq_pub])
+    ro_assembler = ReadoutAssembler(publishers=[zmq_pub])
     ro_assembler.run()

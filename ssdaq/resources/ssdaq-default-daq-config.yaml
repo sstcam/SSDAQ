@@ -6,7 +6,7 @@ ReadoutAssembler:
     set_taskset: true #Using task set to force kernel not to swap cores
     core_id: 0 #which cpu core to use with taskset
   Receiver:
-    class: SSReadoutAssembler
+    class: ReadoutAssembler
     listen_ip: 0.0.0.0
     listen_port: 2009
     relaxed_ip_range: false
