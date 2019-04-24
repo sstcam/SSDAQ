@@ -13,6 +13,7 @@ from ssdaq.data import monitor_pb2
 from ssdaq import logging as handlers
 from ssdaq.core.utils import get_si_prefix
 
+
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes)
@@ -190,7 +191,7 @@ class SSFileWriter(Thread):
             "SSFileWriter has written %d events in %g%sB to file %s"
             % (
                 self._writer.readout_counter,
-                 *get_si_prefix(os.stat(self.filename).st_size),
+                *get_si_prefix(os.stat(self.filename).st_size),
                 self.filename,
             )
         )

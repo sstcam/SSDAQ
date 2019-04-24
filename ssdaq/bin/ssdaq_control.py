@@ -11,47 +11,6 @@ from ssdaq import logging as handlers
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 
 
-class ReadoutAssemblerDaemonWrapper(daemon.Daemon):
-    def __init__(
-        self,
-        stdout="/dev/null",
-        stderr="/dev/null",
-        set_taskset=False,
-        core_id=0,
-        log_level="INFO",
-        **kwargs
-    ):
-        # Deamonizing the server
-        daemon.Daemon.__init__(
-            self, "/tmp/ssdaq_daemon.pid", stdout=stdout, stderr=stderr
-        )
-        self.kwargs = kwargs
-        self.set_taskset = set_taskset
-        self.core_id = str(core_id)
-        import logging
-
-        eval("sslogger.setLevel(logging.%s)" % log_level)
-        sslogger.info("Set logging level to {}".format(log_level))
-
-    def run(self):
-        from subprocess import call
-        import os
-
-        if self.set_taskset:
-            # forces the process to one particular CPU core
-            call(["taskset", "-cp", self.core_id, "%s" % (str(os.getpid()))])
-        eps = []
-        i = 1
-        for epname, epconf in self.kwargs["Publishers"].items():
-            epconf["name"] = epname
-            pubclass = getattr(publishers, epconf["class"])
-            del epconf["class"]
-            eps.append(pubclass(**epconf))
-            i += 1
-        roa = SSReadoutAssembler(publishers=eps, **self.kwargs["SSReadoutAssembler"])
-        roa.run()
-
-
 class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
     def __init__(self, stdout="/dev/null", stderr="/dev/null", **kwargs):
         # Deamonizing the server
@@ -161,7 +120,7 @@ def print_version(ctx, param, value):
     is_eager=True,
 )
 def cli(ctx):
-    """Start, stop and control ssdaq readout assembler and writer daemons"""
+    """Start, stop and control receiver and writer daemons"""
     ctx.ensure_object(dict)
 
     from pkg_resources import resource_stream, resource_string, resource_listdir
@@ -169,33 +128,16 @@ def cli(ctx):
     ctx.obj["CONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-config.yaml")
     )
-    pass
+    ctx.obj["DAQCONFIG"] = yaml.safe_load(
+        resource_stream("ssdaq.resources", "ssdaq-default-daq-config.yaml")
+    )
 
 
 @click.group()
 @click.pass_context
 def start(ctx):  # ,config):
-    """Start a readout assembler or data writer """
+    """Start receivers or data writers """
     ctx.ensure_object(dict)
-
-
-@start.command()
-@click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
-@click.argument("config", required=False)
-@click.pass_context
-def roa(ctx, daemon, config):
-    """Start a readout assembler with an optional custom CONFIG file"""
-
-    print("Starting readout assembler...")
-    if daemon:
-        print("Run as deamon")
-    if config:
-        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
-    config = ctx.obj["CONFIG"]
-    readout_assembler = ReadoutAssemblerDaemonWrapper(
-        **config["ReadoutAssemblerDaemon"], **config["ReadoutAssembler"]
-    )
-    readout_assembler.start(daemon)
 
 
 @start.command()
@@ -236,19 +178,8 @@ def dw(ctx, filename_prefix, output_folder, daemon, config):
 @click.group()
 @click.pass_context
 def stop(ctx):
-    """Stop a running readout assembler or writer"""
+    """Stop a running receiver or writer daemon"""
     pass
-
-
-@stop.command()
-@click.pass_context
-def roa(ctx):
-    """Stop a running readout assembler"""
-    config = ctx.obj["CONFIG"]
-    readout_assembler = ReadoutAssemblerDaemonWrapper(
-        **config["ReadoutAssemblerDaemon"], **config["ReadoutAssembler"]
-    )
-    readout_assembler.stop()
 
 
 @stop.command()
@@ -268,14 +199,6 @@ def dw(ctx):
         return
     if dwpid != None:
         os.kill(dwpid, signal.SIGHUP)
-
-
-# @stop.command()
-# @click.pass_context
-# def all(ctx):
-#     '''Stop both the readout assembler and writer'''
-#     roa(ctx)
-#     dw(ctx)
 
 
 @click.group(name="roa-ctrl")
@@ -334,49 +257,65 @@ def f(receiver, comp_config):
     receiver.start(daemon)
 
 
-@start.command()
-@click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
-@click.argument("config")
-@click.pass_context
-def config(ctx, config, daemon):
-    """Start daemons from CONFIG file"""
-    # print("Starting readout writer...")
-    if daemon:
-        print("Run as deamon")
+def foundcmp(comp, complist):
+    for i, c in enumerate(complist):
+        if c == comp[: len(c)]:
+            del complist[i]
+            return True
+    else:
+        return False
 
+
+@start.command()
+@click.option("--config", "-c", default=None, help="Use a custom config file")
+@click.argument("components", nargs=-1)
+@click.pass_context
+def daq(ctx, config, components):
+    """ Start receivers daemons\n
+            example:\n
+                `control-ssdaq start daq Moni Read`\n
+            which starts a MonitorReceiver and a ReadoutAssembler
+    """
+    components = list(components)
     if config:
-        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
-    config = ctx.obj["CONFIG"]
-    for component, comp_config in config.items():
-        receiver = getattr(receivers, comp_config["Receiver"]["class"])
-        del comp_config["Receiver"]["class"]
-        print("Starting {} ....".format(component))
-        p = Process(target=f, args=(receiver, comp_config))
-        p.start()
-        p.join()
-        time.sleep(1)
+        ctx.obj["DAQCONFIG"] = yaml.safe_load(open(config, "r"))
+    config = ctx.obj["DAQCONFIG"]
+    cmptlen = len(components)
+    for compt, comp_config in config.items():
+        if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
+            receiver = getattr(receivers, comp_config["Receiver"]["class"])
+            del comp_config["Receiver"]["class"]
+            print("Starting {} ....".format(compt))
+            p = Process(target=f, args=(receiver, comp_config))
+            p.start()
+            p.join()
+            time.sleep(1)
 
 
 @stop.command()
-@click.argument("config")
+@click.option("--config", "-c", default=None, help="Use a custom config file")
+@click.argument("components", nargs=-1)
 @click.pass_context
-def config(ctx, config):
-    """Start daemons from CONFIG file"""
-    # print("Starting readout writer...")
-    if daemon:
-        print("Run as deamon")
-
+def daq(ctx, config, components):
+    """ Stop receivers daemons\n
+            example:\n
+                `control-ssdaq stops daq Moni Read`\n
+            which stops the MonitorReceiver and ReadoutAssembler
+    """
+    components = list(components)
     if config:
-        ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
-    config = ctx.obj["CONFIG"]
-    for component, comp_config in config.items():
-        receiver = getattr(receivers, comp_config["Receiver"]["class"])
-        del comp_config["Receiver"]["class"]
-        print("Stoping {} ....".format(component))
-        receiver = RecieverDaemonWrapper(
-            receiver, **comp_config["Daemon"], **comp_config
-        )
-        receiver.stop()
+        ctx.obj["DAQCONFIG"] = yaml.safe_load(open(config, "r"))
+    cmptlen = len(components)
+    config = ctx.obj["DAQCONFIG"]
+    for compt, comp_config in config.items():
+        if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
+            receiver = getattr(receivers, comp_config["Receiver"]["class"])
+            del comp_config["Receiver"]["class"]
+            print("Stoping {} ....".format(compt))
+            receiver = RecieverDaemonWrapper(
+                receiver, **comp_config["Daemon"], **comp_config
+            )
+            receiver.stop()
 
 
 cli.add_command(start)

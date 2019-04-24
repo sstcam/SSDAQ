@@ -4,6 +4,7 @@ from queue import Queue
 import logging
 from .utils import get_si_prefix
 
+
 class BasicSubscriber(Thread):
     """ A convinience class to subscribe to a published data stream from a reciver.
         Data are retrived by the `get_data()` method once the listener has been started by the
