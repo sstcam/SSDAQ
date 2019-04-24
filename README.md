@@ -59,7 +59,7 @@ Commands:
 
 which starts all receivers that are configured in the default configuration. To start with a custom configuration one can specify a file with the `--config, -c` option. The `start daq` command also takes arguments that select which receivers to start *e.g*
 
-```control-ssdaq start daq Trigg SSRead```
+```control-ssdaq start daq Trigg Read```
 
  will only start the `TriggerPacketReceiver` and `ReadoutAssembler`. Note that you only have to spell out enough of the receiver class name to make it unique. An empty arg list will start all receivers as seen earlier.
 
@@ -69,9 +69,9 @@ Receivers can be stopped in by using the `stop daq` command in the same manner t
  
  would stop all running receiver daemons while
  
- ```control-ssdaq stop daq Trigg SSRead```
+ ```control-ssdaq stop daq Trigg Read```
  
- would only stop the `TriggerPacketReceiver` and `SSReadoutAssembler` daemons.
+ would only stop the `TriggerPacketReceiver` and `ReadoutAssembler` daemons.
  
 ##### Start and stop filewriter daemons
 Currently only the `ReadoutFileWriter` daemon is supported and it is started with
@@ -86,7 +86,7 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 
 | Receiver              | Usage              | 
 | --------------------- |:------------------:|
-| SSReadoutAssembler    | Receives slow signal data from the FEE TMs and assembled them into a full camera readout|
+| ReadoutAssembler      | Receives slow signal data from the FEE TMs and assembled them into a full camera readout|
 | TriggerPacketReceiver | Receives trigger pattern packets from the backplane|
 | TimestampReceiver     | Recieves timestamps from the timing board|
 | LogReceiver           | Receives logs that are send on port `10001` |
@@ -96,13 +96,13 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 
 | Port          | Usage              | Which application  |
 | ------------- |:------------------:| ------------------:|
-| 17000         | listen (UDP)       | SSReadoutAssembler|
+| 17000         | listen (UDP)       | ReadoutAssembler|
 | 8307          | listen (UDP)       | TriggerPacketReceiver |
-| 6666          | subscribe (TCP/ZMQ) | TimestampReceiver  |
+| 6666          | subscribe (TCP/ZMQ)| TimestampReceiver  |
 | 9001          | publish  (TCP/ZMQ) | LogReceiver  |
 | 9002          | publish  (TCP/ZMQ) | TriggerReceiver  |
 | 9003          | publish  (TCP/ZMQ) | TimestampReceiver  |
-| 9004          | publish  (TCP/ZMQ) | SSReadoutAssembler  |
+| 9004          | publish  (TCP/ZMQ) | ReadoutAssembler  |
 | 9004          | publish  (TCP/ZMQ) | MonitorReceiver  |
 | 10001         | listen  (TCP/ZMQ)  | LogReceiver  |
 | 10002         | pull  (TCP/ZMQ)    | MonitorReceiver  |
@@ -119,7 +119,7 @@ ReadoutAssembler:
     set_taskset: true #Using task set to force kernel not to swap cores
     core_id: 0 #which cpu core to use with taskset
   Receiver:
-    class: SSReadoutAssembler
+    class: ReadoutAssembler
     listen_ip: 0.0.0.0
     listen_port: 17000
     relaxed_ip_range: false
