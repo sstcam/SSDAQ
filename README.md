@@ -50,11 +50,38 @@ Commands:
   stop      Stop a running receiver or writer daemon
 ```
 
- The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. The recommended way of starting the receivers is by using the command
+ The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. 
  
- ```control-ssdaq start config path/to/config```
+ ##### Start and stop receiver daemons
+ The recommended way of starting the receivers is by using the command
+ 
+ ```control-ssdaq start daq```
 
-where the config file contains configuration for the receivers that should be started. They can be stopped in the same way by using the stop command instead. In one of the following sections a typical configuration file for starting receievers is shown. 
+which starts all receivers that are configured in the default configuration. To start with a custom configuration one can specify a file with the `--config, -c` option. The `start daq` command also takes arguments that select which receivers to start *e.g*
+
+```control-ssdaq start daq Trigg Read```
+
+ will only start the `TriggerPacketReceiver` and `ReadoutAssembler`. Note that you only have to spell out enough of the receiver class name to make it unique. An empty arg list will start all receivers as seen earlier.
+
+Receivers can be stopped in by using the `stop daq` command in the same manner that we started them, *i.e*
+
+```control-ssdaq stop daq ```
+ 
+ would stop all running receiver daemons while
+ 
+ ```control-ssdaq stop daq Trigg Read```
+ 
+ would only stop the `TriggerPacketReceiver` and `ReadoutAssembler` daemons.
+ 
+##### Start and stop filewriter daemons
+Currently only the `ReadoutFileWriter` daemon is supported and it is started with
+
+```control-ssdaq start dw  path/to/configfile.yaml -d ```
+and stopped with
+```control-ssdaq stop dw ```
+
+Note that if `-d` is ommited the writer will not run as a daemon, which can be good sometimes during testing, and output it's log messages directly in the terminal. To stop it type `ctrl+C`.
+
 ##### List of standard port numbers used
 
 | Port          | Usage              | Which application  |
