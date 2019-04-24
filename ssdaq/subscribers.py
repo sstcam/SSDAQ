@@ -153,8 +153,6 @@ class SSFileWriter(Thread):
         self._open_file()
 
     def _open_file(self):
-
-
         self.file_readout_counter = 0
         if self.file_enumerator == "date":
             suffix = datetime.utcnow().strftime("%Y-%m-%d_%H.%M")
