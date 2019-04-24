@@ -1,16 +1,3 @@
-# SSFileWriter:
-#   Daemon:
-#     #redirection of output (should be /dev/null when logging is fully configurable)
-#     stdout: '/tmp/ssdaq_writer.log'
-#     stderr: '/tmp/ssdaq_writer.log'
-#   SSFileWriter:
-#     file_enumerator: date #enumerates with timestamp (yr-mo-dy.H.M) or `order` which enumerates with numbers starting from 00001
-#     file_prefix: SlowSignalData
-#     folder: /tmp/
-#     ip: 127.0.0.101
-#     port: 5555
-#     filesize_lim: 10
-
 ReadoutAssembler:
   Daemon:
     #redirection of output (should be /dev/null when logging is fully configurable)
@@ -90,3 +77,20 @@ TimestampReceiver:
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
       ip: 127.0.0.101
       port: 9003
+
+MonitorReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/monrec.log'
+    stderr: '/tmp/monrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: MonitorReceiver
+    ip: 0.0.0.0
+    port: 10002
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9005
