@@ -10,6 +10,7 @@ from ssdaq import logging as handlers
 
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 
+
 class ReadoutFileWriterDaemonWrapper(daemon.Daemon):
     def __init__(self, stdout="/dev/null", stderr="/dev/null", **kwargs):
         # Deamonizing the server
@@ -181,7 +182,6 @@ def stop(ctx):
     pass
 
 
-
 @stop.command()
 @click.pass_context
 def dw(ctx):
@@ -199,8 +199,6 @@ def dw(ctx):
         return
     if dwpid != None:
         os.kill(dwpid, signal.SIGHUP)
-
-
 
 
 @click.group(name="roa-ctrl")
@@ -258,27 +256,33 @@ def f(receiver, comp_config):
     receiver = RecieverDaemonWrapper(receiver, **comp_config["Daemon"], **comp_config)
     receiver.start(daemon)
 
-def foundcmp(comp,complist):
+
+def foundcmp(comp, complist):
     for i, c in enumerate(complist):
-        if c == comp[:len(c)]:
+        if c == comp[: len(c)]:
             del complist[i]
             return True
     else:
         return False
+
+
 @start.command()
-# @click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
 @click.option("--config", "-c", default=None, help="Use a custom config file")
-@click.argument("components",nargs=-1)
+@click.argument("components", nargs=-1)
 @click.pass_context
-def daq(ctx, config,components):
-    """Start daemons from CONFIG file"""
+def daq(ctx, config, components):
+    """ Start receivers daemons\n
+            example:\n
+                `control-ssdaq start daq Moni Read`\n
+            which starts a MonitorReceiver and a ReadoutAssembler
+    """
     components = list(components)
     if config:
         ctx.obj["DAQCONFIG"] = yaml.safe_load(open(config, "r"))
     config = ctx.obj["DAQCONFIG"]
     cmptlen = len(components)
     for compt, comp_config in config.items():
-        if cmptlen==0 or (cmptlen>0  and foundcmp(compt,components)):
+        if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
             receiver = getattr(receivers, comp_config["Receiver"]["class"])
             del comp_config["Receiver"]["class"]
             print("Starting {} ....".format(compt))
@@ -290,18 +294,21 @@ def daq(ctx, config,components):
 
 @stop.command()
 @click.option("--config", "-c", default=None, help="Use a custom config file")
-@click.argument("components",nargs=-1)
+@click.argument("components", nargs=-1)
 @click.pass_context
-def daq(ctx, config,components):
-    """Stops daemons from CONFIG file"""
-    # print("Starting readout writer...")
+def daq(ctx, config, components):
+    """ Stop receivers daemons\n
+            example:\n
+                `control-ssdaq stops daq Moni Read`\n
+            which stops the MonitorReceiver and ReadoutAssembler
+    """
     components = list(components)
     if config:
         ctx.obj["DAQCONFIG"] = yaml.safe_load(open(config, "r"))
     cmptlen = len(components)
     config = ctx.obj["DAQCONFIG"]
     for compt, comp_config in config.items():
-        if cmptlen==0 or (cmptlen>0  and foundcmp(compt,components)):
+        if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
             receiver = getattr(receivers, comp_config["Receiver"]["class"])
             del comp_config["Receiver"]["class"]
             print("Stoping {} ....".format(compt))
