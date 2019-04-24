@@ -162,7 +162,7 @@ class WriterSubscriber(Thread):
         self.log.info("Closing file %s" % self.filename)
         self._writer.close()
         self.log.info(
-            "SSFileWriter has written %d events in %g%sB to file %s"
+            "FileWriter has written %d events in %g%sB to file %s"
             % (
                 self._writer.data_counter,
                 *get_si_prefix(os.stat(self.filename).st_size),
