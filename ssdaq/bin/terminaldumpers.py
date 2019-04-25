@@ -58,6 +58,7 @@ def slowsignaldump():
         print("Cpu timestamp {}".format(readout.cpu_t_ns))
         m = ~np.isnan(readout.data)
         print("Participating TMs: ",set(np.where(m)[0]))
+        print("Number of participating TMs: ",len(set(np.where(m)[0])))
         # print(readout.data)
         # n_modules_per_readout.append(np.sum(m))
         # readout_counter[m] += 1

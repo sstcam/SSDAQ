@@ -8,10 +8,10 @@ ReadoutAssembler:
   Receiver:
     class: ReadoutAssembler
     listen_ip: 0.0.0.0
-    listen_port: 2009
+    listen_port: 17000
     relaxed_ip_range: false
     buffer_length: 1000
-    readout_tw: !!float 1.e7 #nano seconds
+    readout_tw: !!float 1.1e8 #nano seconds
     buffer_time: !!float 4e9
   Publishers: #Listing publishers
     ZMQReadoutPublisherLocal: #name
