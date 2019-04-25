@@ -3,6 +3,9 @@ import zmq
 from queue import Queue
 import logging
 from .utils import get_si_prefix
+from ssdaq import sslogger
+from datetime import datetime
+import os
 
 
 class BasicSubscriber(Thread):
@@ -137,7 +140,6 @@ class WriterSubscriber(Thread):
         self._open_file()
 
     def _open_file(self):
-        from datetime import datetime
 
         self.file_data_counter = 0
         if self.file_enumerator == "date":
@@ -160,7 +162,7 @@ class WriterSubscriber(Thread):
         self.log.info("Closing file %s" % self.filename)
         self._writer.close()
         self.log.info(
-            "SSFileWriter has written %d events in %g%sB to file %s"
+            "FileWriter has written %d events in %g%sB to file %s"
             % (
                 self._writer.data_counter,
                 *get_si_prefix(os.stat(self.filename).st_size),

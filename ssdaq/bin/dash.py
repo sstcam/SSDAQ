@@ -84,7 +84,7 @@ def mondumper():
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
 
-    rdash = ReceiverStatusDash(t, "SSReadoutAssembler", (0, 1))
+    rdash = ReceiverStatusDash(t, "ReadoutAssembler", (0, 1))
     triggdash = ReceiverStatusDash(t, "TriggerPacketReceiver", (30, 1))
     timedash = ReceiverStatusDash(t, "TimestampReceiver", (0, 6))
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))

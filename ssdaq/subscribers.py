@@ -1,18 +1,12 @@
 import logging
 import os
+from datetime import datetime
 from threading import Thread
-from ssdaq.data import SSReadout
-from ssdaq.data.io import SSDataWriter
 from ssdaq import sslogger
 from ssdaq.core.basicsubscriber import BasicSubscriber, WriterSubscriber
 from ssdaq import logging as handlers
-from ssdaq.data import io
-from ssdaq.data import TriggerPacketData
-from ssdaq.data import CDTS_pb2
-from ssdaq.data import monitor_pb2
-from ssdaq import logging as handlers
+from ssdaq.data import io, TriggerPacketData, CDTS_pb2, monitor_pb2, SSReadout
 from ssdaq.core.utils import get_si_prefix
-
 
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
@@ -62,6 +56,11 @@ class LogProtoSubscriber(BasicSubscriber):
         super().__init__(ip=ip, port=port, unpack=logprotounpack)
 
 
+# These are locals in init that we want to skip
+# when creating the kwargs dict
+skip = ["self", "__class__"]
+
+
 class LogWriter(WriterSubscriber):
     def __init__(
         self,
@@ -73,16 +72,11 @@ class LogWriter(WriterSubscriber):
         filesize_lim: int = None,
     ):
         super().__init__(
-            file_prefix=file_prefix,
-            ip=ip,
-            port=port,
             subscriber=LogProtoSubscriber,
             writer=io.LogWriter,
             file_ext=".prt",
             name="LogWriter",
-            folder=folder,
-            file_enumerator=file_enumerator,
-            filesize_lim=filesize_lim,
+            **{k: v for k, v in locals().items() if k not in skip}
         )
 
 
@@ -96,18 +90,15 @@ class TimestampWriter(WriterSubscriber):
         file_enumerator: str = None,
         filesize_lim: int = None,
     ):
+
         super().__init__(
-            file_prefix=file_prefix,
-            ip=ip,
-            port=port,
             subscriber=BasicTimestampSubscriber,
             writer=io.TimestampWriter,
             file_ext=".prt",
             name="TimestampWriter",
-            folder=folder,
-            file_enumerator=file_enumerator,
-            filesize_lim=filesize_lim,
+            **{k: v for k, v in locals().items() if k not in skip}
         )
+        print(locals())
 
 
 class TriggerWriter(WriterSubscriber):
@@ -121,16 +112,11 @@ class TriggerWriter(WriterSubscriber):
         filesize_lim: int = None,
     ):
         super().__init__(
-            file_prefix=file_prefix,
-            ip=ip,
-            port=port,
             subscriber=BasicTriggerSubscriber,
             writer=io.TriggerWriter,
             file_ext=".prt",
             name="TriggerWriter",
-            folder=folder,
-            file_enumerator=file_enumerator,
-            filesize_lim=filesize_lim,
+            **{k: v for k, v in locals().items() if k not in skip}
         )
 
 
@@ -167,8 +153,6 @@ class SSFileWriter(Thread):
         self._open_file()
 
     def _open_file(self):
-        from datetime import datetime
-
         self.file_readout_counter = 0
         if self.file_enumerator == "date":
             suffix = datetime.utcnow().strftime("%Y-%m-%d_%H.%M")
@@ -178,17 +162,14 @@ class SSFileWriter(Thread):
             suffix = ""
 
         self.filename = os.path.join(self.folder, self.file_prefix + suffix + ".hdf5")
-        self._writer = SSDataWriter(self.filename)
+        self._writer = io.SSDataWriter(self.filename)
         self.log.info("Opened new file, will write events to file: %s" % self.filename)
 
     def _close_file(self):
-
-        from ssdaq.utils.file_size import convert_size
-
         self.log.info("Closing file %s" % self.filename)
         self._writer.close_file()
         self.log.info(
-            "SSFileWriter has written %d events in %g%sB to file %s"
+            "FileWriter has written %d events in %g%sB to file %s"
             % (
                 self._writer.readout_counter,
                 *get_si_prefix(os.stat(self.filename).st_size),
