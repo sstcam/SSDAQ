@@ -148,13 +148,14 @@ class TriggerPacketGenerator(object):
     async def send_triggers_data(self):
         header = data.TriggerPacketData.pack_header(0, 22)
         tack = 0
+        trp = bitarray.bitarray(0, endian="little")
+        i = 2 ** 512 - 1
+        trp.frombytes(i.to_bytes(64, "little"))
+
+        # packet.extend()
+
         while True:
             # packet = bytearray(header)
-            trp = bitarray.bitarray(0, endian="little")
-            i = 2 ** 512 - 1
-            trp.frombytes(i.to_bytes(64, "little"))
-
-            # packet.extend()
             packet = bytearray(
                 data.NominalTriggerDataEncode.pack(tack, trp, 2, 3, 4, 0)
             )
@@ -162,7 +163,7 @@ class TriggerPacketGenerator(object):
             # print("Sending packet")
             # print(packet)
             self.udp_sock.sendto(packet, self.host_address)
-            time.sleep(0.00001)
+            # time.sleep(0.00000001)
 
 
 if __name__ == "__main__":

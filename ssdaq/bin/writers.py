@@ -26,7 +26,13 @@ def writerfactory(descr, defaultport, writer_cls):
             ans = input("To stop type `yes`: \n")
             if ans == "yes":
                 running = False
-        data_writer.close()
+        try:
+            print("Waiting for writer to write buffered data to file......")
+            print("`Ctrl-C` will empty the buffers and close the file immediately.")
+            data_writer.close()
+        except KeyboardInterrupt:
+            print()
+            data_writer.close(hard=True)
 
     return writer
 

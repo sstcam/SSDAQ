@@ -13,16 +13,24 @@ class BasicSubscriber(Thread):
         Data are retrived by the `get_data()` method once the listener has been started by the
         `start()` method
 
-        Args:
-            ip (str):   The ip address where the datas are published (can be local or remote)
-            port (int): The port number at which the datas are published
-        Kwargs:
-            logger:     Optionally provide a logger instance
+
     """
 
     id_counter = 0
 
     def __init__(self, ip: str, port: int, unpack=None, logger: logging.Logger = None):
+        """ The init of a BasicSubscriber
+
+            Args:
+                ip (str):   The ip address where the datas are published (can be local or remote)
+                port (int): The port number at which the datas are published
+
+            Kwargs:
+                unpack (callable): A callable which takes the received data packet as input
+                                    and returns an unpacked object. If not given the packed data
+                                    object is put in the subscribed buffer.
+                logger:     Optionally provide a logger instance
+        """
         Thread.__init__(self)
         BasicSubscriber.id_counter += 1
         self.log = logger or logging.getLogger(
@@ -47,21 +55,25 @@ class BasicSubscriber(Thread):
         self.close_sock.bind("inproc://" + self.inproc_sock_name)
         self.unpack = (lambda x: x) if unpack is None else unpack
 
-    def close(self):
-        """ Closes listener thread and empties the data buffer to unblock the
-            the get_data method
+    def close(self,hard=True):
+        """ Closes subscriber so no more data is put in the buffer
+            args:
+                hard (bool): If set to true the buffer will be emptied and
+                            any data still in the buffer will be lost.
         """
 
         if self.running:
             self.log.debug("Sending close message to listener thread")
             self.close_sock.send(b"close")
             self.running = False
-        self.log.debug("Emptying data buffer")
-        # Empty the buffer after closing the recv thread
-        while not self._data_buffer.empty():
-            self._data_buffer.get()
-            self._data_buffer.task_done()
-        self._data_buffer.join()
+
+        if hard:
+            self.log.info("Emptying data buffer")
+            # Empty the buffer after closing the recv thread
+            while not self._data_buffer.empty():
+                self._data_buffer.get()
+                self._data_buffer.task_done()
+            self._data_buffer.join()
 
     def get_data(self, **kwargs):
         """ Returns unpacked data from the published data stream.
@@ -74,6 +86,10 @@ class BasicSubscriber(Thread):
         data = self._data_buffer.get(**kwargs)
         self._data_buffer.task_done()
         return data
+    def empty(self):
+        """ Returns true if the subscriber buffer is empty
+        """
+        return self._data_buffer.empty()
 
     def run(self):
         """ This is the main method of the listener
@@ -133,6 +149,7 @@ class WriterSubscriber(Thread):
             logger=self.log.getChild("Subscriber"), ip=ip, port=port
         )
         self.running = False
+        self.stopping = False
         self.data_counter = 0
         self.file_counter = 1
         self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
@@ -171,11 +188,25 @@ class WriterSubscriber(Thread):
             )
         )
 
-    def close(self):
-        self.running = False
-        self._subscriber.close()
+    def close(self,hard:bool=False,non_block:bool=False):
+        """ Stops the writer by closing the subscriber
 
-        self.join()
+            args:
+                hard (bool): If set to true the subscriber
+                             buffer will be dropped and the file
+                             will be immediately closed. Any data still
+                             in the subscriber buffer will be lost.
+                non_block (bool): If set to true will not block
+        """
+        if hard:
+            self.running = False
+        #set stopping flag to true
+        self.stopping = True
+        #close subscriber
+        self.log.info("Stopping Subscriber thread")
+        self._subscriber.close(hard=hard)
+        if not non_block:
+            self.join()
 
     def data_cond(self, data):
         return False
@@ -188,9 +219,12 @@ class WriterSubscriber(Thread):
 
             data = self._subscriber.get_data()
             if data == None:
+                if self.stopping and self._subscriber.empty():
+                    break
                 continue
+
             # Start a new file if we get
-            # an data with data number 1
+            # a data with data number 1
             if self.data_cond(data) and self.data_counter > 0:
                 self._close_file()
                 self.file_counter += 1
@@ -207,7 +241,7 @@ class WriterSubscriber(Thread):
             self._writer.write(data)
             self.data_counter += 1
 
-        self.log.info("Stopping Subscriber thread")
+
         self._close_file()
         self.log.info(
             "FileWriter has written a"

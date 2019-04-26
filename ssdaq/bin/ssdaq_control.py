@@ -9,7 +9,7 @@ from logging.handlers import SocketHandler
 from ssdaq import logging as handlers
 
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
-
+signal_counter = 0
 class FileWriterDaemonWrapper(daemon.Daemon):
     def __init__(self,name,writer_cls, stdout="/dev/null", stderr="/dev/null", **kwargs):
         # Deamonizing the server
@@ -27,16 +27,24 @@ class FileWriterDaemonWrapper(daemon.Daemon):
 
         def signal_handler_fact(data_writer, self):
             def signal_handler(sig, frame):
+                global signal_counter
+                signal.signal(signal.SIGINT, signal_handler_fact(data_writer, self))
+                signal_counter +=1
+                hard = False
+                if signal_counter>1:
+                    hard = True
                 # print new line so that the next log message will
                 # have a fresh line to print to
                 if sig == signal.SIGINT:
-                    print()
-                data_writer.close()
-
+                    if signal_counter == 1:
+                        print("\nAnother invocation of Ctrl-c will immediately close the file")
+                    else:
+                        print()
+                data_writer.close(hard,non_block=True)
             return signal_handler
-
+        s =signal_handler_fact(data_writer, self)
         signal.signal(signal.SIGHUP, signal_handler_fact(data_writer, self))
-        signal.signal(signal.SIGINT, signal_handler_fact(data_writer, self))
+        signal.signal(signal.SIGINT, s)
         data_writer.start()
 
 class RecieverDaemonWrapper(daemon.Daemon):
