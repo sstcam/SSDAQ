@@ -55,6 +55,7 @@ class BasicSubscriber(Thread):
         if self.running:
             self.log.debug("Sending close message to listener thread")
             self.close_sock.send(b"close")
+            self.running = False
         self.log.debug("Emptying data buffer")
         # Empty the buffer after closing the recv thread
         while not self._data_buffer.empty():
@@ -173,6 +174,7 @@ class WriterSubscriber(Thread):
     def close(self):
         self.running = False
         self._subscriber.close()
+
         self.join()
 
     def data_cond(self, data):
@@ -206,7 +208,6 @@ class WriterSubscriber(Thread):
             self.data_counter += 1
 
         self.log.info("Stopping Subscriber thread")
-        self._subscriber.close()
         self._close_file()
         self.log.info(
             "FileWriter has written a"

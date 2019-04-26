@@ -155,7 +155,7 @@ class SSFileWriter(Thread):
     def _open_file(self):
         self.file_readout_counter = 0
         if self.file_enumerator == "date":
-            suffix = datetime.utcnow().strftime("%Y-%m-%d_%H.%M")
+            suffix = datetime.utcnow().strftime("%Y-%m-%d.%H:%M")
         elif self.file_enumerator == "order":
             suffix = "%0.3d" % self.file_counter
         else:
@@ -209,7 +209,6 @@ class SSFileWriter(Thread):
             self.readout_counter += 1
 
         self.log.info("Stopping Subscriber thread")
-        self._readout_subscriber.close()
         self._close_file()
         self.log.info(
             "SSFileWriter has written a"

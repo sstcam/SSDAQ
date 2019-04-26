@@ -119,7 +119,7 @@ class SSDataWriter(object):
         filename: str,
         attrs: dict = None,
         filters: tables.Filters = None,
-        buffer: int = 1,
+        buffer: int = 1000,
         tel_table=True,
     ):
 
@@ -289,6 +289,7 @@ class SSDataReader(object):
             self.cpu_t_s = r["cpu_t_s"]
             self.cpu_t_ns = r["cpu_t_ns"]
             yield self.data
+
 
     @property
     def n_readouts(self):

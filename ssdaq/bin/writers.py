@@ -21,8 +21,7 @@ def writerfactory(descr, defaultport, writer_cls):
         )
 
         data_writer.start()
-
-        running = True
+        running =True
         while running:
             ans = input("To stop type `yes`: \n")
             if ans == "yes":
