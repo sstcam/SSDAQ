@@ -5,7 +5,7 @@ from threading import Thread
 from ssdaq import sslogger
 from ssdaq.core.basicsubscriber import BasicSubscriber, WriterSubscriber
 from ssdaq import logging as handlers
-from ssdaq.data import io, TriggerPacketData, CDTS_pb2, monitor_pb2, SSReadout
+from ssdaq.data import io, TriggerPacketData, TriggerMessage, SSReadout, MonitorData
 from ssdaq.core.utils import get_si_prefix
 
 class SSReadoutSubscriber(BasicSubscriber):
@@ -27,7 +27,7 @@ class BasicLogSubscriber(BasicSubscriber):
 
 
 def timeunpack(x):
-    tmsg = CDTS_pb2.TriggerMessage()
+    tmsg = TriggerMessage()
     tmsg.ParseFromString(x)
     return tmsg
 
@@ -38,7 +38,7 @@ class BasicTimestampSubscriber(BasicSubscriber):
 
 
 def monunpack(x):
-    monmsg = monitor_pb2.MonitorData()
+    monmsg = MonitorData()
     monmsg.ParseFromString(x)
     return monmsg
 

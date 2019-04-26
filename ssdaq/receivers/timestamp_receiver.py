@@ -3,7 +3,7 @@ from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
 import zmq
 
-from ssdaq.data import CDTS_pb2
+from ssdaq.data._dataimpl import CDTS_pb2
 
 
 class TimestampReceiver(ReceiverServer):

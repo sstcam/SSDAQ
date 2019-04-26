@@ -1,4 +1,4 @@
-from ssdaq.data import monitor_pb2
+from ssdaq.data import MonitorData
 import datetime
 import os
 import zmq
@@ -44,7 +44,7 @@ class ReceiverMonSender:
         while True:
             await asyncio.sleep(self.mon_wait)
 
-            mdata = monitor_pb2.MonitorData()
+            mdata = MonitorData()
             # constructing timestamp
             tstamp = datetime.datetime.utcnow().timestamp()
             mdata.time.sec = int(tstamp)
