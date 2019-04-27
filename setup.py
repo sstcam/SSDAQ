@@ -59,9 +59,11 @@ setup(
             "chec-log-dumper=ssdaq.bin.terminaldumpers:logdump",
             "chec-timestamp-writer=ssdaq.bin.writers:timestampwriter",
             "chec-trigger-writer=ssdaq.bin.writers:triggerwriter",
+            "chec-atrigger-writer=ssdaq.bin.writers:atriggerwriter",
             "chec-log-writer=ssdaq.bin.writers:logwriter",
             "chec-slowsig-writer=ssdaq.bin.writers:slowsignal",
             "chec-daq-dash=ssdaq.bin.dash:mondumper",
+
         ]
     },
 )

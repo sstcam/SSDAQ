@@ -10,14 +10,19 @@ from ssdaq import logging as handlers
 
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 signal_counter = 0
+
+
 class FileWriterDaemonWrapper(daemon.Daemon):
-    def __init__(self,name,writer_cls, stdout="/dev/null", stderr="/dev/null", **kwargs):
+    def __init__(
+        self, name, writer_cls, stdout="/dev/null", stderr="/dev/null", **kwargs
+    ):
         # Deamonizing the server
         daemon.Daemon.__init__(
             self, "/tmp/{}.pid".format(name), stdout=stdout, stderr=stderr
         )
         self.kwargs = kwargs
         self.writer_cls = writer_cls
+
     def run(self):
         from ssdaq.subscribers import SSFileWriter
         import signal
@@ -29,23 +34,28 @@ class FileWriterDaemonWrapper(daemon.Daemon):
             def signal_handler(sig, frame):
                 global signal_counter
                 signal.signal(signal.SIGINT, signal_handler_fact(data_writer, self))
-                signal_counter +=1
+                signal_counter += 1
                 hard = False
-                if signal_counter>1:
+                if signal_counter > 1:
                     hard = True
                 # print new line so that the next log message will
                 # have a fresh line to print to
                 if sig == signal.SIGINT:
                     if signal_counter == 1:
-                        print("\nAnother invocation of Ctrl-c will immediately close the file")
+                        print(
+                            "\nAnother invocation of Ctrl-c will immediately close the file"
+                        )
                     else:
                         print()
-                data_writer.close(hard,non_block=True)
+                data_writer.close(hard, non_block=True)
+
             return signal_handler
-        s =signal_handler_fact(data_writer, self)
+
+        s = signal_handler_fact(data_writer, self)
         signal.signal(signal.SIGHUP, signal_handler_fact(data_writer, self))
         signal.signal(signal.SIGINT, s)
         data_writer.start()
+
 
 class RecieverDaemonWrapper(daemon.Daemon):
     def __init__(
@@ -148,8 +158,8 @@ def start(ctx):  # ,config):
 
 @start.command()
 @click.option("--daemon/--no-daemon", "-d", default=False, help="run as daemon")
-@click.option("--config","-c", default=None,help="specify custom config file")
-@click.option("--list","-l",'ls', is_flag=True,help="list possible writers")
+@click.option("--config", "-c", default=None, help="specify custom config file")
+@click.option("--list", "-l", "ls", is_flag=True, help="list possible writers")
 @click.argument("components", nargs=-1)
 @click.option(
     "--filename-prefix",
@@ -164,24 +174,26 @@ def start(ctx):  # ,config):
     help="Set output folder (over-rides the loaded configuration)",
 )
 @click.pass_context
-def dw(ctx, filename_prefix, output_folder, daemon,components, config,ls):
+def dw(ctx, filename_prefix, output_folder, daemon, components, config, ls):
     """Start a data writer with an optional custom CONFIG file"""
     if config:
         ctx.obj["CONFIG"] = yaml.safe_load(open(config, "r"))
     config = ctx.obj["CONFIG"]
     if ls:
-        for k,v in config.items():
-            print("`{}` as class: {}".format(k,v['Writer']['class']))
+        for k, v in config.items():
+            print("`{}` as class: {}".format(k, v["Writer"]["class"]))
         exit()
 
     components = list(components)
     cmptlen = len(components)
-    if cmptlen>1 and  not daemon:
+    if cmptlen > 1 and not daemon:
         print("Can only start multiple writers with `-d` option...")
         exit()
 
-    if filename_prefix and cmptlen>1:
-        print("Setting same file name prefix for multiple writers does not make sense....")
+    if filename_prefix and cmptlen > 1:
+        print(
+            "Setting same file name prefix for multiple writers does not make sense...."
+        )
         exit()
     started = False
     for compt, comp_config in config.items():
@@ -194,14 +206,12 @@ def dw(ctx, filename_prefix, output_folder, daemon,components, config,ls):
             if output_folder:
                 comp_config["Writer"]["folder"] = output_folder
             print("Starting {} writer...".format(clas))
-            writerdaemon = FileWriterDaemonWrapper(compt, writer,**comp_config["Daemon"], **comp_config["Writer"]
+            writerdaemon = FileWriterDaemonWrapper(
+                compt, writer, **comp_config["Daemon"], **comp_config["Writer"]
             )
             writerdaemon.start(daemon)
             started = True
     # if not started:
-
-
-
 
 
 @start.command()
@@ -230,13 +240,12 @@ def daq(ctx, config, components):
             time.sleep(1)
 
 
-
-
 @click.group()
 @click.pass_context
 def stop(ctx):
     """Stop a running receiver or writer daemon"""
     pass
+
 
 @stop.command()
 @click.option("--config", "-c", default=None, help="Use a custom config file")
@@ -262,6 +271,7 @@ def daq(ctx, config, components):
                 receiver, **comp_config["Daemon"], **comp_config
             )
             receiver.stop()
+
 
 @stop.command()
 @click.pass_context
@@ -345,9 +355,6 @@ def foundcmp(comp, complist):
             return True
     else:
         return False
-
-
-
 
 
 cli.add_command(start)

@@ -1,5 +1,6 @@
 import math
-
+import asyncio
+import sys
 
 def get_si_prefix(value: float) -> tuple:
     prefixes = [
@@ -29,3 +30,75 @@ def get_si_prefix(value: float) -> tuple:
     # if ind>14:
     #     ind=14
     return s, prefixes[ind]
+
+
+def get_utc_timestamp():
+    from datetime import datetime
+
+    # from collections import namedtuple
+    timestamp = datetime.utcnow().timestamp()
+    s = int(timestamp)
+    ns = int((timestamp - s) * 1e9)
+    return s, ns
+
+
+def async_loop_cleanup(loop):
+    if hasattr(
+        loop, "shutdown_asyncgens"
+    ):  # This check is only needed for Python 3.5 and below
+        loop.run_until_complete(loop.shutdown_asyncgens())
+    loop.close()
+
+def async_shut_down_loop(loop):
+    # Handle shutdown gracefully by waiting for all tasks to be cancelled
+    tasks = asyncio.gather(
+        *asyncio.Task.all_tasks(loop=loop), loop=loop, return_exceptions=True
+    )
+    tasks.add_done_callback(lambda t: loop.stop())
+    tasks.cancel()
+
+    # Keep the event loop running until it is either destroyed or all
+    # tasks have really terminated
+    while not tasks.done() and not loop.is_closed():
+        loop.run_forever()
+def async_interup_loop_cleanup(loop):
+
+
+    # Optionally show a message if the shutdown may take a while
+    # print("Attempting graceful shutdown, press Ctrl+C again to exit…", flush=True)
+
+    # Do not show `asyncio.CancelledError` exceptions during shutdown
+    # (a lot of these may be generated, skip this if you prefer to see them)
+    def shutdown_exception_handler(loop, context):
+        if "exception" not in context or not isinstance(
+            context["exception"], asyncio.CancelledError
+        ):
+            loop.default_exception_handler(context)
+
+    loop.set_exception_handler(shutdown_exception_handler)
+
+    # Handle shutdown gracefully by waiting for all tasks to be cancelled
+    tasks = asyncio.gather(
+        *asyncio.Task.all_tasks(loop=loop), loop=loop, return_exceptions=True
+    )
+    tasks.add_done_callback(lambda t: loop.stop())
+    tasks.cancel()
+
+    # Keep the event loop running until it is either destroyed or all
+    # tasks have really terminated
+    while not tasks.done() and not loop.is_closed():
+        loop.run_forever()
+
+
+class AsyncPrompt:
+    def __init__(self, loop=None):
+        self.loop = loop or asyncio.get_event_loop()
+        self.q = asyncio.Queue(loop=self.loop)
+        self.loop.add_reader(sys.stdin, self.got_input)
+
+    def got_input(self):
+        asyncio.ensure_future(self.q.put(sys.stdin.readline()), loop=self.loop)
+
+    async def __call__(self, msg, end='\n', flush=False):
+        print(msg, end=end, flush=flush)
+        return (await self.q.get()).rstrip('\n')

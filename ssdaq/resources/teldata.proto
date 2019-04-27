@@ -1,0 +1,8 @@
+package chec;
+import "monitor.proto";
+
+message TelData{
+    required TimeUTC time = 1;
+    optional float ra=2;
+    optional float dec=3;
+}

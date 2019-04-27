@@ -290,7 +290,6 @@ class SSDataReader(object):
             self.cpu_t_ns = r["cpu_t_ns"]
             yield self.data
 
-
     @property
     def n_readouts(self):
         return self.file.root.SlowSignal.readout.nrows

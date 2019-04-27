@@ -10,7 +10,7 @@ import zmq
 import zmq.asyncio
 from queue import Queue
 import inspect
-from ssdaq.data import trigger_format as data
+from ssdaq.data._dataimpl import trigger_format as data
 import bitarray
 
 
@@ -163,7 +163,7 @@ class TriggerPacketGenerator(object):
             # print("Sending packet")
             # print(packet)
             self.udp_sock.sendto(packet, self.host_address)
-            # time.sleep(0.00000001)
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":

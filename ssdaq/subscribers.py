@@ -3,14 +3,25 @@ import os
 from datetime import datetime
 from threading import Thread
 from ssdaq import sslogger
-from ssdaq.core.basicsubscriber import BasicSubscriber, WriterSubscriber
+from ssdaq.core.basicsubscriber import (
+    BasicSubscriber,
+    WriterSubscriber,
+    AsyncSubscriber,
+    AsyncWriterSubscriber,
+)
 from ssdaq import logging as handlers
 from ssdaq.data import io, TriggerPacketData, TriggerMessage, SSReadout, MonitorData
 from ssdaq.core.utils import get_si_prefix
 
+
 class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes)
+
+
+class AsyncTriggerSubscriber(AsyncSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None, loop=None):
+        super().__init__(ip=ip, port=port, unpack=TriggerPacketData.unpack, loop=loop)
 
 
 class BasicTriggerSubscriber(BasicSubscriber):
@@ -116,6 +127,26 @@ class TriggerWriter(WriterSubscriber):
             writer=io.TriggerWriter,
             file_ext=".prt",
             name="TriggerWriter",
+            **{k: v for k, v in locals().items() if k not in skip}
+        )
+
+
+class ATriggerWriter(AsyncWriterSubscriber):
+    def __init__(
+        self,
+        file_prefix: str,
+        ip: str,
+        port: int,
+        folder: str = "",
+        file_enumerator: str = None,
+        filesize_lim: int = None,
+        loop = None
+    ):
+        super().__init__(
+            subscriber=AsyncTriggerSubscriber,
+            writer=io.TriggerWriter,
+            file_ext=".prt",
+            name="ATriggerWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
 

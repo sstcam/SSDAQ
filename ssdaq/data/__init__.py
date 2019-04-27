@@ -8,3 +8,4 @@ from ._dataimpl.trigger_format import NominalTriggerDataEncode
 from ._dataimpl.CDTS_pb2 import TimeStamp
 from ._dataimpl.CDTS_pb2 import TriggerMessage
 from ._dataimpl.CDTS_pb2 import TriggerBunch
+from ._dataimpl.teldata_pb2 import TelData
