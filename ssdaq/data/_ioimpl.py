@@ -174,6 +174,8 @@ class SSDataWriter(object):
         self.tel_row["dec"] = dec
         self.tel_row.append()
 
+    def write(self,ro):
+        self.write_readout(ro)
     def write_readout(self, ro):
 
         self.ro_row["iro"] = ro.iro

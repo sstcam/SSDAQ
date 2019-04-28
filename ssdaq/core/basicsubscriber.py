@@ -350,7 +350,6 @@ class AsyncSubscriber:
             try:
                 data = self.unpack(await self.sock.recv())
             except asyncio.CancelledError:
-                self.log.info("Cancelled")
                 return
             except Exception as e:
                 self.log.warning("An error ocurred while unpacking data {}".format(e))
@@ -380,7 +379,6 @@ class AsyncSubscriber:
         if not self.task.cancelled():
             self.sock.close()
             self.task.cancel()
-            self.log.info("Canceling task")
         await self.task
         # await self.task
         # if hard:
