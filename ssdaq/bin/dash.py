@@ -62,7 +62,7 @@ class ReceiverStatusDash:
 import queue
 
 
-def mondumper():
+def mondumper1():
 
     parser = argparse.ArgumentParser(
         description="Subcribe to a published log stream.",
@@ -88,8 +88,9 @@ def mondumper():
     triggdash = ReceiverStatusDash(t, "TriggerPacketReceiver", (30, 1))
     timedash = ReceiverStatusDash(t, "TimestampReceiver", (0, 6))
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
-    mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 12))
-    dashes = [rdash, timedash, triggdash, logdash, mondash]
+    mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
+    teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash]
     with t.fullscreen():
         while True:
             try:
@@ -105,6 +106,59 @@ def mondumper():
                 dash.render(mon)
         sub.close()
 
+def mondumper():
+    import asyncio
+    from ssdaq.core.utils import (
+            AsyncPrompt,
+            async_interup_loop_cleanup,
+            async_shut_down_loop,
+        )
+
+    parser = argparse.ArgumentParser(
+        description="Subcribe to a published log stream.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    cargs.subport(parser, default=9005)
+    cargs.subaddr(parser)
+    cargs.verbosity(parser)
+    cargs.version(parser)
+
+    args = parser.parse_args()
+    eval("sslogger.setLevel(logging.%s)" % args.verbose)
+
+    t = Terminal()
+
+    sub = subscribers.AsyncMonSubscriber(port=args.sub_port, ip=args.sub_ip)
+    loop = asyncio.get_event_loop()
+    # sub.start()
+
+    print("Press `ctrl-C` to stop")
+
+    rdash = ReceiverStatusDash(t, "ReadoutAssembler", (0, 1))
+    triggdash = ReceiverStatusDash(t, "TriggerPacketReceiver", (30, 1))
+    timedash = ReceiverStatusDash(t, "TimestampReceiver", (0, 6))
+    logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
+    mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
+    teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash]
+    async def control_task(loop,dashes,sub,t):
+            prompt = AsyncPrompt(loop)
+            while True:
+                try:
+                    mon = await asyncio.wait_for(sub.get_data(),1.0)
+                except asyncio.TimeoutError:
+                    mon = None
+
+                for dash in dashes:
+                    dash.render(mon)
+    with t.fullscreen():
+        main_task = loop.create_task(control_task(loop, dashes,sub,t))
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            # print('HERE')
+            # klakslkd
+            loop.run_until_complete(sub.close())
 
 if __name__ == "__main__":
     mondumper()

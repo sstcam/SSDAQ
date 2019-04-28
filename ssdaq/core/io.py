@@ -28,7 +28,10 @@ class RawObjectWriterBase:
         self.file.close()
 
     def write(self, data: bytes):
-        """
+        """ Writes a stream of bytes to file
+
+            args:
+                data (bytes): bytes to be writen to file
         """
         self.file.write(_chunk_header.pack(len(data), binascii.crc32(data)))
         self.file.write(data)

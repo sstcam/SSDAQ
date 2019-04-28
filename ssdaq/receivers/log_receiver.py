@@ -32,7 +32,7 @@ class LogReceiver(ReceiverServer):
             lambda: LogReceiverProtocol(self, self.loop, self.log)
         )
         self.log_buffer = deque([], maxlen=100)
-        self.mon = ReceiverMonSender("LogReceiver", self.loop, self._context)
+        self.mon = ReceiverMonSender(name, self.loop, self._context)
 
     async def receive_log(self, record):
         self.log_buffer.append(record)

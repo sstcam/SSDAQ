@@ -1,13 +1,13 @@
 import logging
 import logging.handlers
-from ssdaq.data import log_pb2
+from ssdaq.data import LogData
 from datetime import datetime
 import os
 
 
 class ChecSocketLogHandler(logging.handlers.SocketHandler):
     def makePickle(self, record):
-        logdata = log_pb2.LogData()
+        logdata = LogData()
         logdata.systemType = 0
         logdata.severity = record.levelno
         logdata.sender = record.name
@@ -19,13 +19,13 @@ class ChecSocketLogHandler(logging.handlers.SocketHandler):
         return logdata.SerializeToString()
 
 
-def parseprotb2log(data: bytes) -> log_pb2.LogData:
-    log = log_pb2.LogData()
+def parseprotb2log(data: bytes) -> LogData:
+    log = LogData()
     log.ParseFromString(data)
     return log
 
 
-def protb2logrecord(proto: log_pb2.LogData) -> logging.LogRecord:
+def protb2logrecord(proto: LogData) -> logging.LogRecord:
     record = logging.LogRecord(
         name=proto.sender,
         level=proto.severity,

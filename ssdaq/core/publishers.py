@@ -59,7 +59,7 @@ class ZMQTCPPublisher(Publisher):
         logger=None,
         mode: str = "local",
     ):
-        """Slow signal readout publisher
+        """A generic zmq tcp publisher
         """
 
         super().__init__(name)
