@@ -120,8 +120,7 @@ class BasicSubscriber(Thread):
                 break
         self.running = False
 
-
-class WriterSubscriber(Thread):
+class BaseFileWriter:
     """
     A data file writer for slow signal data.
 
@@ -132,27 +131,17 @@ class WriterSubscriber(Thread):
     def __init__(
         self,
         file_prefix: str,
-        ip: str,
-        port: int,
-        subscriber: BasicSubscriber,
         writer,
         file_ext: str,
-        name: str,
         folder: str = "",
         file_enumerator: str = None,
         filesize_lim: int = None,
     ):
 
-        Thread.__init__(self)
         self.file_enumerator = file_enumerator
         self.folder = folder
         self.file_prefix = file_prefix
-        self.log = sslogger.getChild(name)
-        self._subscriber = subscriber(
-            logger=self.log.getChild("Subscriber"), ip=ip, port=port
-        )
-        self.running = False
-        self.stopping = False
+        self.log = sslogger.getChild(__class__.__name__)
         self.data_counter = 0
         self.file_counter = 1
         self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
@@ -191,6 +180,77 @@ class WriterSubscriber(Thread):
             )
         )
 
+
+    def data_cond(self, data):
+        return False
+
+    def _start_new_file(self):
+        self._close_file()
+        self.file_counter += 1
+        self._open_file()
+
+
+    def write(self,data):
+        # Start a new file if we get
+        # a data with data number 1
+        if self.data_cond(data) and self.data_counter > 0:
+            self._close_file()
+            self.file_counter += 1
+            self._open_file()
+        elif self.filesize_lim is not None:
+            if (
+                self.data_counter % 100 == 0
+                and os.stat(self.filename).st_size > self.filesize_lim
+            ):
+                self._close_file()
+                self.file_counter += 1
+                self._open_file()
+
+        self._writer.write(data)
+        self.data_counter += 1
+
+    def close(self):
+        self._close_file()
+        self.log.info(
+            "FileWriter has written a"
+            " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
+        )
+class WriterSubscriber(Thread,BaseFileWriter):
+    """
+    A data file writer for slow signal data.
+
+    This class uses a instance of a SSReadoutSubscriber to receive readouts and
+    an instance of SSDataWriter to write an HDF5 file to disk.
+    """
+
+    def __init__(
+        self,
+        file_prefix: str,
+        ip: str,
+        port: int,
+        subscriber: BasicSubscriber,
+        writer,
+        file_ext: str,
+        name: str,
+        folder: str = "",
+        file_enumerator: str = None,
+        filesize_lim: int = None,
+    ):
+        BaseFileWriter.__init__(self,file_prefix=file_prefix,
+                        writer=writer,
+                        folder=folder,
+                        file_enumerator=file_enumerator,
+                        filesize_lim=filesize_lim,
+                        file_ext=file_ext)
+        Thread.__init__(self)
+        self.log = sslogger.getChild(name)
+        self._subscriber = subscriber(
+            logger=self.log.getChild("Subscriber"), ip=ip, port=port
+        )
+        self.running = False
+        self.stopping = False
+
+
     def close(self, hard: bool = False, non_block: bool = False):
         """ Stops the writer by closing the subscriber
 
@@ -210,9 +270,8 @@ class WriterSubscriber(Thread):
         self._subscriber.close(hard=hard)
         if not non_block:
             self.join()
+        BaseFileWriter.close(self)
 
-    def data_cond(self, data):
-        return False
 
 
 
@@ -227,30 +286,7 @@ class WriterSubscriber(Thread):
                 if self.stopping and self._subscriber.empty():
                     break
                 continue
-
-            # Start a new file if we get
-            # a data with data number 1
-            if self.data_cond(data) and self.data_counter > 0:
-                self._close_file()
-                self.file_counter += 1
-                self._open_file()
-            elif self.filesize_lim is not None:
-                if (
-                    self.data_counter % 100 == 0
-                    and os.stat(self.filename).st_size > self.filesize_lim
-                ):
-                    self._close_file()
-                    self.file_counter += 1
-                    self._open_file()
-
-            self._writer.write(data)
-            self.data_counter += 1
-
-        self._close_file()
-        self.log.info(
-            "FileWriter has written a"
-            " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
-        )
+            self.write(data)
 
 
 from distutils.version import LooseVersion
@@ -354,7 +390,7 @@ class AsyncSubscriber:
         #     await self._data_buffer.join()
 
 
-class AsyncWriterSubscriber:
+class AsyncWriterSubscriber(BaseFileWriter):
     """
     A data file writer for slow signal data.
 
@@ -376,59 +412,17 @@ class AsyncWriterSubscriber:
         filesize_lim: int = None,
         loop=None,
     ):
+        super().__init__(file_prefix=file_prefix,
+                        writer=writer,
+                        folder=folder,
+                        file_enumerator=file_enumerator,
+                        filesize_lim=filesize_lim,
+                        file_ext=file_ext)
         self.loop = loop or asyncio.get_event_loop()
-        self.file_enumerator = file_enumerator
-        self.folder = folder
-        self.file_prefix = file_prefix
-        self.log = sslogger.getChild(__class__.__name__)
         self._subscriber = subscriber(ip=ip, port=port, loop=self.loop)
         self.running = False
         self.stopping = False
-        self.data_counter = 0
-        self.file_counter = 1
-        self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
-        self._writercls = writer
-        self.file_ext = file_ext
-        self._open_file()
         self.task = self.loop.create_task(self.run())
-
-    def _open_file(self):
-
-        self.file_data_counter = 0
-        if self.file_enumerator == "date":
-            suffix = datetime.utcnow().strftime("%Y-%m-%d.%H:%M")
-        elif self.file_enumerator == "order":
-            suffix = "%0.3d" % self.file_counter
-        else:
-            suffix = ""
-
-        self.filename = os.path.join(
-            self.folder, self.file_prefix + suffix + self.file_ext
-        )
-        self._writer = self._writercls(self.filename)
-        self.log.info("Opened new file, will write events to file: %s" % self.filename)
-
-    def _close_file(self):
-
-        from ssdaq.utils.file_size import convert_size
-
-        self.log.info("Closing file %s" % self.filename)
-        self._writer.close()
-        self.log.info(
-            "FileWriter has written %d events in %g%sB to file %s"
-            % (
-                self._writer.data_counter,
-                *get_si_prefix(os.stat(self.filename).st_size),
-                self.filename,
-            )
-        )
-
-    def _start_new_file(self):
-        self._close_file()
-        self.file_counter += 1
-        self._open_file()
-    def data_cond(self, data):
-        return False
 
     async def run(self):
         self.log.info("Starting writer")
@@ -444,27 +438,7 @@ class AsyncWriterSubscriber:
 
             if data == None:
                 continue
-
-            # Start a new file if we get
-            # a data with data number 1
-            if self.data_cond(data) and self.data_counter > 0:
-                self._start_new_file()
-            elif self.filesize_lim is not None:
-                if (
-                    self.data_counter % 100 == 0
-                    and os.stat(self.filename).st_size > self.filesize_lim
-                ):
-                  self._start_new_file()
-
-            self._writer.write(data)
-            await asyncio.sleep(1)
-            self.data_counter += 1
-
-        self._close_file()
-        self.log.info(
-            "FileWriter has written a"
-            " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
-        )
+            self.write(data)
 
     async def close(self, hard: bool = False):
         """ Stops the writer by closing the subscriber.
@@ -489,3 +463,6 @@ class AsyncWriterSubscriber:
                 self.log.info('Cancelling')
                 self.task.cancel()
         await self.task
+        # Closing the BaseFilewriter to close the
+        # filehandle and get a nice summary log message
+        super().close()
