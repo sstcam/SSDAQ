@@ -90,7 +90,7 @@ def mondumper():
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
-    dashes = [rdash, timedash, triggdash, logdash, mondash,teldash]
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash]
     with t.fullscreen():
         while True:
             try:

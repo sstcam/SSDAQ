@@ -64,7 +64,6 @@ setup(
             "chec-slowsig-writer=ssdaq.bin.writers:slowsignal",
             "chec-aslowsig-writer=ssdaq.bin.writers:aslowsignal",
             "chec-daq-dash=ssdaq.bin.dash:mondumper",
-
         ]
     },
 )

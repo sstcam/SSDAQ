@@ -73,7 +73,12 @@ def asyncwriterfactory(descr, defaultport, writer_cls):
             ip=args.sub_ip,
             loop=loop,
         )
-        from ssdaq.core.utils import AsyncPrompt,async_interup_loop_cleanup,async_shut_down_loop
+        from ssdaq.core.utils import (
+            AsyncPrompt,
+            async_interup_loop_cleanup,
+            async_shut_down_loop,
+        )
+
         async def control_input(loop, data_writer):
             running = True
             prompt = AsyncPrompt(loop)
@@ -85,13 +90,15 @@ def asyncwriterfactory(descr, defaultport, writer_cls):
                     return
                 if ans == "yes":
                     running = False
-            print("Waiting for writer to write buffered data to file......",flush=True)
-            print("`Ctrl-C` will empty the buffers and close the file immediately.",flush=True)
+            print("Waiting for writer to write buffered data to file......", flush=True)
+            print(
+                "`Ctrl-C` will empty the buffers and close the file immediately.",
+                flush=True,
+            )
             close = loop.create_task(data_writer.close())
-            close.add_done_callback(lambda x:loop.stop())
+            close.add_done_callback(lambda x: loop.stop())
 
-
-        task = loop.create_task(control_input(loop,data_writer))
+        task = loop.create_task(control_input(loop, data_writer))
         try:
             loop.run_forever()
         except KeyboardInterrupt:

@@ -2,6 +2,7 @@ import math
 import asyncio
 import sys
 
+
 def get_si_prefix(value: float) -> tuple:
     prefixes = [
         "a",
@@ -21,7 +22,7 @@ def get_si_prefix(value: float) -> tuple:
         "Y",
     ]
     if abs(value) < 1e-18:
-        return 0,""
+        return 0, ""
     i = int(math.floor(math.log10(abs(value))))
     i = int(i / 3)
     p = math.pow(1000, i)
@@ -51,6 +52,7 @@ def async_loop_cleanup(loop):
         loop.run_until_complete(loop.shutdown_asyncgens())
     loop.close()
 
+
 def async_shut_down_loop(loop):
     # Handle shutdown gracefully by waiting for all tasks to be cancelled
     tasks = asyncio.gather(
@@ -63,8 +65,9 @@ def async_shut_down_loop(loop):
     # tasks have really terminated
     while not tasks.done() and not loop.is_closed():
         loop.run_forever()
-def async_interup_loop_cleanup(loop):
 
+
+def async_interup_loop_cleanup(loop):
 
     # Optionally show a message if the shutdown may take a while
     # print("Attempting graceful shutdown, press Ctrl+C again to exit…", flush=True)
@@ -101,6 +104,6 @@ class AsyncPrompt:
     def got_input(self):
         asyncio.ensure_future(self.q.put(sys.stdin.readline()), loop=self.loop)
 
-    async def __call__(self, msg, end='\n', flush=False):
+    async def __call__(self, msg, end="\n", flush=False):
         print(msg, end=end, flush=flush)
-        return (await self.q.get()).rstrip('\n')
+        return (await self.q.get()).rstrip("\n")

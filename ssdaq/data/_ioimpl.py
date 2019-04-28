@@ -174,8 +174,9 @@ class SSDataWriter(object):
         self.tel_row["dec"] = dec
         self.tel_row.append()
 
-    def write(self,ro):
+    def write(self, ro):
         self.write_readout(ro)
+
     def write_readout(self, ro):
 
         self.ro_row["iro"] = ro.iro
@@ -196,6 +197,7 @@ class SSDataWriter(object):
     def _flush(self):
         for table in self.tables:
             table.flush()
+
     def close(self):
         self.close_file()
 

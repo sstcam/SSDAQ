@@ -120,6 +120,7 @@ class BasicSubscriber(Thread):
                 break
         self.running = False
 
+
 class BaseFileWriter:
     """
     A data file writer for slow signal data.
@@ -180,7 +181,6 @@ class BaseFileWriter:
             )
         )
 
-
     def data_cond(self, data):
         return False
 
@@ -189,8 +189,7 @@ class BaseFileWriter:
         self.file_counter += 1
         self._open_file()
 
-
-    def write(self,data):
+    def write(self, data):
         # Start a new file if we get
         # a data with data number 1
         if self.data_cond(data) and self.data_counter > 0:
@@ -215,7 +214,9 @@ class BaseFileWriter:
             "FileWriter has written a"
             " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
         )
-class WriterSubscriber(Thread,BaseFileWriter):
+
+
+class WriterSubscriber(Thread, BaseFileWriter):
     """
     A data file writer for slow signal data.
 
@@ -236,12 +237,15 @@ class WriterSubscriber(Thread,BaseFileWriter):
         file_enumerator: str = None,
         filesize_lim: int = None,
     ):
-        BaseFileWriter.__init__(self,file_prefix=file_prefix,
-                        writer=writer,
-                        folder=folder,
-                        file_enumerator=file_enumerator,
-                        filesize_lim=filesize_lim,
-                        file_ext=file_ext)
+        BaseFileWriter.__init__(
+            self,
+            file_prefix=file_prefix,
+            writer=writer,
+            folder=folder,
+            file_enumerator=file_enumerator,
+            filesize_lim=filesize_lim,
+            file_ext=file_ext,
+        )
         Thread.__init__(self)
         self.log = sslogger.getChild(name)
         self._subscriber = subscriber(
@@ -249,7 +253,6 @@ class WriterSubscriber(Thread,BaseFileWriter):
         )
         self.running = False
         self.stopping = False
-
 
     def close(self, hard: bool = False, non_block: bool = False):
         """ Stops the writer by closing the subscriber
@@ -310,7 +313,7 @@ class AsyncSubscriber:
         logger: logging.Logger = None,
         zmqcontext=None,
         loop=None,
-        passoff_callback = None
+        passoff_callback=None,
     ):
         """ The init of a BasicSubscriber
 
@@ -341,7 +344,9 @@ class AsyncSubscriber:
         self.running = True
         self.unpack = (lambda x: x) if unpack is None else unpack
         self.task = self.loop.create_task(self.receive())
-        self.passoff_callback = passoff_callback or (lambda x: self.loop.create_task(self._data_buffer.put(x)))
+        self.passoff_callback = passoff_callback or (
+            lambda x: self.loop.create_task(self._data_buffer.put(x))
+        )
 
     async def receive(self):
         self.log.info("Start subscription")
@@ -412,12 +417,14 @@ class AsyncWriterSubscriber(BaseFileWriter):
         filesize_lim: int = None,
         loop=None,
     ):
-        super().__init__(file_prefix=file_prefix,
-                        writer=writer,
-                        folder=folder,
-                        file_enumerator=file_enumerator,
-                        filesize_lim=filesize_lim,
-                        file_ext=file_ext)
+        super().__init__(
+            file_prefix=file_prefix,
+            writer=writer,
+            folder=folder,
+            file_enumerator=file_enumerator,
+            filesize_lim=filesize_lim,
+            file_ext=file_ext,
+        )
         self.loop = loop or asyncio.get_event_loop()
         self.log.info(subscriber)
         self._subscriber = subscriber(ip=ip, port=port, loop=self.loop)
@@ -430,7 +437,7 @@ class AsyncWriterSubscriber(BaseFileWriter):
         self.running = True
         while self.running:
             if self.stopping and self._subscriber.empty():
-                    break
+                break
             try:
                 data = await self._subscriber.get_data()
             except asyncio.CancelledError:
@@ -462,7 +469,7 @@ class AsyncWriterSubscriber(BaseFileWriter):
 
         if self._subscriber.empty():
             if not self.task.cancelled():
-                self.log.info('Cancelling')
+                self.log.info("Cancelling")
                 self.task.cancel()
         await self.task
         # Closing the BaseFilewriter to close the

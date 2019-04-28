@@ -10,7 +10,14 @@ from ssdaq.core.basicsubscriber import (
     AsyncWriterSubscriber,
 )
 from ssdaq import logging as handlers
-from ssdaq.data import io, TriggerPacketData, TriggerMessage, SSReadout, MonitorData,TelData
+from ssdaq.data import (
+    io,
+    TriggerPacketData,
+    TriggerMessage,
+    SSReadout,
+    MonitorData,
+    TelData,
+)
 from ssdaq.core.utils import get_si_prefix
 
 
@@ -18,9 +25,11 @@ class SSReadoutSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes)
 
+
 class AsyncSSReadoutSubscriber(AsyncSubscriber):
-    def __init__(self, ip: str, port: int, logger: logging.Logger = None,loop=None):
-        super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes, loop = loop)
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None, loop=None):
+        super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes, loop=loop)
+
 
 class AsyncTriggerSubscriber(AsyncSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None, loop=None):
@@ -133,6 +142,7 @@ class TriggerWriter(WriterSubscriber):
             **{k: v for k, v in locals().items() if k not in skip}
         )
 
+
 class SSFileWriter(WriterSubscriber):
     def __init__(
         self,
@@ -150,8 +160,10 @@ class SSFileWriter(WriterSubscriber):
             name="SSFileWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
-    def data_cond(self,data):
+
+    def data_cond(self, data):
         return data.iro == 1 and self.data_counter > 0
+
 
 class ATriggerWriter(AsyncWriterSubscriber):
     def __init__(
@@ -162,7 +174,7 @@ class ATriggerWriter(AsyncWriterSubscriber):
         folder: str = "",
         file_enumerator: str = None,
         filesize_lim: int = None,
-        loop = None
+        loop=None,
     ):
         super().__init__(
             subscriber=AsyncTriggerSubscriber,
@@ -172,10 +184,12 @@ class ATriggerWriter(AsyncWriterSubscriber):
             **{k: v for k, v in locals().items() if k not in skip}
         )
 
+
 def teldataunpack(data):
     teldata = TelData()
     teldata.ParseFromString(data)
     return teldata
+
 
 class ASlowSignalWriter(AsyncWriterSubscriber):
     def __init__(
@@ -186,32 +200,36 @@ class ASlowSignalWriter(AsyncWriterSubscriber):
         folder: str = "",
         file_enumerator: str = None,
         filesize_lim: int = None,
-        loop = None
+        loop=None,
     ):
         print(AsyncSSReadoutSubscriber)
         super().__init__(
             subscriber=AsyncSSReadoutSubscriber,
             writer=io.SSDataWriter,
-            file_ext=".hdf",
+            file_ext=".hdf5",
             name="ASlowSignalWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
 
-        self._teldatasub = AsyncSubscriber(ip="127.0.0.101",
-        port = 9006,
-        unpack=teldataunpack,
-        logger=self.log,
-        zmqcontext=self._subscriber.context,
-        loop=self.loop,
-        passoff_callback = self.write_tel_data)
+        self._teldatasub = AsyncSubscriber(
+            ip="127.0.0.101",
+            port=9006,
+            unpack=teldataunpack,
+            logger=self.log,
+            zmqcontext=self._subscriber.context,
+            loop=self.loop,
+            passoff_callback=self.write_tel_data,
+        )
 
-    def write_tel_data(self,data):
+    def write_tel_data(self, data):
 
-        self._writer.write_tel_data(ra=data.ra,
-                                    dec=data.dec,
-                                    time=data.time.sec+data.time.nsec*1e-9,
-                                    seconds=data.time.sec,
-                                    ns=data.time.nsec)
+        self._writer.write_tel_data(
+            ra=data.ra,
+            dec=data.dec,
+            time=data.time.sec + data.time.nsec * 1e-9,
+            seconds=data.time.sec,
+            ns=data.time.nsec,
+        )
 
     async def close(self, hard: bool = False):
         """ Stops the writer by closing the subscriber.
@@ -225,4 +243,3 @@ class ASlowSignalWriter(AsyncWriterSubscriber):
         await super().close(hard)
         self.log.info("Stopping TelData subscriber")
         await self._teldatasub.close(hard=False)
-

@@ -18,7 +18,7 @@ class TelDataReceiver(ReceiverServer):
         self.running = True
 
     async def ct_query_teldb(self):
-        self.log.info('Starting teldb query task')
+        self.log.info("Starting teldb query task")
         while self.running:
 
             # query data base Dummy code for now
@@ -28,7 +28,7 @@ class TelDataReceiver(ReceiverServer):
             teldata.time.nsec = nsec
             teldata.ra = 0.231
             teldata.dec = -0.231
-            self.log.info('Created fake tel data')
+            self.log.info("Created fake tel data")
             self.mon.register_data_packet()
             await self.publish(teldata.SerializeToString())
             await asyncio.sleep(15)
