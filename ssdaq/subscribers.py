@@ -31,14 +31,15 @@ class AsyncSSReadoutSubscriber(AsyncSubscriber):
         super().__init__(ip=ip, port=port, unpack=SSReadout.from_bytes, loop=loop)
 
 
-class AsyncTriggerSubscriber(AsyncSubscriber):
-    def __init__(self, ip: str, port: int, logger: logging.Logger = None, loop=None):
-        super().__init__(ip=ip, port=port, unpack=TriggerPacketData.unpack, loop=loop)
 
 
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=TriggerPacketData.unpack)
+
+class AsyncTriggerSubscriber(AsyncSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None, loop=None):
+        super().__init__(ip=ip, port=port, unpack=TriggerPacketData.unpack, loop=loop)
 
 
 logunpack = lambda x: handlers.protb2logrecord(handlers.parseprotb2log(x))
@@ -48,6 +49,9 @@ class BasicLogSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=logunpack)
 
+class AsyncLogSubscriber(AsyncSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None,loop=None):
+        super().__init__(ip=ip, port=port, unpack=logunpack,loop=loop)
 
 def timeunpack(x):
     tmsg = TriggerMessage()
@@ -59,6 +63,9 @@ class BasicTimestampSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=timeunpack)
 
+class AsyncTimestampSubscriber(AsyncSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None,loop=None):
+        super().__init__(ip=ip, port=port, unpack=timeunpack,loop=loop)
 
 def monunpack(x):
     monmsg = MonitorData()
@@ -69,7 +76,9 @@ def monunpack(x):
 class BasicMonSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=monunpack)
-
+class AsyncMonSubscriber(AsyncSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None,loop=None):
+        super().__init__(ip=ip, port=port, unpack=monunpack,loop=loop)
 
 logprotounpack = lambda x: handlers.parseprotb2log(x)
 
@@ -78,6 +87,9 @@ class LogProtoSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(ip=ip, port=port, unpack=logprotounpack)
 
+class AsyncLogProtoSubscriber(AsyncSubscriber):
+    def __init__(self, ip: str, port: int, logger: logging.Logger = None,loop=None):
+        super().__init__(ip=ip, port=port, unpack=logprotounpack,loop=loop)
 
 # These are locals in init that we want to skip
 # when creating the kwargs dict
