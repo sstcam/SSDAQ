@@ -20,7 +20,9 @@ def get_si_prefix(value: float) -> tuple:
         "Z",
         "Y",
     ]
-    i = int(math.floor(math.log10(value)))
+    if abs(value) < 1e-18:
+        return 0,""
+    i = int(math.floor(math.log10(abs(value))))
     i = int(i / 3)
     p = math.pow(1000, i)
     s = round(value / p, 2)

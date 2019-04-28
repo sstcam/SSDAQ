@@ -62,6 +62,7 @@ setup(
             "chec-atrigger-writer=ssdaq.bin.writers:atriggerwriter",
             "chec-log-writer=ssdaq.bin.writers:logwriter",
             "chec-slowsig-writer=ssdaq.bin.writers:slowsignal",
+            "chec-aslowsig-writer=ssdaq.bin.writers:aslowsignal",
             "chec-daq-dash=ssdaq.bin.dash:mondumper",
 
         ]

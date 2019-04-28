@@ -110,3 +110,7 @@ def asyncwriterfactory(descr, defaultport, writer_cls):
 atriggerwriter = asyncwriterfactory(
     "Start a simple trigger data writer.", 9002, subscribers.ATriggerWriter
 )
+
+aslowsignal = asyncwriterfactory(
+    "Start a simple slow signal writer.", 9004, subscribers.ASlowSignalWriter
+)

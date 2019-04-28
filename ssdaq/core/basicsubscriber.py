@@ -272,9 +272,6 @@ class WriterSubscriber(Thread,BaseFileWriter):
             self.join()
         BaseFileWriter.close(self)
 
-
-
-
     def run(self):
         self.log.info("Starting writer thread")
         self._subscriber.start()
@@ -313,6 +310,7 @@ class AsyncSubscriber:
         logger: logging.Logger = None,
         zmqcontext=None,
         loop=None,
+        passoff_callback = None
     ):
         """ The init of a BasicSubscriber
 
@@ -326,7 +324,6 @@ class AsyncSubscriber:
                                     object is put in the subscribed buffer.
                 logger:     Optionally provide a logger instance
         """
-        # BasicSubscriber.id_counter += 1
         self.log = logger or logging.getLogger("ssdaq.{}".format(__class__.__name__))
 
         self.context = zmqcontext or zmq.asyncio.Context()
@@ -344,17 +341,22 @@ class AsyncSubscriber:
         self.running = True
         self.unpack = (lambda x: x) if unpack is None else unpack
         self.task = self.loop.create_task(self.receive())
+        self.passoff_callback = passoff_callback or (lambda x: self.loop.create_task(self._data_buffer.put(x)))
 
     async def receive(self):
         self.log.info("Start subscription")
         while self.running:
+            data = None
             try:
                 data = self.unpack(await self.sock.recv())
             except asyncio.CancelledError:
                 self.log.info("Cancelled")
                 return
+            except Exception as e:
+                self.log.warning("An error ocurred while unpacking data {}".format(e))
 
-            await self._data_buffer.put(data)
+            self.passoff_callback(data)
+            # await self._data_buffer.put(data)
 
     async def get_data(self):
         data = await self._data_buffer.get()
@@ -419,6 +421,7 @@ class AsyncWriterSubscriber(BaseFileWriter):
                         filesize_lim=filesize_lim,
                         file_ext=file_ext)
         self.loop = loop or asyncio.get_event_loop()
+        self.log.info(subscriber)
         self._subscriber = subscriber(ip=ip, port=port, loop=self.loop)
         self.running = False
         self.stopping = False
@@ -438,6 +441,7 @@ class AsyncWriterSubscriber(BaseFileWriter):
 
             if data == None:
                 continue
+
             self.write(data)
 
     async def close(self, hard: bool = False):

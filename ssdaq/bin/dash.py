@@ -88,8 +88,9 @@ def mondumper():
     triggdash = ReceiverStatusDash(t, "TriggerPacketReceiver", (30, 1))
     timedash = ReceiverStatusDash(t, "TimestampReceiver", (0, 6))
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
-    mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 12))
-    dashes = [rdash, timedash, triggdash, logdash, mondash]
+    mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
+    teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
+    dashes = [rdash, timedash, triggdash, logdash, mondash,teldash]
     with t.fullscreen():
         while True:
             try:

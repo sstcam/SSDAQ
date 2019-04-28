@@ -156,7 +156,7 @@ class SSDataWriter(object):
             self.tables.append(self.tel_table)
 
         self.ro_row = self.table.row
-        self.readout_counter = 0
+        self.data_counter = 0
         self.buffer = buffer
         self._cur_buf = 0
         if attrs is not None:
@@ -189,11 +189,13 @@ class SSDataWriter(object):
             self._flush()
             self._cur_buf = 0
 
-        self.readout_counter += 1
+        self.data_counter += 1
 
     def _flush(self):
         for table in self.tables:
             table.flush()
+    def close(self):
+        self.close_file()
 
     def close_file(self):
         """Closes file handle
