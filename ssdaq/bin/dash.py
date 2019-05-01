@@ -90,7 +90,8 @@ def mondumper1():
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
-    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash]
+    rtcamim = ReceiverStatusDash(t, "RTCameraImagePublisher", (0, 17))
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash,rtcamim]
     with t.fullscreen():
         while True:
             try:
@@ -140,7 +141,8 @@ def mondumper():
     logdash = ReceiverStatusDash(t, "LogReceiver", (30, 6))
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
-    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash]
+    rtcamim = ReceiverStatusDash(t, "RTCameraImage", (0, 16))
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash,rtcamim]
     async def control_task(loop,dashes,sub,t):
             prompt = AsyncPrompt(loop)
             while True:
