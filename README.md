@@ -91,7 +91,7 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 | TimestampReceiver     | Recieves timestamps from the timing board|
 | LogReceiver           | Receives logs that are send on port `10001` |
 | MonitorReceiver       | Receives monitor data that is pushed on port `10002`|
-
+| TelDataReceiver       | Queries the ASTRI telescope database |
 ##### List of standard port numbers used
 
 | Port          | Usage              | Which application  |
@@ -103,7 +103,8 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 | 9002          | publish  (TCP/ZMQ) | TriggerReceiver  |
 | 9003          | publish  (TCP/ZMQ) | TimestampReceiver  |
 | 9004          | publish  (TCP/ZMQ) | ReadoutAssembler  |
-| 9004          | publish  (TCP/ZMQ) | MonitorReceiver  |
+| 9005          | publish  (TCP/ZMQ) | MonitorReceiver  |
+| 9006          | publish  (TCP/ZMQ) | TelDataReceiver|
 | 10001         | listen  (TCP/ZMQ)  | LogReceiver  |
 | 10002         | pull  (TCP/ZMQ)    | MonitorReceiver  |
 
