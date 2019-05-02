@@ -266,7 +266,7 @@ def daq(ctx, config, components):
         if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
             receiver = getattr(receivers, comp_config["Receiver"]["class"])
             del comp_config["Receiver"]["class"]
-            print("Stoping {} ....".format(compt))
+            print("Stopping {} ....".format(compt))
             receiver = RecieverDaemonWrapper(
                 receiver, **comp_config["Daemon"], **comp_config
             )

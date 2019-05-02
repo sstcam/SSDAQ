@@ -11,8 +11,9 @@ ReadoutAssembler:
     listen_port: 17000
     relaxed_ip_range: false
     buffer_length: 1000
-    readout_tw: !!float 1.1e8 #nano seconds
-    buffer_time: !!float 4e9
+    readout_tw: !!float 5.1e7 #nano seconds
+    buffer_time: !!float 1e9
+    packet_debug_stream_file: /tmp/ssdaq.debug.log
   Publishers: #Listing publishers
     ZMQReadoutPublisherLocal: #name
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers

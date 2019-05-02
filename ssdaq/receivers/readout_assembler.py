@@ -228,7 +228,7 @@ class ReadoutAssembler(ReceiverServer):
                                     % (
                                         packet[1] * 1e-9,
                                         packet[0],
-                                        packet[2][33] * 1e-9,
+                                        packet[3].timestamp() * 1e-9,
                                     )
                                 )
                             self.partial_ro_buff[i].add_part(

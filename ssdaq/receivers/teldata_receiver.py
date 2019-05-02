@@ -31,7 +31,7 @@ class TelDataReceiver(ReceiverServer):
                 dec = cursor.fetchall()
                 cursor.execute("SELECT *  FROM TCU_ACTUAL_RA WHERE timetag=(SELECT MAX(timetag) FROM TCU_ACTUAL_RA);")
                 ra = cursor.fetchall()
-                sec = datetime.utcfromtimestamp(ra[0][0]/10000000-12219292800)
+                sec = int(ra[0][0]/10000000-12219292800)
                 teldata.time.sec = sec
                 teldata.time.nsec = 0
                 teldata.ra = float(ra[0][1])
