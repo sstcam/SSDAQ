@@ -7,7 +7,8 @@ from ssdaq import sslogger, subscribers
 from logging.handlers import SocketHandler
 
 from ssdaq import logging as handlers
-
+import os
+from pathlib import Path
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 signal_counter = 0
 
@@ -140,14 +141,28 @@ def cli(ctx):
     ctx.ensure_object(dict)
 
     from pkg_resources import resource_stream, resource_string, resource_listdir
-
+    
+    
+    
     ctx.obj["CONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-config.yaml")
     )
     ctx.obj["DAQCONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-daq-config.yaml")
     )
-
+    
+    if os.path.isfile(os.path.join(Path.home(),'.ssdaq_config.yaml')):
+        conf = yaml.safe_load(open(os.path.join(Path.home(),'.ssdaq_config.yaml'),'r'))
+        if 'writer-config' in conf:
+            if(not os.path.isfile(conf['writer-config'])):
+                sslogger.warn("custom writer-config file not found falling back to the default")
+            else:
+                ctx.obj["CONFIG"] = yaml.safe_load(open(conf['writer-config'],'r'))
+        if 'daq-config' in conf:
+            if(not os.path.isfile(conf['daq-config'])):
+                sslogger.warn("custom daq-config file not found falling back to the default")
+            else:
+                ctx.obj["DAQCONFIG"] = yaml.safe_load(open(conf['daq-config'],'r'))
 
 @click.group()
 @click.pass_context
