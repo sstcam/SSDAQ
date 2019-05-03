@@ -38,16 +38,16 @@ def writerfactory(descr, defaultport, writer_cls):
 
 
 slowsignal = writerfactory(
-    "Start a simple slow signal writer.", 9004, subscribers.SSFileWriter
+    "Start a slow signal writer.", 9004, subscribers.SSFileWriter
 )
 logwriter = writerfactory(
-    "Start a simple log data writer.", 9001, subscribers.LogWriter
+    "Start a log data writer.", 9001, subscribers.LogWriter
 )
 timestampwriter = writerfactory(
-    "Start a simple timestamp data writer.", 9003, subscribers.TimestampWriter
+    "Start a timestamp data writer.", 9003, subscribers.TimestampWriter
 )
 triggerwriter = writerfactory(
-    "Start a simple trigger data writer.", 9002, subscribers.TriggerWriter
+    "Start a trigger data writer.", 9002, subscribers.TriggerWriter
 )
 
 
@@ -115,9 +115,9 @@ def asyncwriterfactory(descr, defaultport, writer_cls):
 
 
 atriggerwriter = asyncwriterfactory(
-    "Start a simple trigger data writer.", 9002, subscribers.ATriggerWriter
+    "Start a trigger data writer.", 9002, subscribers.ATriggerWriter
 )
 
 aslowsignal = asyncwriterfactory(
-    "Start a simple slow signal writer.", 9004, subscribers.ASlowSignalWriter
+    "Start a slow signal writer.", 9004, subscribers.ASlowSignalWriter
 )
