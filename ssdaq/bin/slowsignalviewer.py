@@ -168,7 +168,7 @@ def slowsignalviewer():
     if  args.sub_ip != "127.0.0.101" and args.sub_port is None:
         args.sub_port = 10010
     else:
-        args.sub_port = 9010
+        args.sub_port = 9004
 
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
 

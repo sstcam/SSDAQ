@@ -142,7 +142,7 @@ class BaseFileWriter:
         self.file_enumerator = file_enumerator
         self.folder = folder
         self.file_prefix = file_prefix
-        self.log = sslogger.getChild(__class__.__name__)
+        self.log = sslogger.getChild(self.__class__.__name__)
         self.data_counter = 0
         self.file_counter = 1
         self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
@@ -426,7 +426,6 @@ class AsyncWriterSubscriber(BaseFileWriter):
             file_ext=file_ext,
         )
         self.loop = loop or asyncio.get_event_loop()
-        self.log.info(subscriber)
         self._subscriber = subscriber(ip=ip, port=port, loop=self.loop)
         self.running = False
         self.stopping = False
@@ -441,9 +440,10 @@ class AsyncWriterSubscriber(BaseFileWriter):
             try:
                 data = await self._subscriber.get_data()
             except asyncio.CancelledError:
-                self.log.info("Cancelled")
                 continue
-
+            except Exception as e:
+                self.log.error("Exception: {}, occured while retreiving data".format(e))
+                continue
             if data == None:
                 continue
 

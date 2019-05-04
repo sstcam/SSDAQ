@@ -213,13 +213,12 @@ class ASlowSignalWriter(AsyncWriterSubscriber):
         file_enumerator: str = None,
         filesize_lim: int = None,
         loop=None,
+        name="ASlowSignalWriter",
     ):
-        print(AsyncSSReadoutSubscriber)
         super().__init__(
             subscriber=AsyncSSReadoutSubscriber,
             writer=io.SSDataWriter,
             file_ext=".hdf5",
-            name="ASlowSignalWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
 
@@ -232,6 +231,7 @@ class ASlowSignalWriter(AsyncWriterSubscriber):
             loop=self.loop,
             passoff_callback=self.write_tel_data,
         )
+        self.log =sslogger.getChild(name)
 
     def write_tel_data(self, data):
 

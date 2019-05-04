@@ -57,6 +57,45 @@ class FileWriterDaemonWrapper(daemon.Daemon):
         signal.signal(signal.SIGINT, s)
         data_writer.start()
 
+class FileWriterDaemonWrapper(daemon.Daemon):
+    def __init__(
+        self, name, writer_cls, stdout="/dev/null", stderr="/dev/null", **kwargs
+    ):
+        # Deamonizing the server
+        daemon.Daemon.__init__(
+            self, "/tmp/{}.pid".format(name), stdout=stdout, stderr=stderr
+        )
+        self.kwargs = kwargs
+        self.writer_cls = writer_cls
+        self.name = name
+    def run(self):
+        from ssdaq.subscribers import SSFileWriter
+        import signal
+        import sys
+        import asyncio
+        data_writer = self.writer_cls(name=self.name,**self.kwargs)
+        signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+        async def shutdown(signal, loop):
+            data_writer.log.info(f'Received exit signal {signal.name}...')
+            data_writer.log.info('Closing file handlers')
+            done = loop.create_task(data_writer.close())
+            await done
+            tasks = [t for t in asyncio.all_tasks() if t is not
+                     asyncio.current_task()]
+
+            [task.cancel() for task in tasks]
+
+            data_writer.log.info('Canceling outstanding tasks')
+            await asyncio.gather(*tasks)
+            loop.stop()
+            data_writer.log.info('Shutdown complete.')
+
+        for s in signals:
+            data_writer.loop.add_signal_handler(
+                s, lambda s=s: asyncio.create_task(shutdown(s,data_writer.loop)))
+
+        data_writer.loop.run_forever()
+
 
 class RecieverDaemonWrapper(daemon.Daemon):
     def __init__(
@@ -141,29 +180,30 @@ def cli(ctx):
     ctx.ensure_object(dict)
 
     from pkg_resources import resource_stream, resource_string, resource_listdir
-    
-    
-    
+
+
+
     ctx.obj["CONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-config.yaml")
     )
     ctx.obj["DAQCONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-daq-config.yaml")
     )
-    
+
     if os.path.isfile(os.path.join(Path.home(),'.ssdaq_config.yaml')):
         conf = yaml.safe_load(open(os.path.join(Path.home(),'.ssdaq_config.yaml'),'r'))
         if 'writer-config' in conf:
             if(not os.path.isfile(conf['writer-config'])):
                 sslogger.warn("custom writer-config file not found falling back to the default")
             else:
+                sslogger.info("loading custom writer config from {}".format(conf['writer-config']))
                 ctx.obj["CONFIG"] = yaml.safe_load(open(conf['writer-config'],'r'))
         if 'daq-config' in conf:
             if(not os.path.isfile(conf['daq-config'])):
                 sslogger.warn("custom daq-config file not found falling back to the default")
             else:
                 ctx.obj["DAQCONFIG"] = yaml.safe_load(open(conf['daq-config'],'r'))
-
+                sslogger.info("loading custom DAQ config from {}".format(conf['daq-config']))
 @click.group()
 @click.pass_context
 def start(ctx):  # ,config):
@@ -214,13 +254,15 @@ def dw(ctx, filename_prefix, output_folder, daemon, components, config, ls):
     for compt, comp_config in config.items():
         if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
             writer = getattr(subscribers, comp_config["Writer"]["class"])
-            clas = comp_config["Writer"]["class"]
+            class_ = comp_config["Writer"]["class"]
             del comp_config["Writer"]["class"]
+
             if filename_prefix:
                 comp_config["Writer"]["file_prefix"] = filename_prefix
             if output_folder:
                 comp_config["Writer"]["folder"] = output_folder
-            print("Starting {} writer...".format(clas))
+
+            print("Starting {} writer...".format(class_))
             writerdaemon = FileWriterDaemonWrapper(
                 compt, writer, **comp_config["Daemon"], **comp_config["Writer"]
             )
@@ -289,22 +331,33 @@ def daq(ctx, config, components):
 
 
 @stop.command()
+@click.argument("components", nargs=-1)
 @click.pass_context
-def dw(ctx):
-    """Stop a running readout writer"""
-    config = ctx.obj["CONFIG"]
-    readout_writer = ReadoutFileWriterDaemonWrapper(
-        **config["ReadoutFileWriterDaemon"], **config["SSFileWriter"]
-    )
+def dw(ctx,components):
+    """Stop a running file writer"""
     import os
     import signal
+    components = list(components)
+    cmptlen = len(components)
+    config = ctx.obj["CONFIG"]
+    for compt, comp_config in config.items():
+        if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
+            # for compt in components:
+            writer = getattr(subscribers, comp_config["Writer"]["class"])
+            class_ = comp_config["Writer"]["class"]
+            del comp_config["Writer"]["class"]
+            print("Stopping {}...".format(compt))
+            readout_writer = FileWriterDaemonWrapper(
+                compt,writer, **comp_config["Daemon"], **comp_config["Writer"]
 
-    try:
-        dwpid = readout_writer.getpid()
-    except:
-        return
-    if dwpid != None:
-        os.kill(dwpid, signal.SIGHUP)
+            )
+
+            try:
+                dwpid = readout_writer.getpid()
+            except:
+                return
+            if dwpid != None:
+                os.kill(dwpid, signal.SIGHUP)
 
 
 @click.group(name="roa-ctrl")
