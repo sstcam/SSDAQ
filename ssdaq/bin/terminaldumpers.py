@@ -206,7 +206,7 @@ def handle_log_record(log_record):
     for h in logger.handlers:
         h.setFormatter(color_formatter)
     logger.handle(log_record)
-
+    logger.handlers = []
 
 def logdump():
 
@@ -232,13 +232,15 @@ def logdump():
     while True:
         try:
             record = sub.get_data()
+
         except KeyboardInterrupt:
             print("\nClosing listener")
             sub.close()
             break
+        # print(record)
         if record is not None:
             handle_log_record(record)
-    sub.close()
+    # sub.close()
 
 
 def mondumper():
