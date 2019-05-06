@@ -22,11 +22,11 @@ ReadoutAssembler:
     # Dumper: #name
     #   class: RawWriter #class
     #   file_name: 'bindump.dat'
-    # ZMQReadoutPublisherOutbound: #name
-    #   class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
-    #   ip: 141.34.29.161
-    #   port: 9999
-    #   mode: outbound
+    ZMQReadoutPublisherOutbound: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 192.168.100.95
+      port: 10025
+      mode: outbound
 
 LogReceiver:
   Daemon:
