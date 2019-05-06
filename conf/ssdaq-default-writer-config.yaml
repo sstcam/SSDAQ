@@ -4,7 +4,7 @@ ssallnight:
     stdout: '/data/astri_onsky/ssdaq_writer.log'
     stderr: '/data/astri_onsky/ssdaq_writer.log'
   Writer:
-    class: SSFileWriter
+    class: ASlowSignalWriter
     file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
     file_prefix: AllNightSlowSignalData
     folder: /data/astri_onsky/ 
@@ -18,7 +18,7 @@ ssoneoff:
     stdout: '/data/astri_onsky/ssdaq_writer.log'
     stderr: '/data/astri_onsky/ssdaq_writer.log'
   Writer:
-    class: SSFileWriter
+    class: ASlowSignalWriter
     file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
     file_prefix: SlowSignalData
     folder: /data/astri_onsky/

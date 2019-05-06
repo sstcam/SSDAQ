@@ -80,19 +80,19 @@ class FileWriterDaemonWrapper(daemon.Daemon):
             data_writer.log.info('Closing file handlers')
             done = loop.create_task(data_writer.close())
             await done
-            tasks = [t for t in asyncio.all_tasks() if t is not
-                     asyncio.current_task()]
+            #tasks = [t for t in asyncio.all_tasks() if t is not
+            #         asyncio.current_task()]
 
-            [task.cancel() for task in tasks]
+            #[task.cancel() for task in tasks]
 
-            data_writer.log.info('Canceling outstanding tasks')
-            await asyncio.gather(*tasks)
+            #data_writer.log.info('Canceling outstanding tasks')
+            #await asyncio.gather(*tasks)
             loop.stop()
             data_writer.log.info('Shutdown complete.')
 
         for s in signals:
             data_writer.loop.add_signal_handler(
-                s, lambda s=s: asyncio.create_task(shutdown(s,data_writer.loop)))
+                s, lambda s=s: data_writer.loop.create_task(shutdown(s,data_writer.loop)))
 
         data_writer.loop.run_forever()
 
