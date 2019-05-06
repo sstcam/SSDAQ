@@ -13,6 +13,8 @@ install_requires = [
     "bitarray",
     "protobuf",
     "blessed",
+    "pyqtgraph",
+    "mysqlclient"
 ]
 
 #
@@ -63,6 +65,7 @@ setup(
             "chec-log-writer=ssdaq.bin.writers:logwriter",
             "chec-slowsig-writer=ssdaq.bin.writers:slowsignal",
             "chec-aslowsig-writer=ssdaq.bin.writers:aslowsignal",
+            "chec-slowsig-viewer=ssdaq.bin.slowsignalviewer:slowsignalviewer",
             "chec-daq-dash=ssdaq.bin.dash:mondumper",
         ]
     },

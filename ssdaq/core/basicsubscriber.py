@@ -142,11 +142,12 @@ class BaseFileWriter:
         self.file_enumerator = file_enumerator
         self.folder = folder
         self.file_prefix = file_prefix
-        self.log = sslogger.getChild(__class__.__name__)
+        # self.log = sslogger.getChild(self.__class__.__name__)
         self.data_counter = 0
         self.file_counter = 1
         self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
         self._writercls = writer
+        # self.log = writer.log
         self.file_ext = file_ext
         self._open_file()
 
@@ -237,6 +238,7 @@ class WriterSubscriber(Thread, BaseFileWriter):
         file_enumerator: str = None,
         filesize_lim: int = None,
     ):
+        self.log = sslogger.getChild(name)
         BaseFileWriter.__init__(
             self,
             file_prefix=file_prefix,
@@ -247,7 +249,7 @@ class WriterSubscriber(Thread, BaseFileWriter):
             file_ext=file_ext,
         )
         Thread.__init__(self)
-        self.log = sslogger.getChild(name)
+
         self._subscriber = subscriber(
             logger=self.log.getChild("Subscriber"), ip=ip, port=port
         )
@@ -310,10 +312,11 @@ class AsyncSubscriber:
         ip: str,
         port: int,
         unpack=None,
-        logger: logging.Logger = None,
+        logger: logging.Logger =None,
         zmqcontext=None,
         loop=None,
         passoff_callback=None,
+        name = None
     ):
         """ The init of a BasicSubscriber
 
@@ -327,7 +330,13 @@ class AsyncSubscriber:
                                     object is put in the subscribed buffer.
                 logger:     Optionally provide a logger instance
         """
-        self.log = logger or logging.getLogger("ssdaq.{}".format(__class__.__name__))
+        if logger is None:
+            logger = sslogger#logging.getLogger()
+
+        if name is None:
+            self.log = logger.getChild(__class__.__name__)
+        else:
+            self.log = logger.getChild(name)
 
         self.context = zmqcontext or zmq.asyncio.Context()
         self.sock = self.context.socket(zmq.SUB)
@@ -417,6 +426,7 @@ class AsyncWriterSubscriber(BaseFileWriter):
         filesize_lim: int = None,
         loop=None,
     ):
+        self.log = sslogger.getChild(name)
         super().__init__(
             file_prefix=file_prefix,
             writer=writer,
@@ -426,8 +436,7 @@ class AsyncWriterSubscriber(BaseFileWriter):
             file_ext=file_ext,
         )
         self.loop = loop or asyncio.get_event_loop()
-        self.log.info(subscriber)
-        self._subscriber = subscriber(ip=ip, port=port, loop=self.loop)
+        self._subscriber = subscriber(ip=ip, port=port, loop=self.loop,logger=self.log,name='mainsub')
         self.running = False
         self.stopping = False
         self.task = self.loop.create_task(self.run())
@@ -441,9 +450,10 @@ class AsyncWriterSubscriber(BaseFileWriter):
             try:
                 data = await self._subscriber.get_data()
             except asyncio.CancelledError:
-                self.log.info("Cancelled")
                 continue
-
+            except Exception as e:
+                self.log.error("Exception: {}, occured while retreiving data".format(e))
+                continue
             if data == None:
                 continue
 
