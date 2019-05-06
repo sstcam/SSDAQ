@@ -2,6 +2,7 @@
 from . import LogData
 from . import TriggerMessage
 from . import TriggerPacketData, NominalTriggerDataEncode
+from . import Frame
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 
 
@@ -53,6 +54,14 @@ class TriggerWriter(RawObjectWriterBase):
             )
         )
 
+class FrameWriter(RawObjectWriterBase):
+    def __init__(self, filename: str):
+        super().__init__(filename, header=4)
+
+    def write(self, frame):
+        super().write(
+            frame.serialize()
+        )
 
 # Manually list unpackers for now
 class TriggerReader(RawObjectReaderBase):
@@ -72,7 +81,7 @@ def timestamp_unpack(data):
     return timestamp
 
 
-_unpackers = [log_unpack, timestamp_unpack, TriggerPacketData.unpack]
+_unpackers = [log_unpack, timestamp_unpack, TriggerPacketData.unpack,Frame.from_bytes]
 
 
 class DataReader(RawObjectReaderBase):
@@ -83,7 +92,9 @@ class DataReader(RawObjectReaderBase):
         self._unpack = _unpackers[self.fhead - 1]
 
     def read(self):
-        return self._unpack(super().read())
+        self.reload()
+        for i in range(self.n_entries):
+            yield self._unpack(super().read())
 
 
 import numpy as np

@@ -2,6 +2,7 @@ from datetime import datetime
 import numpy as np
 import struct
 from collections import namedtuple as _nt
+import sys
 
 N_TM = 32  # Number of target modules in camera
 N_TM_PIX = 64  # Number of pixels on a Target Module
@@ -45,7 +46,9 @@ class SSReadout(object):
         self.time = timestamp
         self.cpu_t_s = cpu_t_s
         self.cpu_t_ns = cpu_t_ns
-        self.data = np.full((N_TM, N_TM_PIX), np.nan) if data is None else data
+        self.data = np.full((N_TM, N_TM_PIX), np.nan,dtype=np.dtype("<f8")) if data is None else data
+        if sys.byteorder != 'little' and self.data.dtype.byteorder !='<':
+            self.data = self.data.byteswap()
 
     @classmethod
     def from_bytes(cls, data):
@@ -67,7 +70,7 @@ class SSReadout(object):
             returns bytearray
         """
         d_stream = bytearray(
-            struct.pack("4Q", self.iro, self.time, self.cpu_t_s, self.cpu_t_ns)
+            struct.pack("<4Q", self.iro, self.time, self.cpu_t_s, self.cpu_t_ns)
         )
 
         d_stream.extend(self.data.tobytes())
@@ -78,11 +81,11 @@ class SSReadout(object):
         Unpack a bytestream into an readout
         """
         self.iro, self.time, self.cpu_t_s, self.cpu_t_ns = struct.unpack_from(
-            "4Q", byte_stream, 0
+            "<4Q", byte_stream, 0
         )
         self.data = np.frombuffer(
             byte_stream[N_BYTES_NUM * 4 : N_BYTES_NUM * (4 + N_CAM_PIX)],
-            dtype=np.float64,
+            dtype=np.dtype("<f8"),
         ).reshape(N_TM, N_TM_PIX)
 
     def __repr__(self):
