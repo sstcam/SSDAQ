@@ -18,7 +18,7 @@ class ReceiverStatusDash:
         self.status = False
         self.counter = 0
         self.last_seen = datetime.now().timestamp()
-
+        self.last_mon = None
     def render(self, mon):
         # print(mon.reciver.name,self.name,mon.reciver.name!=self.name)
 
@@ -57,7 +57,7 @@ class ReceiverStatusDash:
                 + self.terminal.bold_magenta("%s" % rate)
             )
         self.counter += 1
-
+        self.last_mon = mon
 
 import queue
 
@@ -92,7 +92,10 @@ def mondumper1():
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
     rtcamim = ReceiverStatusDash(t, "RTCameraImagePublisher", (0, 17))
     dashes = [rdash, timedash, triggdash, logdash, mondash, teldash,rtcamim]
+    
     with t.fullscreen():
+        oldh = t.height
+        oldw = t.width
         while True:
             try:
                 mon = sub.get_data(timeout=1.0)
@@ -102,12 +105,18 @@ def mondumper1():
                 print("\nClosing listener")
                 sub.close()
                 break
-
+            if t.height!=oldh or t.width!=oldw:
+                oldh = t.height
+                oldw = t.width
+                t.clear()
+                for dash in dashes:
+                    dash.render(dash.last_mon)
             for dash in dashes:
                 dash.render(mon)
         sub.close()
 
 def mondumper():
+    import curses
     import asyncio
     from ssdaq.core.utils import (
             AsyncPrompt,
@@ -143,24 +152,43 @@ def mondumper():
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
     rtcamim = ReceiverStatusDash(t, "RTCameraImage", (0, 16))
     dashes = [rdash, timedash, triggdash, logdash, mondash, teldash,rtcamim]
+    
+
     async def control_task(loop,dashes,sub,t):
             prompt = AsyncPrompt(loop)
+            oldh = t.height
+            oldw = t.width
             while True:
                 try:
                     mon = await asyncio.wait_for(sub.get_data(),1.0)
                 except asyncio.TimeoutError:
                     mon = None
+#                sslogger.warn("{},{}".format(t.height,t.width))
+                if t.height!=oldh or t.width!=oldw:
+                    oldh = t.height
+                    oldw = t.width
+                    print(t.clear())
+                    for dash in dashes:
+                        dash.render(dash.last_mon)
+#                    sslogger.error("HERE")
 
                 for dash in dashes:
                     dash.render(mon)
     with t.fullscreen():
+        stdscr = curses.initscr()    
+        curses.noecho()
         main_task = loop.create_task(control_task(loop, dashes,sub,t))
         try:
             loop.run_forever()
         except KeyboardInterrupt:
             # print('HERE')
             # klakslkd
+            
+            curses.echo()
             loop.run_until_complete(sub.close())
-
+        finally:
+            stdscr.keypad(0)
+            curses.echo()
+            curses.endwin()
 if __name__ == "__main__":
     mondumper()
