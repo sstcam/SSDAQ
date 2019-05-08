@@ -60,7 +60,8 @@ class DynamicPlotter():
         # self._add_plot('DAC HV Voltage (Super pixels 9-15)',('Voltage','V'),('Time','min'),['dac_suppix_%d'%i for i in range(9,16)])
 
         # self._add_plot('Temperature',('Temperature',u"\u00B0"+'C'),('Time','min'),['temp_powb','temp_auxb','temp_primb'])#,'temp_sipm'
-
+        self.badpixs = np.array([  25,   58,  101,  304,  449,  570,  653, 1049, 1094, 1158, 1177,
+       1381, 1427, 1434, 1439, 1765, 1829, 1869, 1945, 1957, 2009, 2043])
         self.img = pg.ImageItem(levels=(0,400))
         self.p = self.win.addPlot()
         self.p.addItem(self.img)
@@ -131,12 +132,17 @@ class DynamicPlotter():
         else:
             data = evs[-1]
         imgdata = np.zeros((48,48))
-        d = data#d.reshape((48,48))
-        imgdata[self.xmap,self.ymap] = data.flatten()
+        data = data.flatten()
+        data[data<=0] = np.nan
+        #print(data)
 
+        #data = np.log10(data)
+        data[self.badpixs] = np.nan
+        print(data[data>0])
+        imgdata[self.xmap,self.ymap] = data
+        
         imgdata[np.isnan(imgdata)] = 0
-        # print(imgdata)
-        self.img.setImage(imgdata)
+        self.img.setImage(imgdata.T,levels=(0,400))
 
     def run(self):
         self.app.exec_()
@@ -166,7 +172,7 @@ def slowsignalviewer():
 
     args = parser.parse_args()
     if  args.sub_ip != "127.0.0.101" and args.sub_port is None:
-        args.sub_port = 10010
+        args.sub_port = 10025
     else:
         args.sub_port = 9004
 
