@@ -26,6 +26,20 @@ ssoneoff:
     port: 9004
     filesize_lim: 600
 
+ssrun:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/data/astri_onsky/ssdaq_writer.log'
+    stderr: '/data/astri_onsky/ssdaq_writer.log'
+  Writer:
+    class: ASlowSignalWriter
+    file_enumerator: None #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
+    file_prefix: SlowSignalData
+    folder: /data/astri_onsky/
+    ip: 127.0.0.101
+    port: 9004
+    filesize_lim: 600
+
 
 TriggerWriter:
   Daemon:

@@ -59,11 +59,12 @@ def slowsignaldump():
         m = ~np.isnan(readout.data)
         print("Participating TMs: ",set(np.where(m)[0]))
         print("Number of participating TMs: ",len(set(np.where(m)[0])))
+        print("Amplitude sum: {} mV".format(np.nansum(readout.data.flatten())))
         # print(readout.data)
         # n_modules_per_readout.append(np.sum(m))
         # readout_counter[m] += 1
         # m = readout_counter>0
-
+        
         if args.tm_numb:
             print(readout.data[args.tm_numb])
         n += 1
@@ -75,9 +76,9 @@ def slowsignaldump():
     except ImportError:
         return
 
-    plt.figure()
-    plt.hist(n_modules_per_readout, 10, facecolor="g", alpha=0.75)
-    plt.show()
+#    plt.figure()
+#    plt.hist(n_modules_per_readout, 10, facecolor="g", alpha=0.75)
+#    plt.show()
     rsub.close()
     rsub.join()
 

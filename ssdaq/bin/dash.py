@@ -135,7 +135,10 @@ def mondumper():
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
-
+#    stdscr = curses.initscr()    
+#    curses.noecho()
+#    curses.cbreak()
+    
     t = Terminal()
 
     sub = subscribers.AsyncMonSubscriber(port=args.sub_port, ip=args.sub_ip)
@@ -163,7 +166,7 @@ def mondumper():
                     mon = await asyncio.wait_for(sub.get_data(),1.0)
                 except asyncio.TimeoutError:
                     mon = None
-#                sslogger.warn("{},{}".format(t.height,t.width))
+ #               sslogger.warn("{},{}".format(t.height,t.width))
                 if t.height!=oldh or t.width!=oldw:
                     oldh = t.height
                     oldw = t.width
@@ -174,9 +177,9 @@ def mondumper():
 
                 for dash in dashes:
                     dash.render(mon)
+            #stdscr.refresh()
     with t.fullscreen():
-        stdscr = curses.initscr()    
-        curses.noecho()
+       
         main_task = loop.create_task(control_task(loop, dashes,sub,t))
         try:
             loop.run_forever()
@@ -184,11 +187,11 @@ def mondumper():
             # print('HERE')
             # klakslkd
             
-            curses.echo()
+           # curses.echo()
             loop.run_until_complete(sub.close())
-        finally:
-            stdscr.keypad(0)
-            curses.echo()
-            curses.endwin()
+        #finally:
+        #    stdscr.keypad(0)
+        #    curses.echo()
+        #    curses.endwin()
 if __name__ == "__main__":
     mondumper()
