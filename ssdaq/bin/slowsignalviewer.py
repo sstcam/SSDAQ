@@ -7,7 +7,8 @@ from ssdaq import subscribers
 from target_calib import CameraConfiguration
 from ssdaq import sslogger
 import logging
-
+from collections import defaultdict
+from datetime import datetime
 color_set1 = [(228,26,28),
               (55,126,184),
                 (77,175,74),
@@ -47,16 +48,17 @@ class DynamicPlotter():
         self.win = pg.GraphicsWindow()
         self.win.setWindowTitle('Slow signal viewer')
         #data
-        self.data = {'hv_current':list(),'hv_voltage':list()}
+        self.data = defaultdict(list)#{'hv_current':list(),'hv_voltage':list()}
         self.time = list()
         self.plts = {}
         self.curve_names = list()
         self.plot_time_window = 10
         # self.win.addItem(pg.TextItem(text='HEJHEJHEJ', color=(200, 200, 200), html=None, anchor=(0, 0), border=None, fill=None, angle=0, rotateAxis=None),row=1 )
-        # self._add_plot('HV current',('Current','A'),('Time','min'),['hv_current'])
-        # self._add_plot('HV Voltage',('Voltage','V'),('Time','min'),['hv_voltage'])
+        self._add_plot('TMs per readout',('Number of TMs',''),('Time','min'),['current nTMs','av nTMs'])
+        self._add_plot('Slow signal amplitude',('Amplitude','mV'),('Time','min'),['total amplitude','max amplitude X 10'])
+        self.win.nextRow()
         # self._add_plot('DAC HV Voltage (Super pixels 0-8)',('Voltage','V'),('Time','min'),['dac_suppix_%d'%i for i in range(9)])
-        # self.win.nextRow()
+
         # self._add_plot('DAC HV Voltage (Super pixels 9-15)',('Voltage','V'),('Time','min'),['dac_suppix_%d'%i for i in range(9,16)])
 
         # self._add_plot('Temperature',('Temperature',u"\u00B0"+'C'),('Time','min'),['temp_powb','temp_auxb','temp_primb'])#,'temp_sipm'
@@ -67,6 +69,7 @@ class DynamicPlotter():
         self.p.addItem(self.img)
         self.c = CameraConfiguration("1.1.0")
         self.m = self.c.GetMapping()
+
         self.xpix = np.array(self.m.GetXPixVector())
         self.ypix = np.array(self.m.GetYPixVector())
         self.xmap = np.array(self.m.GetRowVector())
@@ -76,7 +79,12 @@ class DynamicPlotter():
             self.map[self.xmap[i],self.ymap[i]] = i
 
         self.map = self.map.flatten()
-
+        # label = pg.LabelItem()
+        # label2 = pg.TextItem("BLAH")
+        # # label2.setText()
+        # label.setText("test",color='CCFF00')
+        # self.win.addItem(label)
+        # self.win.addItem(label2)
          # Add a color scale
         # self.gl = pg.GradientLegend((20, 150), (-10, -10))
         # self.gl.setParentItem(self.img)
@@ -132,18 +140,29 @@ class DynamicPlotter():
         else:
             data = evs[-1]
         imgdata = np.zeros((48,48))
+        m = ~np.isnan(data)
+        parttms = set(np.where(m)[0])
+        nparttms = len(parttms)
         data = data.flatten()
         data[data<=0] = np.nan
-        #print(data)
 
         #data = np.log10(data)
         data[self.badpixs] = np.nan
-        print(data[data>0])
+
+        # print(data[data>0])
         imgdata[self.xmap,self.ymap] = data
-        
+
         imgdata[np.isnan(imgdata)] = 0
         self.img.setImage(imgdata.T,levels=(0,400))
 
+
+        self.data['total amplitude'].append(np.nansum(data))
+        self.data['max amplitude X 10'].append(np.nanmax(data)*10)
+        self.data['current nTMs'].append(nparttms)
+        n = np.min([10,len(self.data['current nTMs'])])
+        self.data['av nTMs'].append(np.mean(self.data['current nTMs'][-n:]))
+
+        self.time.append(datetime.now())
     def run(self):
         self.app.exec_()
 
@@ -155,7 +174,16 @@ class DynamicPlotter():
 
     def updateplots(self):
         self.get_data()
-
+        time = list()
+        now = datetime.now()
+        for t in self.time:
+            time.append((t-now).total_seconds()/60)
+        t = np.array(time)
+        if len(t)>0:
+            trange = t[t>t[-1]-self.plot_time_window]
+            for k,v in self.plts.items():
+                # v[0].setXRange(trange[0], trange[-1])
+                self._update_plot(time,v)
         self.app.processEvents()
 
 def slowsignalviewer():
