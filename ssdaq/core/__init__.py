@@ -1,5 +1,5 @@
 from .receiver_server import ReceiverServer
-from .basicsubscriber import (
+from .basesubscribers import (
     BasicSubscriber,
     WriterSubscriber,
     AsyncSubscriber,

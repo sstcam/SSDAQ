@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from threading import Thread
 from ssdaq import sslogger
-from ssdaq.core.basicsubscriber import (
+from ssdaq.core import (
     BasicSubscriber,
     WriterSubscriber,
     AsyncSubscriber,
@@ -29,6 +29,7 @@ class SSReadoutSubscriber(BasicSubscriber):
 class AsyncSSReadoutSubscriber(AsyncSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None, loop=None,name=None):
         super().__init__(ip=ip, port=port, logger=logger, unpack=SSReadout.from_bytes, loop=loop,name=name)
+
 
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
@@ -184,12 +185,12 @@ class ATriggerWriter(AsyncWriterSubscriber):
         file_enumerator: str = None,
         filesize_lim: int = None,
         loop=None,
+        name="ATriggerWriter",
     ):
         super().__init__(
             subscriber=AsyncTriggerSubscriber,
             writer=io.TriggerWriter,
             file_ext=".prt",
-            name="ATriggerWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
 
