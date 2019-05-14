@@ -8,5 +8,5 @@ from ._ioimpl import (
     DataReader,
     SSDataReader,
     SSDataWriter,
-    FrameWriter
+    FrameWriter,
 )

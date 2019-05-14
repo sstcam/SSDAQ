@@ -7,6 +7,8 @@ from ssdaq.core.utils import get_utc_timestamp
 import MySQLdb
 from datetime import datetime
 import os
+
+
 class TelDataReceiver(ReceiverServer):
     def __init__(
         self, ip: str, port: int, publishers: list, name: str = "TelDataReceiver"
@@ -24,20 +26,29 @@ class TelDataReceiver(ReceiverServer):
 
             teldata = TelData()
             if os.uname().nodename == "chec1.mpi-hd.mpg.de":
-                db = MySQLdb.connect(host="slntmcdb.astrivpn.com",user="ASTRI",passwd="ASTRIteam2014",db="monitoring")
+                db = MySQLdb.connect(
+                    host="slntmcdb.astrivpn.com",
+                    user="ASTRI",
+                    passwd="ASTRIteam2014",
+                    db="monitoring",
+                )
                 cursor = db.cursor()
                 # cursor.execute("SELECT TCU_ACTUAL_DEC.timetag, TCU_ACTUAL_DEC.value, TCU_ACTUAL_RA.value  FROM TCU_ACTUAL_DEC, TCU_ACTUAL_RA WHERE timetag=(SELECT MAX(timetag) FROM TCU_ACTUAL_DEC);")
-                cursor.execute("SELECT *  FROM TCU_ACTUAL_DEC WHERE timetag=(SELECT MAX(timetag) FROM TCU_ACTUAL_DEC);")
+                cursor.execute(
+                    "SELECT *  FROM TCU_ACTUAL_DEC WHERE timetag=(SELECT MAX(timetag) FROM TCU_ACTUAL_DEC);"
+                )
                 dec = cursor.fetchall()
-                cursor.execute("SELECT *  FROM TCU_ACTUAL_RA WHERE timetag=(SELECT MAX(timetag) FROM TCU_ACTUAL_RA);")
+                cursor.execute(
+                    "SELECT *  FROM TCU_ACTUAL_RA WHERE timetag=(SELECT MAX(timetag) FROM TCU_ACTUAL_RA);"
+                )
                 ra = cursor.fetchall()
-                sec = int(ra[0][0]/10000000-12219292800)
+                sec = int(ra[0][0] / 10000000 - 12219292800)
                 teldata.time.sec = sec
                 teldata.time.nsec = 0
                 teldata.ra = float(ra[0][1])
                 teldata.dec = float(dec[0][1])
             else:
-                sec,nsec = get_utc_timestamp()
+                sec, nsec = get_utc_timestamp()
                 teldata.time.sec = sec
                 teldata.time.nsec = nsec
                 teldata.ra = 0.322

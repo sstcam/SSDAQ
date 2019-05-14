@@ -14,7 +14,7 @@ install_requires = [
     "protobuf",
     "blessed",
     "pyqtgraph",
-    "mysqlclient"
+    "mysqlclient",
 ]
 
 #

@@ -312,11 +312,11 @@ class AsyncSubscriber:
         ip: str,
         port: int,
         unpack=None,
-        logger: logging.Logger =None,
+        logger: logging.Logger = None,
         zmqcontext=None,
         loop=None,
         passoff_callback=None,
-        name = None
+        name=None,
     ):
         """ The init of a BasicSubscriber
 
@@ -331,7 +331,7 @@ class AsyncSubscriber:
                 logger:     Optionally provide a logger instance
         """
         if logger is None:
-            logger = sslogger#logging.getLogger()
+            logger = sslogger  # logging.getLogger()
 
         if name is None:
             self.log = logger.getChild(__class__.__name__)
@@ -427,7 +427,9 @@ class AsyncWriterSubscriber(BaseFileWriter):
             file_ext=file_ext,
         )
         self.loop = loop or asyncio.get_event_loop()
-        self._subscriber = subscriber(ip=ip, port=port, loop=self.loop,logger=self.log,name='mainsub')
+        self._subscriber = subscriber(
+            ip=ip, port=port, loop=self.loop, logger=self.log, name="mainsub"
+        )
         self.running = False
         self.stopping = False
         self.task = self.loop.create_task(self.run())

@@ -23,10 +23,12 @@ from ._dataimpl.slowsignal_format import SSReadout
 from ._dataimpl.trigger_format import TriggerPacketData
 from ._dataimpl.trigger_format import NominalTriggerDataEncode
 
-class SSReadoutFrame(FrameObject,SSReadout):
+
+class SSReadoutFrame(FrameObject, SSReadout):
     def __init__(self):
         SSReadout.__init__(self)
-        FrameObject.__init__(self,self.pack,self.unpack)
+        FrameObject.__init__(self, self.pack, self.unpack)
+
 
 # class SSReadoutFrame(FrameObject,SSReadout):
 #     def __init__(self):

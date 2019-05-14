@@ -9,6 +9,7 @@ from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 class LogWriter(RawObjectWriterBase):
     """
     """
+
     def __init__(self, filename: str):
         super().__init__(filename, header=1)
 
@@ -56,16 +57,17 @@ class TriggerWriter(RawObjectWriterBase):
             )
         )
 
+
 class FrameWriter(RawObjectWriterBase):
     """
     """
+
     def __init__(self, filename: str):
         super().__init__(filename, header=4)
 
     def write(self, frame):
-        super().write(
-            frame.serialize()
-        )
+        super().write(frame.serialize())
+
 
 # Manually list unpackers for now
 class TriggerReader(RawObjectReaderBase):
@@ -85,7 +87,7 @@ def timestamp_unpack(data):
     return timestamp
 
 
-_unpackers = [log_unpack, timestamp_unpack, TriggerPacketData.unpack,Frame.from_bytes]
+_unpackers = [log_unpack, timestamp_unpack, TriggerPacketData.unpack, Frame.from_bytes]
 
 
 class DataReader(RawObjectReaderBase):
@@ -101,8 +103,7 @@ class DataReader(RawObjectReaderBase):
             yield self._unpack(super().read())
 
 
-
-#====================HDF5 Slow signal data reader and writer definitions===============
+# ====================HDF5 Slow signal data reader and writer definitions===============
 import numpy as np
 import tables
 from tables import IsDescription, UInt64Col, Float32Col, Float64Col

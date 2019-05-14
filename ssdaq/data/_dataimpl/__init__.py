@@ -12,53 +12,68 @@ from .trigger_format import NominalTriggerDataEncode
 
 # from .frame import Frame, FrameObject
 
+
 class ProtoWrapper:
-    def __init__(self,cls):
+    def __init__(self, cls):
         self._cls = cls
-        for k,v in cls.DESCRIPTOR.fields_by_name.items():
+        for k, v in cls.DESCRIPTOR.fields_by_name.items():
             setattr(
-                        self.__class__,
-                        k,
-                        property(
-                            lambda self,k=k: self._cls.__getattribute__(k),
-                            lambda self, v,k=k: self._cls.__setattr__(k,v),
-                            doc=self._cls.__getattribute__(k).__doc__
-                        ),
-                    )
+                self.__class__,
+                k,
+                property(
+                    lambda self, k=k: self._cls.__getattribute__(k),
+                    lambda self, v, k=k: self._cls.__setattr__(k, v),
+                    doc=self._cls.__getattribute__(k).__doc__,
+                ),
+            )
         self.SerializeToString = self._cls.SerializeToString
         self.ParseFromString = self._cls.ParseFromString
+
     def serialize(self):
         return self._cls.SerializeToString()
 
-    def deserialize(self,data):
+    def deserialize(self, data):
         self._cls.ParseFromString(data)
-
-
 
     def __repr__(self):
         return self._cls.__repr__()
 
+
 class LogData(ProtoWrapper):
     def __init__(self):
         super().__init__(_LogData())
+
+
 class TimeUTC(ProtoWrapper):
     def __init__(self):
         super().__init__(_TimeUTC())
+
+
 class MonitorData(ProtoWrapper):
     def __init__(self):
         super().__init__(_MonitorData())
+
+
 class MonitorFrame(ProtoWrapper):
     def __init__(self):
         super().__init__(_MonitorFrame())
+
+
 class TimeStamp(ProtoWrapper):
     def __init__(self):
         super().__init__(_TimeStamp())
+
+
 class TriggerMessage(ProtoWrapper):
     def __init__(self):
         super().__init__(_TriggerMessage())
+
+
 class TriggerBunch(ProtoWrapper):
     def __init__(self):
         super().__init__(_TriggerBunch())
+
+
 class TelData(ProtoWrapper):
     def __init__(self):
         super().__init__(_TelData())

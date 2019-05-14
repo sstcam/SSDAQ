@@ -19,6 +19,7 @@ class ReceiverStatusDash:
         self.counter = 0
         self.last_seen = datetime.now().timestamp()
         self.last_mon = None
+
     def render(self, mon):
         # print(mon.reciver.name,self.name,mon.reciver.name!=self.name)
 
@@ -59,6 +60,7 @@ class ReceiverStatusDash:
         self.counter += 1
         self.last_mon = mon
 
+
 import queue
 
 
@@ -91,7 +93,7 @@ def mondumper1():
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
     rtcamim = ReceiverStatusDash(t, "RTCameraImagePublisher", (0, 17))
-    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash,rtcamim]
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash, rtcamim]
 
     with t.fullscreen():
         oldh = t.height
@@ -105,7 +107,7 @@ def mondumper1():
                 print("\nClosing listener")
                 sub.close()
                 break
-            if t.height!=oldh or t.width!=oldw:
+            if t.height != oldh or t.width != oldw:
                 oldh = t.height
                 oldw = t.width
                 t.clear()
@@ -115,14 +117,15 @@ def mondumper1():
                 dash.render(mon)
         sub.close()
 
+
 def mondumper():
     import curses
     import asyncio
     from ssdaq.core.utils import (
-            AsyncPrompt,
-            async_interup_loop_cleanup,
-            async_shut_down_loop,
-        )
+        AsyncPrompt,
+        async_interup_loop_cleanup,
+        async_shut_down_loop,
+    )
 
     parser = argparse.ArgumentParser(
         description="Subcribe to a published log stream.",
@@ -135,9 +138,9 @@ def mondumper():
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
-#    stdscr = curses.initscr()
-#    curses.noecho()
-#    curses.cbreak()
+    #    stdscr = curses.initscr()
+    #    curses.noecho()
+    #    curses.cbreak()
 
     t = Terminal()
 
@@ -154,45 +157,46 @@ def mondumper():
     mondash = ReceiverStatusDash(t, "MonitorReceiver", (0, 11))
     teldash = ReceiverStatusDash(t, "TelDataReceiver", (30, 11))
     rtcamim = ReceiverStatusDash(t, "RTCameraImage", (0, 16))
-    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash,rtcamim]
+    dashes = [rdash, timedash, triggdash, logdash, mondash, teldash, rtcamim]
 
-
-    async def control_task(loop,dashes,sub,t):
-            prompt = AsyncPrompt(loop)
-            oldh = t.height
-            oldw = t.width
-            while True:
-                try:
-                    mon = await asyncio.wait_for(sub.get_data(),1.0)
-                except asyncio.TimeoutError:
-                    mon = None
- #               sslogger.warn("{},{}".format(t.height,t.width))
-                if t.height!=oldh or t.width!=oldw:
-                    oldh = t.height
-                    oldw = t.width
-                    print(t.clear())
-                    for dash in dashes:
-                        dash.render(dash.last_mon)
-#                    sslogger.error("HERE")
-
+    async def control_task(loop, dashes, sub, t):
+        prompt = AsyncPrompt(loop)
+        oldh = t.height
+        oldw = t.width
+        while True:
+            try:
+                mon = await asyncio.wait_for(sub.get_data(), 1.0)
+            except asyncio.TimeoutError:
+                mon = None
+            #               sslogger.warn("{},{}".format(t.height,t.width))
+            if t.height != oldh or t.width != oldw:
+                oldh = t.height
+                oldw = t.width
+                print(t.clear())
                 for dash in dashes:
-                    dash.render(mon)
-            #stdscr.refresh()
+                    dash.render(dash.last_mon)
+            #                    sslogger.error("HERE")
+
+            for dash in dashes:
+                dash.render(mon)
+        # stdscr.refresh()
+
     with t.fullscreen():
 
-        main_task = loop.create_task(control_task(loop, dashes,sub,t))
+        main_task = loop.create_task(control_task(loop, dashes, sub, t))
         try:
             loop.run_forever()
         except KeyboardInterrupt:
             # print('HERE')
             # klakslkd
 
-           # curses.echo()
+            # curses.echo()
             loop.run_until_complete(sub.close())
-        #finally:
+        # finally:
         #    stdscr.keypad(0)
         #    curses.echo()
         #    curses.endwin()
+
 
 # from . import dashing
 # class ReceiverStatusTile(dashing.Tile):
