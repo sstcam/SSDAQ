@@ -47,6 +47,7 @@ class SSReadout(object):
         self.cpu_t_s = cpu_t_s
         self.cpu_t_ns = cpu_t_ns
         self.data = np.full((N_TM, N_TM_PIX), np.nan,dtype=np.dtype("<f8")) if data is None else data
+        #Keeping the data in little endiann (assumed to be the mostly used endiann format)
         if sys.byteorder != 'little' and self.data.dtype.byteorder !='<':
             self.data = self.data.byteswap()
 

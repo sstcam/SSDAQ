@@ -7,6 +7,8 @@ from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 
 
 class LogWriter(RawObjectWriterBase):
+    """
+    """
     def __init__(self, filename: str):
         super().__init__(filename, header=1)
 
@@ -55,6 +57,8 @@ class TriggerWriter(RawObjectWriterBase):
         )
 
 class FrameWriter(RawObjectWriterBase):
+    """
+    """
     def __init__(self, filename: str):
         super().__init__(filename, header=4)
 
@@ -97,6 +101,8 @@ class DataReader(RawObjectReaderBase):
             yield self._unpack(super().read())
 
 
+
+#====================HDF5 Slow signal data reader and writer definitions===============
 import numpy as np
 import tables
 from tables import IsDescription, UInt64Col, Float32Col, Float64Col

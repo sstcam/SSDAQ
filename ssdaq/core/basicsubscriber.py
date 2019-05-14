@@ -11,7 +11,7 @@ import asyncio
 
 
 class BasicSubscriber(Thread):
-    """ A convinience class to subscribe to a published data stream from a reciver.
+    """ The base clase to subscribe to a published data stream from a reciver.
         Data are retrived by the `get_data()` method once the listener has been started by the
         `start()` method
 
@@ -123,10 +123,14 @@ class BasicSubscriber(Thread):
 
 class BaseFileWriter:
     """
-    A data file writer for slow signal data.
+    A data file writer wrapper class that handles filename enumerators and size limits.
 
-    This class uses a instance of a SSReadoutSubscriber to receive readouts and
-    an instance of SSDataWriter to write an HDF5 file to disk.
+    Filename enumerators can be date-time or order starting at `000`
+    A new file is started if the preceeding file exceeds the filesize
+    limit or if the method `data_cond()` returns true. This method may
+    be overidden by inheriting classes
+
+
     """
 
     def __init__(
@@ -219,10 +223,6 @@ class BaseFileWriter:
 
 class WriterSubscriber(Thread, BaseFileWriter):
     """
-    A data file writer for slow signal data.
-
-    This class uses a instance of a SSReadoutSubscriber to receive readouts and
-    an instance of SSDataWriter to write an HDF5 file to disk.
     """
 
     def __init__(
@@ -388,20 +388,11 @@ class AsyncSubscriber:
                             any data still in the buffer will be lost.
         """
         self.running = False
-        # self.loop.stop()
 
         if not self.task.cancelled():
             self.sock.close()
             self.task.cancel()
         await self.task
-        # await self.task
-        # if hard:
-        #     self.log.info("Emptying data buffer")
-        #     # Empty the buffer after closing the recv thread
-        #     while not self._data_buffer.empty():
-        #         self._data_buffer.get()
-        #         self._data_buffer.task_done()
-        #     await self._data_buffer.join()
 
 
 class AsyncWriterSubscriber(BaseFileWriter):
