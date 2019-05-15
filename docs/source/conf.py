@@ -185,3 +185,11 @@ epub_exclude_files = ['search.html']
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+extensions = [
+    'sphinx.ext.napoleon',
+]
+
+napoleon_google_docstring = True
+napoleon_use_param = True
+napoleon_use_ivar = True

@@ -3,7 +3,7 @@
 
 Data acquisition and distribution for CHEC-S TARGET-C modules.
 
-This project contains a set of modules and applications to receive and handle pushed data from the CHEC camera. The data is then published on TCP sockets that are subscribable. Subscribers for printing out the data or writing it to disk are provided as well. 
+This project contains a set of modules and applications to receive and handle pushed data from the CHEC camera. The data is then published on TCP sockets that are subscribable. Subscribers for printing out the data or writing it to disk are provided as well.
 
 
 ## Installation
@@ -27,7 +27,7 @@ instead and adding the `--user` option if not installing in a conda env. This le
 The SSDAQ software package contains applications for CHEC-S pushed data acqusition and writing that data to disk, but can also be use as a python library to write custom subscribers, and to read and write slow signal, trigger, timestamp, log or monitoring data.
 
 ### Applications
-A range of applications are provided in the SSDAQ software package and if the install is sucessful these should all be in your path. The majority of the applications are different types of subscribers and the executables are prefixed with `chec-<name>-<type>`, where `<type>` is the type of subscriber which will be explained shortly and `<name>` refers to the data which it subscribes to. Currently there are three types of subscribers, `chec-dumpers` which dump the content they receive directly in the terminal std output, `chec-writer` are as the name suggests subscribers that write to file and lastly we have the `chec-daq-dash`, a simple terminal dash showing monitoring data from the receivers.   
+A range of applications are provided in the SSDAQ software package and if the install is sucessful these should all be in your path. The majority of the applications are different types of subscribers and the executables are prefixed with `chec-<name>-<type>`, where `<type>` is the type of subscriber which will be explained shortly and `<name>` refers to the data which it subscribes to. Currently there are three types of subscribers, `chec-dumpers` which dump the content they receive directly in the terminal std output, `chec-writer` are as the name suggests subscribers that write to file and lastly we have the `chec-daq-dash`, a simple terminal dash showing monitoring data from the receivers.
 
 Starting and stopping the receivers should be done with the `control-ssdaq` application which starts the receivers as deamons and configures the logging so that it is output on a dedicated port. More on how to use `control-ssdaq` follows in the next section.
 
@@ -50,11 +50,11 @@ Commands:
   stop      Stop a running receiver or writer daemon
 ```
 
- The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler. 
- 
+ The program provides two main commands `start` and `stop` for starting and stopping the daemons. Additionally there is the `roa-ctrl` command to send control commands to the readout assembler.
+
  ##### Start and stop receiver daemons
  The recommended way of starting the receivers is by using the command
- 
+
  ```control-ssdaq start daq```
 
 which starts all receivers that are configured in the default configuration. To start with a custom configuration one can specify a file with the `--config, -c` option. The `start daq` command also takes arguments that select which receivers to start *e.g*
@@ -66,13 +66,13 @@ which starts all receivers that are configured in the default configuration. To 
 Receivers can be stopped in by using the `stop daq` command in the same manner that we started them, *i.e*
 
 ```control-ssdaq stop daq ```
- 
+
  would stop all running receiver daemons while
- 
+
  ```control-ssdaq stop daq Trigg Read```
- 
+
  would only stop the `TriggerPacketReceiver` and `ReadoutAssembler` daemons.
- 
+
 ##### Start and stop filewriter daemons
 Currently only the `ReadoutFileWriter` daemon is supported and it is started with
 
@@ -84,7 +84,7 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 
 ##### List of receivers
 
-| Receiver              | Usage              | 
+| Receiver              | Usage              |
 | --------------------- |:------------------:|
 | ReadoutAssembler      | Receives slow signal data from the FEE TMs and assembled them into a full camera readout|
 | TriggerPacketReceiver | Receives trigger pattern packets from the backplane|
@@ -92,6 +92,7 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 | LogReceiver           | Receives logs that are send on port `10001` |
 | MonitorReceiver       | Receives monitor data that is pushed on port `10002`|
 | TelDataReceiver       | Queries the ASTRI telescope database |
+
 ##### List of standard port numbers used
 
 | Port          | Usage              | Which application  |

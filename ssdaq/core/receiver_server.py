@@ -17,20 +17,19 @@ class ReceiverServer:
         receive commands via ipc.
         Asynchrosity is implemented using asyncio. Executing the `run()` method will,
         thus, start the event loop.
+
+        Args:
+            ip (str):           The ip address/interface to listen to
+            port (int):         The port to listen to
+            publishers (list):  A list of publisher instances that are cycled
+                                through when `self.publish(data)` is called
+            name (str):         A name for the instance (usefull for logging)
+        Kwargs:
+            loop (asyncio.loop):If not given an an event loop an asyncio loop will
+                                retreived.
     """
     def __init__(self, ip: str, port: int, publishers: list, name: str, loop=None):
         """ The init of a ReceiverServer
-
-            Args:
-                ip (str):           The ip address/interface to listen to
-                port (int):         The port to listen to
-                publishers (list):  A list of publisher instances that are cycled
-                                    through when `self.publish(data)` is called
-                name (str):         A name for the instance (usefull for logging)
-            Kwargs:
-                loop (asyncio.loop):If not given an an event loop an asyncio loop will
-                                    retreived.
-
         """
         self.loop = loop or asyncio.get_event_loop()
         self.log = sslogger.getChild(name)
@@ -66,8 +65,7 @@ class ReceiverServer:
         """ Adds a UDP socket in the ReceiverServer eventloop.
 
             Args:
-                recv_protocol: an asyncio.Protocol that conforms to asyncio
-                                Datagram protocols
+                recv_protocol: an asyncio.Protocol that conforms to asyncio Datagram protocols
         """
         self._setup = True
         self.log.info(
