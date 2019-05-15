@@ -22,11 +22,11 @@
 project = 'SSDAQ'
 copyright = '2019, Samuel Flis'
 author = 'Samuel Flis'
-
+from ssdaq import version as v
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.9.0'
+release = v.get_version(True)
 
 
 # -- General configuration ---------------------------------------------------
@@ -80,7 +80,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'classic'#'alabaster'
+html_theme = 'sphinx_rtd_theme'#'classic'#'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
