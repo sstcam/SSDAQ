@@ -148,7 +148,7 @@ def update_release_version(fpath, pep440=False):
     """
     version = get_version(pep440=pep440)
     with open(path.join(fpath, VFILE), "w") as outfile:
-        outfile.write("version={}".format(version))
+        outfile.write("version='{}'".format(version))
         outfile.write("\n")
 
 
