@@ -5,6 +5,8 @@ Data acquisition and distribution for CHEC-S TARGET-C modules.
 
 This project contains a set of modules and applications to receive and handle pushed data from the CHEC camera. The data is then published on TCP sockets that are subscribable. Subscribers for printing out the data or writing it to disk are provided as well. 
 
+This README serves as a quick guide to the project while a comprehensive reference manual can be found here:
+https://ssdaq.readthedocs.io/en/latest/
 
 ## Installation
 For a normal install run
@@ -92,6 +94,7 @@ Note that if `-d` is ommited the writer will not run as a daemon, which can be g
 | LogReceiver           | Receives logs that are send on port `10001` |
 | MonitorReceiver       | Receives monitor data that is pushed on port `10002`|
 | TelDataReceiver       | Queries the ASTRI telescope database |
+
 ##### List of standard port numbers used
 
 | Port          | Usage              | Which application  |
