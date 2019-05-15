@@ -1,7 +1,8 @@
 from ssdaq.utils import common_args as cargs
 from ssdaq import subscribers
 
-
+# A writer-exectutable factory containing boilerplate code for the
+# executable
 def writerfactory(descr, defaultport, writer_cls):
     def writer():
         import argparse
@@ -37,12 +38,11 @@ def writerfactory(descr, defaultport, writer_cls):
     return writer
 
 
+# =================Threaded writer definitions======================
 slowsignal = writerfactory(
     "Start a slow signal writer.", 9004, subscribers.SSFileWriter
 )
-logwriter = writerfactory(
-    "Start a log data writer.", 9001, subscribers.LogWriter
-)
+logwriter = writerfactory("Start a log data writer.", 9001, subscribers.LogWriter)
 timestampwriter = writerfactory(
     "Start a timestamp data writer.", 9003, subscribers.TimestampWriter
 )
@@ -51,6 +51,8 @@ triggerwriter = writerfactory(
 )
 
 
+# A factory for an async writer-exectutable containing boilerplate code for the
+# executable
 def asyncwriterfactory(descr, defaultport, writer_cls):
     def writer():
         import argparse
@@ -114,6 +116,7 @@ def asyncwriterfactory(descr, defaultport, writer_cls):
     return writer
 
 
+# =================Asynchronous writer definitions======================
 atriggerwriter = asyncwriterfactory(
     "Start a trigger data writer.", 9002, subscribers.ATriggerWriter
 )

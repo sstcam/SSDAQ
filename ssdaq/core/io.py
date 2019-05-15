@@ -1,9 +1,10 @@
 import struct
 import binascii
 from .utils import get_si_prefix
-
-_chunk_header = struct.Struct("2I")
-_file_header = struct.Struct("Q4I")
+from datetime import datetime
+import os
+_chunk_header = struct.Struct("<2I")
+_file_header = struct.Struct("<Q4I")
 ###Raw object IO classes#####
 
 
@@ -42,7 +43,7 @@ class RawObjectWriterBase:
 
 
 class RawObjectReaderBase:
-    """
+    """This class
     """
 
     def __init__(self, filename: str):
@@ -104,3 +105,101 @@ class RawObjectReaderBase:
 
 
 ###End of Raw object IO classes#####
+
+class BaseFileWriter:
+    """
+    A data file writer wrapper class that handles filename enumerators and size limits.
+
+    Filename enumerators can be date-time or order starting at ``000``.
+    A new file is started if the preceeding file exceeds the filesize
+    limit or if the method ``data_cond()`` returns true. This method may
+    be overidden by inheriting classes
+
+
+    """
+
+    def __init__(
+        self,
+        file_prefix: str,
+        writer,
+        file_ext: str,
+        folder: str = "",
+        file_enumerator: str = None,
+        filesize_lim: int = None,
+    ):
+
+        self.file_enumerator = file_enumerator
+        self.folder = folder
+        self.file_prefix = file_prefix
+        # self.log = sslogger.getChild(self.__class__.__name__)
+        self.data_counter = 0
+        self.file_counter = 1
+        self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
+        self._writercls = writer
+        # self.log = writer.log
+        self.file_ext = file_ext
+        self._open_file()
+
+    def _open_file(self):
+
+        self.file_data_counter = 0
+        if self.file_enumerator == "date":
+            suffix = datetime.utcnow().strftime("%Y-%m-%d.%H:%M")
+        elif self.file_enumerator == "order":
+            suffix = "%0.3d" % self.file_counter
+        else:
+            suffix = ""
+
+        self.filename = os.path.join(
+            self.folder, self.file_prefix + suffix + self.file_ext
+        )
+        self._writer = self._writercls(self.filename)
+        self.log.info("Opened new file, will write events to file: %s" % self.filename)
+
+    def _close_file(self):
+
+        from ssdaq.utils.file_size import convert_size
+
+        self.log.info("Closing file %s" % self.filename)
+        self._writer.close()
+        self.log.info(
+            "FileWriter has written %d events in %g%sB to file %s"
+            % (
+                self._writer.data_counter,
+                *get_si_prefix(os.stat(self.filename).st_size),
+                self.filename,
+            )
+        )
+
+    def data_cond(self, data):
+        return False
+
+    def _start_new_file(self):
+        self._close_file()
+        self.file_counter += 1
+        self._open_file()
+
+    def write(self, data):
+        # Start a new file if self.data_cond(data) returns true
+        if self.data_cond(data) and self.data_counter > 0:
+            self._close_file()
+            self.file_counter += 1
+            self._open_file()
+        elif self.filesize_lim is not None:
+            if (
+                self.data_counter % 100 == 0
+                and os.stat(self.filename).st_size > self.filesize_lim
+            ):
+                self._close_file()
+                self.file_counter += 1
+                self._open_file()
+
+        self._writer.write(data)
+        self.data_counter += 1
+
+    def close(self):
+        self._close_file()
+        self.log.info(
+            "FileWriter has written a"
+            " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
+        )

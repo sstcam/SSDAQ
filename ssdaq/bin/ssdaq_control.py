@@ -9,6 +9,7 @@ from logging.handlers import SocketHandler
 from ssdaq import logging as handlers
 import os
 from pathlib import Path
+
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 signal_counter = 0
 
@@ -57,6 +58,7 @@ class FileWriterDaemonWrapper(daemon.Daemon):
         signal.signal(signal.SIGINT, s)
         data_writer.start()
 
+
 class FileWriterDaemonWrapper(daemon.Daemon):
     def __init__(
         self, name, writer_cls, stdout="/dev/null", stderr="/dev/null", **kwargs
@@ -68,31 +70,36 @@ class FileWriterDaemonWrapper(daemon.Daemon):
         self.kwargs = kwargs
         self.writer_cls = writer_cls
         self.name = name
+
     def run(self):
         from ssdaq.subscribers import SSFileWriter
         import signal
         import sys
         import asyncio
-        data_writer = self.writer_cls(name=self.name,**self.kwargs)
+
+        data_writer = self.writer_cls(name=self.name, **self.kwargs)
         signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+
         async def shutdown(signal, loop):
-            data_writer.log.info(f'Received exit signal {signal.name}...')
-            data_writer.log.info('Closing file handlers')
+            data_writer.log.info(f"Received exit signal {signal.name}...")
+            data_writer.log.info("Closing file handlers")
             done = loop.create_task(data_writer.close())
             await done
-            #tasks = [t for t in asyncio.all_tasks() if t is not
+            # tasks = [t for t in asyncio.all_tasks() if t is not
             #         asyncio.current_task()]
 
-            #[task.cancel() for task in tasks]
+            # [task.cancel() for task in tasks]
 
-            #data_writer.log.info('Canceling outstanding tasks')
-            #await asyncio.gather(*tasks)
+            # data_writer.log.info('Canceling outstanding tasks')
+            # await asyncio.gather(*tasks)
             loop.stop()
-            data_writer.log.info('Shutdown complete.')
+            data_writer.log.info("Shutdown complete.")
 
         for s in signals:
             data_writer.loop.add_signal_handler(
-                s, lambda s=s: data_writer.loop.create_task(shutdown(s,data_writer.loop)))
+                s,
+                lambda s=s: data_writer.loop.create_task(shutdown(s, data_writer.loop)),
+            )
 
         data_writer.loop.run_forever()
 
@@ -106,7 +113,7 @@ class RecieverDaemonWrapper(daemon.Daemon):
         set_taskset=False,
         core_id=0,
         log_level="INFO",
-        **kwargs
+        **kwargs,
     ):
         # Deamonizing the server
         daemon.Daemon.__init__(
@@ -181,8 +188,6 @@ def cli(ctx):
 
     from pkg_resources import resource_stream, resource_string, resource_listdir
 
-
-
     ctx.obj["CONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-config.yaml")
     )
@@ -190,20 +195,32 @@ def cli(ctx):
         resource_stream("ssdaq.resources", "ssdaq-default-daq-config.yaml")
     )
 
-    if os.path.isfile(os.path.join(Path.home(),'.ssdaq_config.yaml')):
-        conf = yaml.safe_load(open(os.path.join(Path.home(),'.ssdaq_config.yaml'),'r'))
-        if 'writer-config' in conf:
-            if(not os.path.isfile(conf['writer-config'])):
-                sslogger.warn("custom writer-config file not found falling back to the default")
+    if os.path.isfile(os.path.join(Path.home(), ".ssdaq_config.yaml")):
+        conf = yaml.safe_load(
+            open(os.path.join(Path.home(), ".ssdaq_config.yaml"), "r")
+        )
+        if "writer-config" in conf:
+            if not os.path.isfile(conf["writer-config"]):
+                sslogger.warn(
+                    "custom writer-config file not found falling back to the default"
+                )
             else:
-                sslogger.info("loading custom writer config from {}".format(conf['writer-config']))
-                ctx.obj["CONFIG"] = yaml.safe_load(open(conf['writer-config'],'r'))
-        if 'daq-config' in conf:
-            if(not os.path.isfile(conf['daq-config'])):
-                sslogger.warn("custom daq-config file not found falling back to the default")
+                sslogger.info(
+                    "loading custom writer config from {}".format(conf["writer-config"])
+                )
+                ctx.obj["CONFIG"] = yaml.safe_load(open(conf["writer-config"], "r"))
+        if "daq-config" in conf:
+            if not os.path.isfile(conf["daq-config"]):
+                sslogger.warn(
+                    "custom daq-config file not found falling back to the default"
+                )
             else:
-                ctx.obj["DAQCONFIG"] = yaml.safe_load(open(conf['daq-config'],'r'))
-                sslogger.info("loading custom DAQ config from {}".format(conf['daq-config']))
+                ctx.obj["DAQCONFIG"] = yaml.safe_load(open(conf["daq-config"], "r"))
+                sslogger.info(
+                    "loading custom DAQ config from {}".format(conf["daq-config"])
+                )
+
+
 @click.group()
 @click.pass_context
 def start(ctx):  # ,config):
@@ -333,10 +350,11 @@ def daq(ctx, config, components):
 @stop.command()
 @click.argument("components", nargs=-1)
 @click.pass_context
-def dw(ctx,components):
+def dw(ctx, components):
     """Stop a running file writer"""
     import os
     import signal
+
     components = list(components)
     cmptlen = len(components)
     config = ctx.obj["CONFIG"]
@@ -348,8 +366,7 @@ def dw(ctx,components):
             del comp_config["Writer"]["class"]
             print("Stopping {}...".format(compt))
             readout_writer = FileWriterDaemonWrapper(
-                compt,writer, **comp_config["Daemon"], **comp_config["Writer"]
-
+                compt, writer, **comp_config["Daemon"], **comp_config["Writer"]
             )
 
             try:

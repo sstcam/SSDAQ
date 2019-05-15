@@ -5,13 +5,11 @@ from queue import Queue
 import logging
 from .utils import get_si_prefix
 from ssdaq import sslogger
-from datetime import datetime
-import os
 import asyncio
-
+from .io import BaseFileWriter
 
 class BasicSubscriber(Thread):
-    """ A convinience class to subscribe to a published data stream from a reciver.
+    """ The base class to subscribe to a published data stream from a reciver.
         Data are retrived by the `get_data()` method once the listener has been started by the
         `start()` method
 
@@ -121,110 +119,9 @@ class BasicSubscriber(Thread):
         self.running = False
 
 
-class BaseFileWriter:
-    """
-    A data file writer for slow signal data.
-
-    This class uses a instance of a SSReadoutSubscriber to receive readouts and
-    an instance of SSDataWriter to write an HDF5 file to disk.
-    """
-
-    def __init__(
-        self,
-        file_prefix: str,
-        writer,
-        file_ext: str,
-        folder: str = "",
-        file_enumerator: str = None,
-        filesize_lim: int = None,
-    ):
-
-        self.file_enumerator = file_enumerator
-        self.folder = folder
-        self.file_prefix = file_prefix
-        # self.log = sslogger.getChild(self.__class__.__name__)
-        self.data_counter = 0
-        self.file_counter = 1
-        self.filesize_lim = ((filesize_lim or 0) * 1024 ** 2) or None
-        self._writercls = writer
-        # self.log = writer.log
-        self.file_ext = file_ext
-        self._open_file()
-
-    def _open_file(self):
-
-        self.file_data_counter = 0
-        if self.file_enumerator == "date":
-            suffix = datetime.utcnow().strftime("%Y-%m-%d.%H:%M")
-        elif self.file_enumerator == "order":
-            suffix = "%0.3d" % self.file_counter
-        else:
-            suffix = ""
-
-        self.filename = os.path.join(
-            self.folder, self.file_prefix + suffix + self.file_ext
-        )
-        self._writer = self._writercls(self.filename)
-        self.log.info("Opened new file, will write events to file: %s" % self.filename)
-
-    def _close_file(self):
-
-        from ssdaq.utils.file_size import convert_size
-
-        self.log.info("Closing file %s" % self.filename)
-        self._writer.close()
-        self.log.info(
-            "FileWriter has written %d events in %g%sB to file %s"
-            % (
-                self._writer.data_counter,
-                *get_si_prefix(os.stat(self.filename).st_size),
-                self.filename,
-            )
-        )
-
-    def data_cond(self, data):
-        return False
-
-    def _start_new_file(self):
-        self._close_file()
-        self.file_counter += 1
-        self._open_file()
-
-    def write(self, data):
-        # Start a new file if we get
-        # a data with data number 1
-        if self.data_cond(data) and self.data_counter > 0:
-            self._close_file()
-            self.file_counter += 1
-            self._open_file()
-        elif self.filesize_lim is not None:
-            if (
-                self.data_counter % 100 == 0
-                and os.stat(self.filename).st_size > self.filesize_lim
-            ):
-                self._close_file()
-                self.file_counter += 1
-                self._open_file()
-
-        self._writer.write(data)
-        self.data_counter += 1
-
-    def close(self):
-        self._close_file()
-        self.log.info(
-            "FileWriter has written a"
-            " total of %d events to %d file(s)" % (self.data_counter, self.file_counter)
-        )
-
-
 class WriterSubscriber(Thread, BaseFileWriter):
     """
-    A data file writer for slow signal data.
-
-    This class uses a instance of a SSReadoutSubscriber to receive readouts and
-    an instance of SSDataWriter to write an HDF5 file to disk.
     """
-
     def __init__(
         self,
         file_prefix: str,
@@ -298,10 +195,7 @@ if LooseVersion("17") > LooseVersion(zmq.__version__):
 
 
 class AsyncSubscriber:
-    """ A convinience class to subscribe to a published data stream from a reciver.
-        Data are retrived by the `get_data()` method once the listener has been started by the
-        `start()` method
-
+    """
 
     """
 
@@ -312,11 +206,11 @@ class AsyncSubscriber:
         ip: str,
         port: int,
         unpack=None,
-        logger: logging.Logger =None,
+        logger: logging.Logger = None,
         zmqcontext=None,
         loop=None,
         passoff_callback=None,
-        name = None
+        name:str=None,
     ):
         """ The init of a BasicSubscriber
 
@@ -329,15 +223,12 @@ class AsyncSubscriber:
                                     and returns an unpacked object. If not given the packed data
                                     object is put in the subscribed buffer.
                 logger:     Optionally provide a logger instance
+
+
         """
-        if logger is None:
-            logger = sslogger#logging.getLogger()
-
-        if name is None:
-            self.log = logger.getChild(__class__.__name__)
-        else:
-            self.log = logger.getChild(name)
-
+        logger = logger or sslogger
+        name = name or __class__.__name__
+        self.log = logger.getChild(name)
         self.context = zmqcontext or zmq.asyncio.Context()
         self.sock = self.context.socket(zmq.SUB)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
@@ -369,9 +260,12 @@ class AsyncSubscriber:
                 self.log.warning("An error ocurred while unpacking data {}".format(e))
 
             self.passoff_callback(data)
-            # await self._data_buffer.put(data)
 
     async def get_data(self):
+        """ Get data from the subscriber buffer.
+
+            Returns data object
+        """
         data = await self._data_buffer.get()
         self._data_buffer.task_done()
         return data
@@ -388,20 +282,11 @@ class AsyncSubscriber:
                             any data still in the buffer will be lost.
         """
         self.running = False
-        # self.loop.stop()
 
         if not self.task.cancelled():
             self.sock.close()
             self.task.cancel()
         await self.task
-        # await self.task
-        # if hard:
-        #     self.log.info("Emptying data buffer")
-        #     # Empty the buffer after closing the recv thread
-        #     while not self._data_buffer.empty():
-        #         self._data_buffer.get()
-        #         self._data_buffer.task_done()
-        #     await self._data_buffer.join()
 
 
 class AsyncWriterSubscriber(BaseFileWriter):
@@ -436,7 +321,9 @@ class AsyncWriterSubscriber(BaseFileWriter):
             file_ext=file_ext,
         )
         self.loop = loop or asyncio.get_event_loop()
-        self._subscriber = subscriber(ip=ip, port=port, loop=self.loop,logger=self.log,name='mainsub')
+        self._subscriber = subscriber(
+            ip=ip, port=port, loop=self.loop, logger=self.log, name="mainsub"
+        )
         self.running = False
         self.stopping = False
         self.task = self.loop.create_task(self.run())
