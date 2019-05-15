@@ -3,8 +3,8 @@ import binascii
 from .utils import get_si_prefix
 from datetime import datetime
 import os
-_chunk_header = struct.Struct("2I")
-_file_header = struct.Struct("Q4I")
+_chunk_header = struct.Struct("<2I")
+_file_header = struct.Struct("<Q4I")
 ###Raw object IO classes#####
 
 
@@ -110,9 +110,9 @@ class BaseFileWriter:
     """
     A data file writer wrapper class that handles filename enumerators and size limits.
 
-    Filename enumerators can be date-time or order starting at `000`
+    Filename enumerators can be date-time or order starting at ``000``.
     A new file is started if the preceeding file exceeds the filesize
-    limit or if the method `data_cond()` returns true. This method may
+    limit or if the method ``data_cond()`` returns true. This method may
     be overidden by inheriting classes
 
 
@@ -180,8 +180,7 @@ class BaseFileWriter:
         self._open_file()
 
     def write(self, data):
-        # Start a new file if we get
-        # a data with data number 1
+        # Start a new file if self.data_cond(data) returns true
         if self.data_cond(data) and self.data_counter > 0:
             self._close_file()
             self.file_counter += 1

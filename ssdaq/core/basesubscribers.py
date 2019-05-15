@@ -9,7 +9,7 @@ import asyncio
 from .io import BaseFileWriter
 
 class BasicSubscriber(Thread):
-    """ The base clase to subscribe to a published data stream from a reciver.
+    """ The base class to subscribe to a published data stream from a reciver.
         Data are retrived by the `get_data()` method once the listener has been started by the
         `start()` method
 
@@ -122,7 +122,6 @@ class BasicSubscriber(Thread):
 class WriterSubscriber(Thread, BaseFileWriter):
     """
     """
-
     def __init__(
         self,
         file_prefix: str,
@@ -196,10 +195,7 @@ if LooseVersion("17") > LooseVersion(zmq.__version__):
 
 
 class AsyncSubscriber:
-    """ A convinience class to subscribe to a published data stream from a reciver.
-        Data are retrived by the `get_data()` method once the listener has been started by the
-        `start()` method
-
+    """
 
     """
 
@@ -214,7 +210,7 @@ class AsyncSubscriber:
         zmqcontext=None,
         loop=None,
         passoff_callback=None,
-        name=None,
+        name:str=None,
     ):
         """ The init of a BasicSubscriber
 
@@ -227,16 +223,12 @@ class AsyncSubscriber:
                                     and returns an unpacked object. If not given the packed data
                                     object is put in the subscribed buffer.
                 logger:     Optionally provide a logger instance
+
+
         """
-        if logger is None:
-            logger = sslogger  # logging.getLogger()
+        logger = logger or sslogger
         name = name or __class__.__name__
         self.log = logger.getChild(name)
-        # if name is None:
-        #     self.log = logger.getChild(__class__.__name__)
-        # else:
-        #     self.log = logger.getChild(name)
-
         self.context = zmqcontext or zmq.asyncio.Context()
         self.sock = self.context.socket(zmq.SUB)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
@@ -268,9 +260,12 @@ class AsyncSubscriber:
                 self.log.warning("An error ocurred while unpacking data {}".format(e))
 
             self.passoff_callback(data)
-            # await self._data_buffer.put(data)
 
     async def get_data(self):
+        """ Get data from the subscriber buffer.
+
+            Returns data object
+        """
         data = await self._data_buffer.get()
         self._data_buffer.task_done()
         return data

@@ -19,7 +19,7 @@ from ._dataimpl import TriggerBunch
 from ._dataimpl import TelData
 
 from ._dataimpl.frame import Frame, FrameObject
-from ._dataimpl.slowsignal_format import SSReadout
+from ._dataimpl import SSReadout
 from ._dataimpl.trigger_format import TriggerPacketData
 from ._dataimpl.trigger_format import NominalTriggerDataEncode
 

@@ -10,7 +10,28 @@ if LooseVersion("17") > LooseVersion(zmq.__version__):
 
 
 class ReceiverServer:
+    """ Base class for receivers.
+
+        Implements some of the boilerplate code to setup a server
+        that listens to either a TCP or UDP socket, publishes processed data and can
+        receive commands via ipc.
+        Asynchrosity is implemented using asyncio. Executing the `run()` method will,
+        thus, start the event loop.
+    """
     def __init__(self, ip: str, port: int, publishers: list, name: str, loop=None):
+        """ The init of a ReceiverServer
+
+            Args:
+                ip (str):           The ip address/interface to listen to
+                port (int):         The port to listen to
+                publishers (list):  A list of publisher instances that are cycled
+                                    through when `self.publish(data)` is called
+                name (str):         A name for the instance (usefull for logging)
+            Kwargs:
+                loop (asyncio.loop):If not given an an event loop an asyncio loop will
+                                    retreived.
+
+        """
         self.loop = loop or asyncio.get_event_loop()
         self.log = sslogger.getChild(name)
         self._name = name
@@ -27,6 +48,11 @@ class ReceiverServer:
         self._setup = False
 
     def setup_stream(self, recv_protocol):
+        """ Adds a TCP stream socket in the ReceiverServer eventloop.
+
+            Args:
+                recv_protocol: an asyncio.Protocol that conforms to asyncio TCP protocols
+        """
         self._setup = True
         self.log.info(
             "Settting up TCP receiver socket at %s:%d" % (tuple(self.listen_addr))
@@ -37,6 +63,12 @@ class ReceiverServer:
         return self.loop.run_until_complete(listen)
 
     def setup_udp(self, recv_protocol):
+        """ Adds a UDP socket in the ReceiverServer eventloop.
+
+            Args:
+                recv_protocol: an asyncio.Protocol that conforms to asyncio
+                                Datagram protocols
+        """
         self._setup = True
         self.log.info(
             "Settting up UDP receiver socket at %s:%d" % (tuple(self.listen_addr))
@@ -47,6 +79,8 @@ class ReceiverServer:
         return self.loop.run_until_complete(listen)
 
     def run(self):
+        """ Starts the eventloop of the ReceiverServer (blocking)
+        """
         if not self._setup:
             raise RuntimeError("No receiver socket setup")
 
@@ -90,6 +124,14 @@ class ReceiverServer:
             self._com_sock.send(reply)
 
     async def publish(self, packet: bytes):
+        """ Publishes the packed processed data on the publishers
+            in the publisher list of the Receiver.
+
+            Should be called by the inheriting classes to publish data
+
+            Args:
+                packet (bytes): The data packet that should be published
+        """
         tasks = []
         for pub in self.publishers:
             tasks.append(self.loop.create_task(pub.apublish(packet)))

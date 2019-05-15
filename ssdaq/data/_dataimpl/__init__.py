@@ -2,14 +2,13 @@ from .log_pb2 import LogData as _LogData
 from .monitor_pb2 import TimeUTC as _TimeUTC
 from .monitor_pb2 import MonitorData as _MonitorData
 from .monitor_pb2 import MonitorFrame as _MonitorFrame
-from .slowsignal_format import SSReadout as _SSReadout
 from .CDTS_pb2 import TimeStamp as _TimeStamp
 from .CDTS_pb2 import TriggerMessage as _TriggerMessage
 from .CDTS_pb2 import TriggerBunch as _TriggerBunch
 from .teldata_pb2 import TelData as _TelData
 from .trigger_format import TriggerPacketData
 from .trigger_format import NominalTriggerDataEncode
-
+from .slowsignal_format import SSReadout
 # from .frame import Frame, FrameObject
 
 
