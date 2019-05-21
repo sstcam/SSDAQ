@@ -98,11 +98,12 @@ class DataReader(RawObjectReaderBase):
         self._unpack = _unpackers[self.fhead - 1]
 
     def read(self):
-        self.reload()
+        return self._unpack(super().read())
+
+    def readobjects(self):
+        self.resetfp()
         for i in range(self.n_entries):
             yield self._unpack(super().read())
-
-
 # ====================HDF5 Slow signal data reader and writer definitions===============
 import numpy as np
 import tables

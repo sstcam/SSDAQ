@@ -63,14 +63,27 @@ class RawObjectReaderBase:
         self.file.close()
 
     def reload(self):
-        self.file.seek(0)
-        self._scan_file()
+        self._scan_file(self.filesize,self.n_entries,self.fpos)
 
-    def _scan_file(self):
-        self.file.seek(0)
+    def resetfp(self):
+        self.file.seek(_file_header.size)
+
+    def __getitem__(self, ind):
+        if isinstance(ind, slice):
+            data = [self.read_at(ii) for ii in range(*ind.indices(self.n_entries))]
+            return data
+        elif isinstance(ind, list):
+            data = [self.read_at(ii) for ii in ind]
+            return data
+        elif isinstance(ind, int):
+            return self.read_at(ind)
+
+
+    def _scan_file(self,offset=0,n_entries=0,fpos=[]):
+        self.file.seek(offset)
         fh = self.file
-        self.n_entries = 0
-        self.fpos = []
+        self.n_entries = n_entries
+        self.fpos = fpos
         # Skipping file header
         fp = _file_header.size
         while True:
@@ -84,6 +97,12 @@ class RawObjectReaderBase:
             fp = fh.tell() + offset
         self.file.seek(_file_header.size)
         self.filesize = self.fpos[-1] + offset
+
+    def read_at(self,pos:int) -> bytes:
+        if pos > len(self.fpos)-1:
+            raise IndexError("The requested file object ({}) is out of range".format(pos))
+        self.file.seek(self.fpos[pos])
+        return self.read()
 
     def read(self) -> bytes:
         sized = self.file.read(_chunk_header.size)
