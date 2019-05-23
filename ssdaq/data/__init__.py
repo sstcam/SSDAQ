@@ -20,7 +20,7 @@ from ._dataimpl import TelData
 
 from ._dataimpl.frame import Frame, FrameObject
 from ._dataimpl import SSReadout
-from ._dataimpl.trigger_format import TriggerPacketData
+from ._dataimpl.trigger_format import TriggerPacketData,TriggerPacket, NominalTriggerPacket
 from ._dataimpl.trigger_format import NominalTriggerDataEncode
 
 

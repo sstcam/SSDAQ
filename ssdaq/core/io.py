@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 _chunk_header = struct.Struct("<2I")
 _file_header = struct.Struct("<Q4I")
+_file_header2 = struct.Struct("<8s4I")
 ###Raw object IO classes#####
 
 
@@ -51,9 +52,17 @@ class RawObjectReaderBase:
         self.file = open(self.filename, "rb")
         self._fhead = self.file.read(_file_header.size)
         self.file.seek(0)
+
         self.fhead = self._fhead[0]
         self.version = self._fhead[1]
-        # self._chunk_header = struct.Struct("2I")
+        if self.version == 0 and self.fhead>0:
+            pass
+        elif self.version >0:
+            marker,self.version,self.compressed,a,self.fhead = _file_header2.unpack(self._fhead)
+            if marker[:3] != "SOF":
+                raise TypeError("This file appears not to be a stream object file (SOF)")
+        else:
+            raise TypeError("This file appears not to be a stream object file (SOF)")
         self._scan_file()
 
     def __enter__(self):
@@ -139,7 +148,8 @@ class RawObjectReaderBase:
         s = "{}:\n".format(self.__class__.__name__)
         s += "filename: {}\n".format(self.filename)
         s += "n_entries: {}\n".format(self.n_entries)
-        s += "file size: {} {}B".format(*get_si_prefix(self.filesize))
+        s += "file size: {} {}B\n".format(*get_si_prefix(self.filesize))
+        s += "file format version: {}".format(self.version)
         return s
 
 

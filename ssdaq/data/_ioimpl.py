@@ -1,7 +1,7 @@
 ### Specialization to different protobuf protocols#####
 from . import LogData
 from . import TriggerMessage
-from . import TriggerPacketData, NominalTriggerDataEncode
+from . import TriggerPacketData, NominalTriggerDataEncode, TriggerPacket
 from . import Frame
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 
@@ -72,7 +72,8 @@ class FrameWriter(RawObjectWriterBase):
 # Manually list unpackers for now
 class TriggerReader(RawObjectReaderBase):
     def read(self):
-        return TriggerPacketData.unpack(super().read())
+        return TriggerPacket.unpack(super().read())
+        # return TriggerPacketData.unpack(super().read())
 
 
 def log_unpack(data):
@@ -87,7 +88,7 @@ def timestamp_unpack(data):
     return timestamp
 
 
-_unpackers = [log_unpack, timestamp_unpack, TriggerPacketData.unpack, Frame.from_bytes]
+_unpackers = [log_unpack, timestamp_unpack, TriggerPacket.unpack, Frame.from_bytes]
 
 
 class DataReader(RawObjectReaderBase):
@@ -96,7 +97,7 @@ class DataReader(RawObjectReaderBase):
         if self.fhead == 0 or self.fhead > len(_unpackers):
             raise ValueError("No compatible reader found for this file...")
         self._unpack = _unpackers[self.fhead - 1]
-
+        self.resetfp()
     def read(self):
         return self._unpack(super().read())
 
