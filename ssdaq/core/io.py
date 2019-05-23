@@ -63,12 +63,20 @@ class RawObjectReaderBase:
         self.file.close()
 
     def reload(self):
+        """ Reload the index table. Useful if the file
+            is being written too when read
+        """
         self._scan_file(self.filesize,self.n_entries,self.fpos)
 
     def resetfp(self):
+        """ Resets file pointer to the first object in file
+        """
         self.file.seek(_file_header.size)
 
     def __getitem__(self, ind):
+        """ Indexing interface to the streamed file.
+            Objects are read by their index, slice or list of indices.
+        """
         if isinstance(ind, slice):
             data = [self.read_at(ii) for ii in range(*ind.indices(self.n_entries))]
             return data
@@ -98,13 +106,25 @@ class RawObjectReaderBase:
         self.file.seek(_file_header.size)
         self.filesize = self.fpos[-1] + offset
 
-    def read_at(self,pos:int) -> bytes:
-        if pos > len(self.fpos)-1:
-            raise IndexError("The requested file object ({}) is out of range".format(pos))
-        self.file.seek(self.fpos[pos])
+    def read_at(self,ind:int) -> bytes:
+        """ Reads one object at the index indicated by `ind`
+
+            Args:
+                ind (int): the index of the object to be read
+            Returns:
+                bytes: that represent the object
+        """
+        if ind > len(self.fpos)-1:
+            raise IndexError("The requested file object ({}) is out of range".format(ind))
+        self.file.seek(self.fpos[ind])
         return self.read()
 
     def read(self) -> bytes:
+        """ Reads one object at the position of the file pointer.
+
+            Returns:
+                bytes: Bytes that represent the object
+        """
         sized = self.file.read(_chunk_header.size)
         if sized == b"":
             return None

@@ -20,3 +20,4 @@ ssdaq.data.io
 
 .. autoclass:: ssdaq.data.io.DataReader
     :members:
+    :inherited-members:
