@@ -1,0 +1,69 @@
+slowsig1:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq_writer.log'
+    stderr: '/tmp/ssdaq_writer.log'
+  Writer:
+    class: ASlowSignalWriter
+    file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
+    file_prefix: SlowSignalData
+    folder: /tmp/
+    ip: 127.0.0.101
+    port: 9004
+    filesize_lim: 600
+
+slowsig2:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq_writer.log'
+    stderr: '/tmp/ssdaq_writer.log'
+  Writer:
+    class: ASlowSignalWriter
+    file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
+    file_prefix: SlowSignalData2_
+    folder: /tmp/
+    ip: 127.0.0.101
+    port: 9004
+    filesize_lim: 600
+
+SSFileWriter:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq_writer.log'
+    stderr: '/tmp/ssdaq_writer.log'
+  Writer:
+    class: ASlowSignalWriter
+    file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
+    file_prefix: SlowSignalData
+    folder: /tmp/
+    ip: 127.0.0.101
+    port: 9004
+    filesize_lim: 600
+
+TimestampWriter:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq_writer.log'
+    stderr: '/tmp/ssdaq_writer.log'
+  Writer:
+    class: ATimestampWriter
+    file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
+    file_prefix: TimestampData
+    folder: /tmp/
+    ip: 127.0.0.101
+    port: 9003
+    filesize_lim: 600
+
+TriggerWriter:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq_writer.log'
+    stderr: '/tmp/ssdaq_writer.log'
+  Writer:
+    class: ATriggerWriter
+    file_enumerator: date #enumerates with timestamp (yr-mo-dy.H:M) or `order` which enumerates with numbers starting from 00001
+    file_prefix: TriggerPackets
+    folder: /tmp/
+    ip: 127.0.0.101
+    port: 9002
+    filesize_lim: 10
