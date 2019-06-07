@@ -1,13 +1,14 @@
 from ssdaq import subscribers
 from ssdaq.utils import common_args as cargs
 from ssdaq import sslogger
+from ssdaq import data
 import logging
 import numpy as np
 import argparse
 import signal
 from datetime import datetime
 import time
-
+from statistics import mean
 
 def slowsignaldump():
 
@@ -85,6 +86,43 @@ def slowsignaldump():
 
 def timestampdump():
 
+    def isValidTS(ts):
+        if ts.time.HasField('seconds') and ts.time.HasField('pico_seconds'):
+            return True
+        else:
+            return False
+
+    def isSmaller(ts_last,ts_current):
+        if (ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds) <= (ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds):
+            return True
+        else:
+            return False
+
+    def get_deltat_in_ps(ts_last,ts_current):
+        tlast = (ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds)
+        tcurr = (ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds)
+        return (tcurr - tlast)
+
+    #myStats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
+    def add_timestamp(ts,myStats):
+        myStats["fTrigger"] += 1
+        myStats["fCurrent_ts"] = ts
+        if not isValidTS(myStats["fLast_ts"]):
+            myStats["fLast_ts"] = ts
+
+    def get_frequency_in_Hz(myStats):
+        if not (myStats["fTrigger"] or isValidTS(myStats["fLast_ts"]) or isValidTS(myStats["fCurrent_ts"])):
+            return
+        delt = get_deltat_in_ps(myStats["fLast_ts"],myStats["fCurrent_ts"])*1e-12
+        trig = myStats["fTrigger"]
+        myStats["fTrigger"] = 0
+        myStats["fLast_ts"] = myStats["fCurrent_ts"]
+        if delt <= 1e-12:
+            return
+        else:
+            return trig/delt
+
+
     parser = argparse.ArgumentParser(
         description="Subcribe to a published timestamp stream.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -102,10 +140,19 @@ def timestampdump():
 
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
-    last_uc_ev = 0
-    missed_counter = 0
-    time1 = time.time()
-    time2 = time.time()
+
+    readout_stats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
+    readout_counter_missed = 0
+    readout_counter_last = 0
+    readout_ts_smaller = 0
+    readout_freq = []
+
+    busy_stats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
+    busy_counter_missed = 0
+    busy_counter_last = 0
+    busy_ts_smaller = 0
+    busy_freq = []
+
     while True:
         try:
             tmsg = sub.get_data()
@@ -114,24 +161,63 @@ def timestampdump():
             sub.close()
             break
 
-        if tmsg is not None and tmsg.type == 1:
+        if tmsg is not None:
+            #print(tmsg.type,tmsg.event_counter)
+            #print(tmsg.time.seconds, tmsg.time.pico_seconds)
 
-            # if last_uc_ev != 0 and last_uc_ev + 1 != trigger.uc_ev:
-            #     missed_counter += 1
+            if tmsg.type == 1: # readout triggers only
+                add_timestamp(tmsg,readout_stats)
 
-            print("##################################")
-            # print("#Data: {}".format(trigger.__class__.__name__))
-            # for name, value in trigger._asdict().items():
-            #     print("#    {}: {}".format(name, value))
-            print("# {}".format(tmsg))
-            # print("#    Missed: {}".format(missed_counter))
-            print("#    Frequency: {} Hz".format(1.0 / ((time2 - time1) + 1e-7)))
-            print("#    dt: {} s".format(time2 - time1))
-            print("##################################")
-            time1 = time2
-            time2 = time.time()
+                # check if events count up properly
+                current_readout_counter = tmsg.event_counter
+                if readout_counter_last != 0 and readout_counter_last + 1 != current_readout_counter:
+                    readout_counter_missed += 1
+                    print('# of missed readout events',readout_counter_missed)
+                readout_counter_last = current_readout_counter
 
-            # last_uc_ev = trigger.uc_ev
+                # check for timing issues within the time stamps
+                if isSmaller(readout_stats["fLast_ts"],readout_stats["fCurrent_ts"]):
+                    readout_ts_smaller += 1
+                    print('# of readout timestamps smaller',readout_ts_smaller)
+
+                # try something useful
+                updatetime = 1 # how other do we want to calculate the frequency
+                if (get_deltat_in_ps(readout_stats["fLast_ts"], readout_stats["fCurrent_ts"])*1e12) > updatetime:
+                    readout_frequency = get_frequency_in_Hz(readout_stats)
+                    readout_freq.append(readout_frequency)
+                    print('> Readout Frequency [Hz] =',readout_frequency)
+
+            if tmsg.type == 2: # busy triggers (same logic as readout stuff)
+                add_timestamp(tmsg,busy_stats)
+
+                current_busy_counter = tmsg.event_counter
+                if busy_counter_last != 0 and busy_counter_last + 1 != current_busy_counter:
+                    busy_counter_missed += 1
+                    print('# of missed busy events',busy_counter_missed)
+                busy_counter_last = current_busy_counter
+
+                if isSmaller(busy_stats["fLast_ts"],busy_stats["fCurrent_ts"]):
+                    busy_ts_smaller += 1
+                    print('# of busy timestamps smaller',busy_ts_smaller)
+
+                updatetime = 1
+                if (get_deltat_in_ps(busy_stats["fLast_ts"], busy_stats["fCurrent_ts"])*1e12) > updatetime:
+                    busy_frequency = get_frequency_in_Hz(busy_stats)
+                    busy_freq.append(busy_frequency)
+                    print('> Busy Frequency [Hz] =',busy_frequency)
+
+    """
+    try:
+        from matplotlib import pyplot as plt
+    except ImportError:
+        return
+
+    plt.figure()
+    plt.hist(readout_freq, 100, facecolor="g", alpha=0.75)
+    plt.figtext(0.1,0.9,mean(readout_freq))
+    plt.show()
+    """
+
     sub.close()
     sub.join()
 
