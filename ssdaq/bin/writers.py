@@ -121,6 +121,10 @@ atriggerwriter = asyncwriterfactory(
     "Start a trigger data writer.", 9002, subscribers.ATriggerWriter
 )
 
+atimestampwriter = asyncwriterfactory(
+    "Start a time stamp data writer.", 9003, subscribers.ATimestampWriter
+)
+
 aslowsignal = asyncwriterfactory(
     "Start a slow signal writer.", 9004, subscribers.ASlowSignalWriter
 )
