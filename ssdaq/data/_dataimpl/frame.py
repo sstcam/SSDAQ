@@ -72,13 +72,19 @@ class Frame:
         for i, c in zip(index, classes.split("\n")):
             key, class_, module_ = c.split(",")
             if class_ not in self._cache.keys():
-                m = import_module(module_)
-                self._cache[class_] = getattr(m, class_)
+                try:
+                    m = import_module(module_)
+                    self._cache[class_] = getattr(m, class_)
+                except AttributeError:
+                    self._cache[class_] = None
 
-            cls = self._cache[class_]()
-            # cls = dynamic_import(module_,class_)()
-            cls.deserialize(data_stream[last_pos:i])
-            self._objects[key] = cls
+            if self._cache[class_] is not None:
+                cls = self._cache[class_]()
+                # cls = dynamic_import(module_,class_)()
+                cls.deserialize(data_stream[last_pos:i])
+                self._objects[key] = cls
+            else:
+                self._objects[key] = data_stream[last_pos:i]
             last_pos = i
 
 
@@ -92,3 +98,9 @@ class FrameObject:
 
     def deserialize(self, data):
         return self.unpack(data)
+
+   #  @classmethod
+   #  def from_bytes(cls, data):
+   #      inst = cls()
+   #      inst.unpack(data)
+   #      return inst

@@ -1,5 +1,5 @@
 import pytest
-from ssdaq.data import SSReadout
+from ssdaq.data import SSReadout,BusyTriggerPacketV2,NominalTriggerPacketV2,TriggerPacket
 import numpy as np
 
 
@@ -22,3 +22,13 @@ def test_pack_unpack():
     assert (readout1.data[3] == readout2.data[3]).all(), "correct readout"
     assert not (readout1.data[4] == readout2.data[4]).all(), "correct readout"
     assert np.isnan(readout1.data[4, 0]), "nans for empty readouts"
+
+
+def test_trigger_packet_pack_unpack():
+    trigg = BusyTriggerPacketV2(trigg_phases= 2**np.random.uniform(0,15,512),
+                                trigg_phase=2**int(np.random.uniform(0,7)))
+
+    triggun = TriggerPacket.unpack(trigg.pack())
+    assert np.all(triggun.trigg == trigg.trigg), "correct trigger pattern"
+    assert triggun.busy == trigg.busy, "correct busy flag"
+    assert np.all(triggun.trigg_union == trigg.trigg_union), "correct union of triggers"

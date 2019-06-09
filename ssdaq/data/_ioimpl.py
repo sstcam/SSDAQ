@@ -1,7 +1,9 @@
 ### Specialization to different protobuf protocols#####
 from . import LogData
 from . import TriggerMessage
-from . import TriggerPacketData, NominalTriggerDataEncode, TriggerPacket
+# from . import TriggerPacketData, NominalTriggerDataEncode,
+from . import NominalTriggerPacket, BusyTriggerPacket, NominalTriggerPacketV2, BusyTriggerPacketV2
+from . import TriggerPacket
 from . import Frame
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 
@@ -46,15 +48,15 @@ class TriggerWriter(RawObjectWriterBase):
         super().__init__(filename, header=3)
 
     def write(self, trigg):
-        super().write(
-            NominalTriggerDataEncode.pack(
-                trigg.TACK,
-                trigg.trigg,
-                trigg.uc_ev,
-                trigg.uc_pps,
-                trigg.uc_clock,
-                trigg.type,
-            )
+        super().write(trigg.pack()
+            # NominalTriggerDataEncode.pack(
+            #     trigg.TACK,
+            #     trigg.trigg,
+            #     trigg.uc_ev,
+            #     trigg.uc_pps,
+            #     trigg.uc_clock,
+            #     trigg.type,
+            # )
         )
 
 
@@ -92,7 +94,15 @@ _unpackers = [log_unpack, timestamp_unpack, TriggerPacket.unpack, Frame.from_byt
 
 
 class DataReader(RawObjectReaderBase):
-    def __init__(self, filename):
+    def __init__(self, filename:str):
+        """ Open a Streamed Object File to read.
+
+        Args:
+            filename (str): path and filename
+
+        Raises:
+            ValueError: Is raised if no suitable unpacker is found
+        """
         super().__init__(filename)
         if self.fhead == 0 or self.fhead > len(_unpackers):
             raise ValueError("No compatible reader found for this file...")
