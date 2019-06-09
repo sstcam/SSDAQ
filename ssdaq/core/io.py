@@ -454,10 +454,10 @@ class RawObjectReaderV1:
         print(self._bunch_index)
         print(len(self._index))
         self.n_entries = len(self._index)
-    def _get_bunch(self,bunch_id):
-        if bunch_id in self._bunch_buffer
-            return self._bunch_buffer[bunch_id]
-        else:
+    # def _get_bunch(self,bunch_id):
+    #     if bunch_id in self._bunch_buffer
+    #         return self._bunch_buffer[bunch_id]
+    #     else:
 
     def read_at(self,ind:int) -> bytes:
         """Reads one object at the index indicated by `ind`
@@ -496,7 +496,7 @@ class RawObjectReaderV0:
 
         self.file = file
         self._scan_file()
-        self.timestamp = '-'
+        self._timestamp = 0
 
     def reload(self):
         """ Reload the index table. Useful if the file
