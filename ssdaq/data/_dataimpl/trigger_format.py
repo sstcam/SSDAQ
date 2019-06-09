@@ -4,8 +4,28 @@ from ssdaq import sslogger
 from bitarray import bitarray
 
 log = sslogger.getChild("trigger_data")
-
 TriggerPacketHeader = struct.Struct("<H2B")
+def get_SP2bptrigg_mapping():
+    fMask2SPA = np.array([6,7,14,12,4,5,15,13,3,2,8,11,1,0,10,9])
+    fMask2SPB = np.array([9,10,0,1,11,8,2,3,13,15,5,4,12,14,7,6])
+    masks = [fMask2SPA,fMask2SPB]
+    sel = [0,1,0,1]+[1,0]*12+[0,1,0,1]
+    m = np.zeros(512,dtype=np.uint64)
+    for i,s in enumerate(sel):
+        m[i*16:i*16+16] = masks[s]+i*16
+    return m
+
+def get_bptrigg2SP_mapping():
+    fSP2MaskA = np.array([13,12,9,8,4,5,0,1,10,15,14,11,3,7,2,6])
+    fSP2MaskB = np.array([2,3,6,7,11,10,15,14,5,0,1,4,12,8,13,9])
+    masks = [fSP2MaskA,fSP2MaskB]
+    sel = [0,1,0,1]+[1,0]*12+[0,1,0,1]
+    m = np.zeros(512,dtype=np.uint64)
+    for i,s in enumerate(sel):
+        m[i*16:i*16+16] = masks[s]+i*16
+    return m
+
+
 
 class TriggerPacket:
     _message_types ={}
