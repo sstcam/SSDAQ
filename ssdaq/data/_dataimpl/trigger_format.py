@@ -62,7 +62,7 @@ class TriggerPacket:
 @TriggerPacket.register
 class NominalTriggerPacket(TriggerPacket):
     _tail_form = struct.Struct("<3I2H")
-    _mtype = 0x1
+    _mtype = 0x0
     def __init__(self,
         TACK: int = None,
         trigg: bitarray = None,
@@ -78,7 +78,8 @@ class NominalTriggerPacket(TriggerPacket):
         self.uc_pps = uc_pps
         self.uc_clock = uc_clock
         self.type = type_
-
+        self.busy = False
+        self._mtype = NominalTriggerPacket._mtype
     @classmethod
     def unpack(cls,raw_packet: bytearray):
         tack = int.from_bytes(raw_packet[:8], "little")
@@ -88,7 +89,7 @@ class NominalTriggerPacket(TriggerPacket):
         return cls(*[tack, tbits] + list(tail[:-1]))
 
     def pack(self):
-        raw_packet = super().pack_header(0x1, 22)
+        raw_packet = super().pack_header(self._mtype, 22)
         raw_packet.extend(self.TACK.to_bytes(8, "little"))
         raw_packet.extend(self.trigg.tobytes())
         raw_packet.extend(
@@ -108,6 +109,22 @@ class NominalTriggerPacket(TriggerPacket):
         s +="type: {}, \n".format(self.type)
         s +="trigg: {}".format(self.trigg)
         return s
+
+@TriggerPacket.register
+class BusyTriggerPacket(NominalTriggerPacket):
+    # _tail_form = struct.Struct("<3I2H")
+    _mtype = 0x1
+    def __init__(self,
+        TACK: int = None,
+        trigg: bitarray = None,
+        uc_ev: int = None,
+        uc_pps: int = None,
+        uc_clock: int = None,
+        type_: int = None,
+    ):
+        super().__init__(TACK, trigg, uc_ev, uc_pps, uc_clock, type_)
+        self.busy = True
+        self._mtype = BusyTriggerPacket._mtype
 
 
 
