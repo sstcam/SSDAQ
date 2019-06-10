@@ -20,8 +20,8 @@ class RawObjectWriterBase:
     """
     _protocols ={}
 
-    def __init__(self, filename: str, protocol = 0, **kwargs):
-        self._writer = RawObjectWriterBase._protocols[protocol](filename,**kwargs)
+    def __init__(self, filename: str, protocol = 1,compressor = 'bz2', **kwargs):
+        self._writer = RawObjectWriterBase._protocols[protocol](filename,compressor =compressor ,**kwargs)
         self.protocol = protocol
 
     def __enter__(self):
@@ -183,7 +183,6 @@ class RawObjectWriterV1:
         self._cbunchindex = []
         self._cbunchoffset = 0
         self._last_bunch_fp = 0
-        # self._bunch_start_fp = self._fp
         self._bunch_number = 0
     def _write(self, data:bytes):
         self._file.write(data)
@@ -197,14 +196,12 @@ class RawObjectWriterV1:
         """
 
         self._buffer.append(data)
-        self._cbunchindex.append((binascii.crc32(data),self._cbunchoffset))
+        self._cbunchindex.append((binascii.crc32(data),len(data)))#self._cbunchoffset))
         self._cbunchoffset += len(data)
         self.data_counter += 1
         if self._cbunchoffset>self.bunchsize:
             self.flush()
 
-        # self.file.write(_chunk_header.pack(len(data), binascii.crc32(data)))
-        # self.file.write(data)
 
 
     def flush(self):
@@ -219,12 +216,11 @@ class RawObjectWriterV1:
             for data in self._buffer:
                 self._write(data)
 
-        self._cbunchindex.append((0,self._cbunchoffset))
 
         #constructing the index and writing it in the bunch trailer
         index = list(zip(*self._cbunchindex))
         n = len(self._buffer)
-        bunch_index = struct.pack("{}I{}I".format(n,n+1),*index[0][:-1],*index[1])
+        bunch_index = struct.pack("{}I{}I".format(n,n),*index[0],*index[1])
         self._write(bunch_index)
 
         bunch_crc = 0
@@ -285,8 +281,6 @@ class RawObjectReaderBase:
             self._fhead = self.file.read(readerclass._file_header.size)
             # marker,extmarker,self.version,self.timestamp,self.compressed,self.lenheadext = readerclass._file_header.unpack(self._fhead)
             self._reader = readerclass(self.file)
-            # if marker[:3].decode('ascii') != "SOF":
-                # raise TypeError("This file appears not to be a stream object file (SOF)")
         else:
             raise TypeError("This file appears not to be a stream object file (SOF)")
 
@@ -390,6 +384,7 @@ class RawObjectReaderV1:
     _bunch_trailer_header = struct.Struct("<3Q2IH")
     _file_trailer = struct.Struct("<4s4sIQ")
     _compressors = {'bz2':(bz2,1)}
+
     def __init__(self, file):
         fileheader_def = RawObjectReaderV1._file_header
         self.file = file
@@ -404,7 +399,11 @@ class RawObjectReaderV1:
                                                                           RawObjectReaderV1._protocol_v))
         self._compressor = None
         if self._compressed>0:
-            self._compressor = RawObjectReaderV1._compressors[self._compressed]
+            compressorsr = {}
+            for k,v in RawObjectReaderV1._compressors.items():
+                compressorsr[v[1]] = (v[0],k)
+            self._compressor = compressorsr[self._compressed][0]
+            self._compressor_name = compressorsr[self._compressed][1]
         self._headext = None
         if self._lenheadext>0:
             self._headext = self.file.read(self._lenheadext)
@@ -414,13 +413,13 @@ class RawObjectReaderV1:
         self.filesize = None
         self._rawindex = {}
         self._bunch_buffer = {}
-
+        self._current_index = 0
         self._scan_file()
 
 
     def _scan_file(self):
         from collections import namedtuple
-        BunchTrailer = namedtuple("BunchTrailer","bunchoff dataoff fileoff crc ndata, index size")
+        BunchTrailer = namedtuple("BunchTrailer","bunchoff dataoff fileoff crc bunchsize ndata index objsize")
         self.file.seek(-RawObjectReaderV1._bunch_trailer_header.size,os.SEEK_END)
 
         self.filesize = self.file.tell()
@@ -430,34 +429,40 @@ class RawObjectReaderV1:
             last_bunch_trailer = self.file.read(RawObjectReaderV1._bunch_trailer_header.size)
             bunchoff,dataoff,fileoff,crc,ndata,bunch_n = RawObjectReaderV1._bunch_trailer_header.unpack(last_bunch_trailer)
             # read bunch index
-            self.file.seek(self.file.tell()-RawObjectReaderV1._bunch_trailer_header.size-ndata*2*4-4)
-            index = struct.unpack("{}I{}I".format(ndata,ndata+1),self.file.read(ndata*2*4+4))
-            self._rawindex[(0,bunch_n)] = BunchTrailer(bunchoff,
-                                                        dataoff,
-                                                        fileoff,
-                                                        crc,
-                                                        ndata,
-                                                        index[ndata:-1],
-                                                        list(np.diff(index[ndata:]))
+            self.file.seek(self.file.tell()-RawObjectReaderV1._bunch_trailer_header.size-ndata*2*4)
+            index = struct.unpack("{}I{}I".format(ndata,ndata),self.file.read(ndata*2*4))
+            objsize = np.array(index[ndata:],dtype=np.uint32)
+            self._rawindex[(0,bunch_n)] = BunchTrailer(bunchoff,#Offset to earlier bunch or file header if first bunch
+                                                        dataoff,#Offset to beginning of data in bunch
+                                                        fileoff,#Offset to beginning of file
+                                                        crc, #bunch crc
+                                                        dataoff-ndata*2*4,#Size of data bunch
+                                                        ndata,#number of objects in bunch
+                                                        [0]+list(np.cumsum(objsize[:-1])), #Object offsets in bunch
+                                                        objsize #object sizes
                                                         )
-            # print(self.file.tell()-bunchoff)
-            # print(self.file.tell())
             self.file.seek(self.file.tell()-bunchoff)
 
         self._index = []
-        self._bunch_index = []
+        self._bunch_index = {}
         for k, bunch in sorted(self._rawindex.items()):
-            print(k,len(bunch.index))
-            self._bunch_index.append(bunch.fileoff-bunch.dataoff)
+            self._bunch_index[k] = ((bunch.fileoff-bunch.dataoff,bunch.bunchsize))
             for i,obj in enumerate(bunch.index):
-                self._index.append((k,obj,bunch.size[i]))
-        print(self._bunch_index)
-        print(len(self._index))
+                self._index.append((k,int(obj),int(bunch.objsize[i])))
         self.n_entries = len(self._index)
-    # def _get_bunch(self,bunch_id):
-    #     if bunch_id in self._bunch_buffer
-    #         return self._bunch_buffer[bunch_id]
-    #     else:
+
+    def _get_bunch(self,bunch_id):
+        if bunch_id in self._bunch_buffer:
+            return self._bunch_buffer[bunch_id]
+        else:
+            self.file.seek(self._bunch_index[bunch_id][0])
+            bunch = self._compressor.decompress(
+                                            self.file.read(
+                                                self.file_index[bunch_id[0]]+self._bunch_index[bunch_id][1]
+                                                )
+                                            )
+            self._bunch_buffer[bunch_id] = bunch
+            return bunch
 
     def read_at(self,ind:int) -> bytes:
         """Reads one object at the index indicated by `ind`
@@ -475,17 +480,29 @@ class RawObjectReaderV1:
         if ind > self.n_entries-1:
             raise IndexError("The requested file object ({}) is out of range".format(ind))
         obji = self._index[ind]
-        fpos = self.file_index[obji[0][0]]+self._bunch_index[obji[0][1]]+obji[1]
-        print(fpos)
-        print(self._bunch_index[obji[0][1]])
-        print("fp",obji[1])
-        print("size",obji[2])
-        self.file.seek(fpos)
+        if self._compressed:
+            bunch = self._get_bunch(obji[0])
+            return bunch[obji[1]:obji[1]+obji[2]]
+        else:
+            fpos = self.file_index[obji[0][0]]+self._bunch_index[obji[0]][0]+obji[1]
+            self.file.seek(fpos)
 
 
-        return self.file.read(obji[2])
+            return self.file.read(obji[2])
 
-        # print(bunchoff,dataoff,fileoff,crc,ndata,bunch_n)
+    def resetfp(self):
+        """ Resets file pointer to the first object in file
+        """
+        self._current_index = 0
+
+    def read(self) -> bytes:
+        """ Reads one object at the position of the file pointer.
+
+            Returns:
+                bytes: Bytes that represent the object
+        """
+        self._current_index +=1
+        return self.read_at(self._current_index-1)
 
 @RawObjectReaderBase._register
 class RawObjectReaderV0:
@@ -508,6 +525,7 @@ class RawObjectReaderV0:
         """ Resets file pointer to the first object in file
         """
         self.file.seek(_file_header.size)
+
 
     def _scan_file(self,offset=0,n_entries=0,fpos=[]):
         """Summary

@@ -153,7 +153,7 @@ class LogWriter(WriterSubscriber):
         super().__init__(
             subscriber=LogProtoSubscriber,
             writer=io.LogWriter,
-            file_ext=".prt",
+            file_ext=".sof",
             name="LogWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
@@ -173,7 +173,7 @@ class TimestampWriter(WriterSubscriber):
         super().__init__(
             subscriber=BasicTimestampSubscriber,
             writer=io.TimestampWriter,
-            file_ext=".prt",
+            file_ext=".sof",
             name="TimestampWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
@@ -193,7 +193,7 @@ class TriggerWriter(WriterSubscriber):
         super().__init__(
             subscriber=BasicTriggerSubscriber,
             writer=io.TriggerWriter,
-            file_ext=".prt",
+            file_ext=".sof",
             name="TriggerWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
@@ -236,7 +236,7 @@ class ATriggerWriter(AsyncWriterSubscriber):
         super().__init__(
             subscriber=AsyncTriggerSubscriber,
             writer=io.TriggerWriter,
-            file_ext=".prt",
+            file_ext=".sof",
             **{k: v for k, v in locals().items() if k not in skip}
         )
 

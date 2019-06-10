@@ -6,14 +6,16 @@ from . import NominalTriggerPacket, BusyTriggerPacket, NominalTriggerPacketV2, B
 from . import TriggerPacket
 from . import Frame
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
+import struct
 
+_header = struct.Struct("2H")#version:datatype
 
 class LogWriter(RawObjectWriterBase):
     """
     """
 
-    def __init__(self, filename: str):
-        super().__init__(filename, header=1)
+    def __init__(self, filename: str,**kwargs):
+        super().__init__(filename, header_ext=_header.pack(1,1),**kwargs)
 
     def write(self, log: LogData):
         super().write(log.SerializeToString())
@@ -28,8 +30,8 @@ class LogReader(RawObjectReaderBase):
 
 
 class TimestampWriter(RawObjectWriterBase):
-    def __init__(self, filename: str):
-        super().__init__(filename, header=2)
+    def __init__(self, filename: str,**kwargs):
+        super().__init__(filename, header_ext=_header.pack(1,2),**kwargs)
 
     def write(self, timestamp):
         super().write(timestamp.SerializeToString())
@@ -44,19 +46,11 @@ class TimestampReader(RawObjectReaderBase):
 
 
 class TriggerWriter(RawObjectWriterBase):
-    def __init__(self, filename: str):
-        super().__init__(filename, header=3)
+    def __init__(self, filename: str,**kwargs):
+        super().__init__(filename, header_ext=_header.pack(1,3),**kwargs)
 
     def write(self, trigg):
         super().write(trigg.pack()
-            # NominalTriggerDataEncode.pack(
-            #     trigg.TACK,
-            #     trigg.trigg,
-            #     trigg.uc_ev,
-            #     trigg.uc_pps,
-            #     trigg.uc_clock,
-            #     trigg.type,
-            # )
         )
 
 
@@ -64,8 +58,8 @@ class FrameWriter(RawObjectWriterBase):
     """
     """
 
-    def __init__(self, filename: str):
-        super().__init__(filename, header=4)
+    def __init__(self, filename: str,**kwargs):
+        super().__init__(filename, header_ext=_header.pack(1,4),**kwargs)
 
     def write(self, frame):
         super().write(frame.serialize())
@@ -104,12 +98,21 @@ class DataReader(RawObjectReaderBase):
             ValueError: Is raised if no suitable unpacker is found
         """
         super().__init__(filename)
-        if self.fhead == 0 or self.fhead > len(_unpackers):
-            raise ValueError("No compatible reader found for this file...")
-        self._unpack = _unpackers[self.fhead - 1]
-        self.resetfp()
+        if self.version == 0:
+            if self.fhead == 0 or self.fhead > len(_unpackers):
+                raise ValueError("No compatible reader found for this file...")
+            self._unpack = _unpackers[self.fhead - 1]
+            self.resetfp()
+        else:
+            chec_file_version,datatype = _header.unpack(self._reader._headext)
+            print(datatype)
+            self._unpack = _unpackers[datatype-1]
+
     def read(self):
         return self._unpack(super().read())
+
+    def read_at(self,ind:int):
+        return self._unpack(super().read_at(ind))
 
     def readobjects(self):
         self.resetfp()
