@@ -28,6 +28,7 @@ class ReceiverServer:
             loop (asyncio.loop):If not given an an event loop an asyncio loop will
                                 retreived.
     """
+
     def __init__(self, ip: str, port: int, publishers: list, name: str, loop=None):
         """ The init of a ReceiverServer
         """
