@@ -49,14 +49,6 @@ class TriggerWriter(RawObjectWriterBase):
 
     def write(self, trigg):
         super().write(trigg.pack()
-            # NominalTriggerDataEncode.pack(
-            #     trigg.TACK,
-            #     trigg.trigg,
-            #     trigg.uc_ev,
-            #     trigg.uc_pps,
-            #     trigg.uc_clock,
-            #     trigg.type,
-            # )
         )
 
 
