@@ -164,6 +164,10 @@ class NominalTriggerPacketV2(TriggerPacket):
         return self._trigg
 
     @property
+    def busy(self):
+        return self._busy
+
+    @property
     def TACK(self):
         return self._TACK
     @property
@@ -253,8 +257,5 @@ class BusyTriggerPacketV2(NominalTriggerPacketV2):
             uc_clock,
             type_,
         )
-        self.busy = False
+        self._busy = False
         self._mtype = BusyTriggerPacketV2._mtype
-
-
-
