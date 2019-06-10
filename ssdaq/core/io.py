@@ -20,8 +20,8 @@ class RawObjectWriterBase:
     """
     _protocols ={}
 
-    def __init__(self, filename: str, protocol = 0, **kwargs):
-        self._writer = RawObjectWriterBase._protocols[protocol](filename,**kwargs)
+    def __init__(self, filename: str, protocol = 1,compressor = 'bz2', **kwargs):
+        self._writer = RawObjectWriterBase._protocols[protocol](filename,compressor =compressor ,**kwargs)
         self.protocol = protocol
 
     def __enter__(self):
@@ -183,7 +183,6 @@ class RawObjectWriterV1:
         self._cbunchindex = []
         self._cbunchoffset = 0
         self._last_bunch_fp = 0
-        # self._bunch_start_fp = self._fp
         self._bunch_number = 0
     def _write(self, data:bytes):
         self._file.write(data)
