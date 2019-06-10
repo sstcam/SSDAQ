@@ -193,6 +193,7 @@ class NominalTriggerPacketV2(TriggerPacket):
         if self._trigg is None:
             self._compute_trigg()
         return self._trigg
+
     @property
     def trigg_union(self):
         return np.frombuffer(self._trigg_union.unpack(), dtype=bool)

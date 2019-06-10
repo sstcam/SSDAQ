@@ -281,8 +281,6 @@ class RawObjectReaderBase:
             self._fhead = self.file.read(readerclass._file_header.size)
             # marker,extmarker,self.version,self.timestamp,self.compressed,self.lenheadext = readerclass._file_header.unpack(self._fhead)
             self._reader = readerclass(self.file)
-            # if marker[:3].decode('ascii') != "SOF":
-                # raise TypeError("This file appears not to be a stream object file (SOF)")
         else:
             raise TypeError("This file appears not to be a stream object file (SOF)")
 
@@ -448,21 +446,15 @@ class RawObjectReaderV1:
         self._index = []
         self._bunch_index = {}
         for k, bunch in sorted(self._rawindex.items()):
-            # print(k,len(bunch.index))
             self._bunch_index[k] = ((bunch.fileoff-bunch.dataoff,bunch.bunchsize))
             for i,obj in enumerate(bunch.index):
                 self._index.append((k,int(obj),int(bunch.objsize[i])))
-        # print(self._bunch_index)
-        # print(len(self._index))
         self.n_entries = len(self._index)
 
     def _get_bunch(self,bunch_id):
-        # print(bunch_id)
-        # print(self._rawindex[bunch_id])
         if bunch_id in self._bunch_buffer:
             return self._bunch_buffer[bunch_id]
         else:
-            # print(self._bunch_index[bunch_id])
             self.file.seek(self._bunch_index[bunch_id][0])
             bunch = self._compressor.decompress(
                                             self.file.read(
@@ -493,16 +485,11 @@ class RawObjectReaderV1:
             return bunch[obji[1]:obji[1]+obji[2]]
         else:
             fpos = self.file_index[obji[0][0]]+self._bunch_index[obji[0]][0]+obji[1]
-            # print(fpos)
-            # print(self._bunch_index[obji[0]])
-            # print("fp",obji[1])
-            # print("size",obji[2])
             self.file.seek(fpos)
 
 
             return self.file.read(obji[2])
 
-        # print(bunchoff,dataoff,fileoff,crc,ndata,bunch_n)
 
 @RawObjectReaderBase._register
 class RawObjectReaderV0:
