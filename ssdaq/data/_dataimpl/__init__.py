@@ -6,8 +6,10 @@ from .CDTS_pb2 import TimeStamp as _TimeStamp
 from .CDTS_pb2 import TriggerMessage as _TriggerMessage
 from .CDTS_pb2 import TriggerBunch as _TriggerBunch
 from .teldata_pb2 import TelData as _TelData
-from .trigger_format import TriggerPacketData
-from .trigger_format import NominalTriggerDataEncode
+# from .trigger_format import TriggerPacketData
+# from .trigger_format import NominalTriggerDataEncode
+from .trigger_format import TriggerPacket
+from .trigger_format import NominalTriggerPacket,BusyTriggerPacket,NominalTriggerPacketV2,BusyTriggerPacketV2
 from .slowsignal_format import SSReadout
 # from .frame import Frame, FrameObject
 

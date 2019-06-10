@@ -87,6 +87,12 @@ The code actually gets even shorter::
                 await self.publish(packet)
 Note the line ``self._setup = True`` in the ``__init__`` which is needed to overide a check that there is at least one listening socket added.
 
+*********************
+ssdaq.core.publishers
+*********************
+.. autoclass:: ssdaq.core.publishers.ZMQTCPPublisher
+    :members:
+
 ***************
 ssdaq.receivers
 ***************

@@ -135,6 +135,20 @@ class WriterSubscriber(Thread, BaseFileWriter):
         file_enumerator: str = None,
         filesize_lim: int = None,
     ):
+        """Summary
+
+        Args:
+            file_prefix (str): Description
+            ip (str): Description
+            port (int): Description
+            subscriber (BasicSubscriber): Description
+            writer (TYPE): Description
+            file_ext (str): Description
+            name (str): Description
+            folder (str, optional): Description
+            file_enumerator (str, optional): Description
+            filesize_lim (int, optional): Description
+        """
         self.log = sslogger.getChild(name)
         BaseFileWriter.__init__(
             self,
@@ -212,17 +226,21 @@ class AsyncSubscriber:
         passoff_callback=None,
         name:str=None,
     ):
-        """ The init of a BasicSubscriber
+        """The init of an AsyncSubscriber
 
-            Args:
-                ip (str):   The ip address where the datas are published (can be local or remote)
-                port (int): The port number at which the datas are published
-
-            Kwargs:
-                unpack (callable): A callable which takes the received data packet as input
-                                    and returns an unpacked object. If not given the packed data
-                                    object is put in the subscribed buffer.
-                logger:     Optionally provide a logger instance
+        Args:
+            ip (str): The ip address where the datas are published (can be local or remote)
+            port (int): The port number at which the datas are published
+            unpack (None, optional): A callable which takes the received data packet as input
+                                and returns an unpacked object. If not given the packed data
+                                object is put in the subscribed buffer.
+            logger (logging.Logger, optional): Optionally provide a logger instance
+            zmqcontext (None, optional): zmq context
+            loop (None, optional): an asyncio event loop
+            passoff_callback (None, optional): An optional callback for overriding the default
+                                            buffer. Note: if this is used then ``get_data()``
+                                            will always be empty.
+            name (str, optional): Description
 
 
         """
@@ -262,9 +280,10 @@ class AsyncSubscriber:
             self.passoff_callback(data)
 
     async def get_data(self):
-        """ Get data from the subscriber buffer.
+        """Get data from the subscriber buffer.
 
-            Returns data object
+        Returns:
+            data: data object
         """
         data = await self._data_buffer.get()
         self._data_buffer.task_done()
@@ -276,10 +295,11 @@ class AsyncSubscriber:
         return self._data_buffer.empty()
 
     async def close(self, hard=True):
-        """ Closes subscriber so no more data is put in the buffer
-            args:
-                hard (bool): If set to true the buffer will be emptied and
-                            any data still in the buffer will be lost.
+        """Closes subscriber so no more data is put in the buffer
+
+        args:
+            hard (bool): If set to true the buffer will be emptied and
+                        any data still in the buffer will be lost.
         """
         self.running = False
 
@@ -347,13 +367,13 @@ class AsyncWriterSubscriber(BaseFileWriter):
             self.write(data)
 
     async def close(self, hard: bool = False):
-        """ Stops the writer by closing the subscriber.
+        """Stops the writer by closing the subscriber.
 
-            args:
-                hard (bool): If set to true the subscriber
-                             buffer will be dropped and the file
-                             will be immediately closed. Any data still
-                             in the subscriber buffer will be lost.
+        args:
+            hard (bool, optional): If set to true the subscriber
+                         buffer will be dropped and the file
+                         will be immediately closed. Any data still
+                         in the subscriber buffer will be lost.
         """
         if hard:
             self.running = False

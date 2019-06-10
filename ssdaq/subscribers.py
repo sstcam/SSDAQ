@@ -12,7 +12,7 @@ from ssdaq.core import (
 from ssdaq import logging as handlers
 from ssdaq.data import (
     io,
-    TriggerPacketData,
+    TriggerPacket,
     TriggerMessage,
     SSReadout,
     MonitorData,
@@ -55,7 +55,7 @@ class AsyncTriggerSubscriber(AsyncSubscriber):
             ip=ip,
             port=port,
             logger=logger,
-            unpack=TriggerPacketData.unpack,
+            unpack=TriggerPacket.unpack,
             loop=loop,
             name=name,
         )

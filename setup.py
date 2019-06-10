@@ -52,7 +52,6 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ssdaq = ssdaq.bin.ssdaqd:main",
             "control-ssdaq=ssdaq.bin.ssdaq_control:main",
             "chec-slowsig-dumper=ssdaq.bin.terminaldumpers:slowsignaldump",
             "chec-mon-dumper=ssdaq.bin.terminaldumpers:mondumper",
