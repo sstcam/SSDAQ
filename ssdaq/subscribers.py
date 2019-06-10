@@ -43,7 +43,7 @@ class AsyncSSReadoutSubscriber(AsyncSubscriber):
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
         super().__init__(
-            ip=ip, port=port, logger=logger, unpack=TriggerPacketData.unpack
+            ip=ip, port=port, logger=logger, unpack=TriggerPacket.unpack
         )
 
 

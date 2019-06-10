@@ -110,7 +110,6 @@ class DataReader(RawObjectReaderBase):
             self.resetfp()
         else:
             chec_file_version, datatype = _header.unpack(self._reader._headext)
-            print(datatype)
             self._unpack = _unpackers[datatype - 1]
 
     def read(self):
