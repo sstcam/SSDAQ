@@ -413,7 +413,7 @@ class RawObjectReaderV1:
         self.filesize = None
         self._rawindex = {}
         self._bunch_buffer = {}
-
+        self._current_index = 0
         self._scan_file()
 
 
@@ -490,6 +490,19 @@ class RawObjectReaderV1:
 
             return self.file.read(obji[2])
 
+    def resetfp(self):
+        """ Resets file pointer to the first object in file
+        """
+        self._current_index = 0
+
+    def read(self) -> bytes:
+        """ Reads one object at the position of the file pointer.
+
+            Returns:
+                bytes: Bytes that represent the object
+        """
+        self._current_index +=1
+        return self.read_at(self._current_index-1)
 
 @RawObjectReaderBase._register
 class RawObjectReaderV0:
@@ -512,6 +525,7 @@ class RawObjectReaderV0:
         """ Resets file pointer to the first object in file
         """
         self.file.seek(_file_header.size)
+
 
     def _scan_file(self,offset=0,n_entries=0,fpos=[]):
         """Summary
