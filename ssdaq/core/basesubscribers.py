@@ -8,6 +8,7 @@ from ssdaq import sslogger
 import asyncio
 from .io import BaseFileWriter
 
+
 class BasicSubscriber(Thread):
     """ The base class to subscribe to a published data stream from a reciver.
         Data are retrived by the `get_data()` method once the listener has been started by the
@@ -122,6 +123,7 @@ class BasicSubscriber(Thread):
 class WriterSubscriber(Thread, BaseFileWriter):
     """
     """
+
     def __init__(
         self,
         file_prefix: str,
@@ -224,7 +226,7 @@ class AsyncSubscriber:
         zmqcontext=None,
         loop=None,
         passoff_callback=None,
-        name:str=None,
+        name: str = None,
     ):
         """The init of an AsyncSubscriber
 
