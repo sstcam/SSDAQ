@@ -55,7 +55,7 @@ TriggerReceiver:
   Receiver:
     class: TriggerPacketReceiver
     ip: 0.0.0.0
-    port: 8307
+    port: 8407
   Publishers: #Listing publishers
     ZMQReadoutPublisherLocal: #name
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers

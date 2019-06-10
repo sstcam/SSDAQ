@@ -128,7 +128,7 @@ class BusyTriggerPacket(NominalTriggerPacket):
 
 #End of old version of Trigger pattern packets
 #New version Trigger pattern packets
-of = 0
+of = 2
 @TriggerPacket.register
 class NominalTriggerPacketV2(TriggerPacket):
     _mtype = 0x2-of
