@@ -1,21 +1,27 @@
 ### Specialization to different protobuf protocols#####
 from . import LogData
 from . import TriggerMessage
-# from . import TriggerPacketData, NominalTriggerDataEncode,
-from . import NominalTriggerPacket, BusyTriggerPacket, NominalTriggerPacketV2, BusyTriggerPacketV2
+
+from . import (
+    NominalTriggerPacket,
+    BusyTriggerPacket,
+    NominalTriggerPacketV2,
+    BusyTriggerPacketV2,
+)
 from . import TriggerPacket
 from . import Frame
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 import struct
 
-_header = struct.Struct("2H")#version:datatype
+_header = struct.Struct("2H")  # version:datatype
+
 
 class LogWriter(RawObjectWriterBase):
     """
     """
 
-    def __init__(self, filename: str,**kwargs):
-        super().__init__(filename, header_ext=_header.pack(1,1),**kwargs)
+    def __init__(self, filename: str, **kwargs):
+        super().__init__(filename, header_ext=_header.pack(1, 1), **kwargs)
 
     def write(self, log: LogData):
         super().write(log.SerializeToString())
@@ -30,8 +36,8 @@ class LogReader(RawObjectReaderBase):
 
 
 class TimestampWriter(RawObjectWriterBase):
-    def __init__(self, filename: str,**kwargs):
-        super().__init__(filename, header_ext=_header.pack(1,2),**kwargs)
+    def __init__(self, filename: str, **kwargs):
+        super().__init__(filename, header_ext=_header.pack(1, 2), **kwargs)
 
     def write(self, timestamp):
         super().write(timestamp.SerializeToString())
@@ -46,20 +52,19 @@ class TimestampReader(RawObjectReaderBase):
 
 
 class TriggerWriter(RawObjectWriterBase):
-    def __init__(self, filename: str,**kwargs):
-        super().__init__(filename, header_ext=_header.pack(1,3),**kwargs)
+    def __init__(self, filename: str, **kwargs):
+        super().__init__(filename, header_ext=_header.pack(1, 3), **kwargs)
 
     def write(self, trigg):
-        super().write(trigg.pack()
-        )
+        super().write(trigg.pack())
 
 
 class FrameWriter(RawObjectWriterBase):
     """
     """
 
-    def __init__(self, filename: str,**kwargs):
-        super().__init__(filename, header_ext=_header.pack(1,4),**kwargs)
+    def __init__(self, filename: str, **kwargs):
+        super().__init__(filename, header_ext=_header.pack(1, 4), **kwargs)
 
     def write(self, frame):
         super().write(frame.serialize())
@@ -88,7 +93,7 @@ _unpackers = [log_unpack, timestamp_unpack, TriggerPacket.unpack, Frame.from_byt
 
 
 class DataReader(RawObjectReaderBase):
-    def __init__(self, filename:str):
+    def __init__(self, filename: str):
         """ Open a Streamed Object File to read.
 
         Args:
@@ -104,20 +109,21 @@ class DataReader(RawObjectReaderBase):
             self._unpack = _unpackers[self.fhead - 1]
             self.resetfp()
         else:
-            chec_file_version,datatype = _header.unpack(self._reader._headext)
-            print(datatype)
-            self._unpack = _unpackers[datatype-1]
+            chec_file_version, datatype = _header.unpack(self._reader._headext)
+            self._unpack = _unpackers[datatype - 1]
 
     def read(self):
         return self._unpack(super().read())
 
-    def read_at(self,ind:int):
+    def read_at(self, ind: int):
         return self._unpack(super().read_at(ind))
 
     def readobjects(self):
         self.resetfp()
         for i in range(self.n_entries):
             yield self._unpack(super().read())
+
+
 # ====================HDF5 Slow signal data reader and writer definitions===============
 import numpy as np
 import tables

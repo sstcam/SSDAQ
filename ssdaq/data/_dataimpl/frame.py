@@ -99,8 +99,9 @@ class FrameObject:
     def deserialize(self, data):
         return self.unpack(data)
 
-   #  @classmethod
-   #  def from_bytes(cls, data):
-   #      inst = cls()
-   #      inst.unpack(data)
-   #      return inst
+
+#  @classmethod
+#  def from_bytes(cls, data):
+#      inst = cls()
+#      inst.unpack(data)
+#      return inst
