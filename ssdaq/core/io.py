@@ -230,6 +230,8 @@ class RawObjectWriterV1:
             self.flush()
 
     def flush(self):
+        if len(self._buffer)<1:
+            return
         bunch_start_fp = self._fp
         # writing the data bunch
         if self.compress:
