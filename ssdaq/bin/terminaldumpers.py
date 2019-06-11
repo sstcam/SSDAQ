@@ -135,7 +135,7 @@ def timestampdump():
     sub.close()
     sub.join()
 
-
+from ssdaq.core.utils import get_si_prefix
 def triggerdump():
 
     parser = argparse.ArgumentParser(
@@ -157,8 +157,7 @@ def triggerdump():
     print("Press `ctrl-C` to stop")
     last_uc_ev = 0
     missed_counter = 0
-    time1 = time.time()
-    time2 = time.time()
+    last = 0
     while True:
         try:
             trigger = sub.get_data()
@@ -170,19 +169,32 @@ def triggerdump():
         if trigger is not None:
             if last_uc_ev != 0 and last_uc_ev + 1 != trigger.uc_ev:
                 missed_counter += 1
-
+            now = trigger.TACK
             print("##################################")
             print("#Data: {}".format(trigger.__class__.__name__))
             for name, value in trigger._asdict().items():
-                print("#    {}: {}".format(name, value))
-            print("#    Missed: {}".format(missed_counter))
-            print("#    Frequency: {} Hz".format(1.0 / ((time2 - time1) + 1e-7)))
-            print("#    dt: {} s".format(time2 - time1))
-            # print("#    t: {} {} s".format(time2,time1))
-            print("##################################")
-            time1 = time2
-            time2 = time.time()
 
+                if name == 'trigg_union': #or name == 'trigg'
+                    print("#    {}: {}".format(name, np.where(value)[0]))
+                elif name == 'trigg':
+                    # tr = trigger._trigger_phases
+                    # for i, t in enumerate(tr):
+                    #     print(i,hex(t))
+                    # print("#    {}: {}".format(name, tr[tr>0]))
+                    # print("#    {}: {}".format(name, np.where(tr>0)[0]))
+                    print("#    {}: {}".format(name, np.where(value)[0]))
+                    # print("#    {}: {}".format(name, value))
+                elif name == "trigg_phase":
+                    print("#    {}: {}".format(name, 7-int(np.log2(value))))
+                else:
+                    print("#    {}: {}".format(name, value))
+
+
+            print("#    Missed: {}".format(missed_counter))
+            print("#    Frequency: {} {}Hz".format(*get_si_prefix(1.0 / ((now - last)*1e-9))))
+            print("#    dt: {} s".format(now - last))
+            print("##################################")
+            last = now
             last_uc_ev = trigger.uc_ev
     sub.close()
     sub.join()

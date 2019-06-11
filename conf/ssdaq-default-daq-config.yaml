@@ -13,7 +13,7 @@ ReadoutAssembler:
     buffer_length: 1000
     readout_tw: !!float 5.1e7 #nano seconds
     buffer_time: !!float 2e9
-    packet_debug_stream_file: /data/astri_onsky/ssdaq.debug.log
+    #packet_debug_stream_file: /data/astri_onsky/ssdaq.debug.log
   Publishers: #Listing publishers
     ZMQReadoutPublisherLocal: #name
       class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
