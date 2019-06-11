@@ -49,6 +49,9 @@ class RawObjectWriterBase:
     def _register(cls, scls):
         cls._protocols[scls._protocol_v] = scls
         return scls
+    @property
+    def data_counter(self):
+        return self._writer.data_counter
 
 
 @RawObjectWriterBase._register

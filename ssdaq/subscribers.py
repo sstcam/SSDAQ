@@ -234,8 +234,8 @@ class ATriggerWriter(AsyncWriterSubscriber):
         name="ATriggerWriter",
     ):
         super().__init__(
-            subscriber=AsyncTriggerSubscriber,
-            writer=io.TriggerWriter,
+            subscriber=AsyncSubscriber,
+            writer=io.RawTriggerWriter,
             file_ext=".sof",
             **{k: v for k, v in locals().items() if k not in skip}
         )
