@@ -4,6 +4,7 @@ from ._ioimpl import (
     TimestampWriter,
     # TimestampReader,
     TriggerWriter,
+    RawTriggerWriter,
     # TriggerReader,
     DataReader,
     SSDataReader,

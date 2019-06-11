@@ -47,7 +47,7 @@ def get_attritbues(obj_):
      for attr in dir(obj_):
          if attr[0]=='_' or attr[:2] =='__' :
              continue
-         if inspect.ismethod(getattr(obj_,attr)):
+         if inspect.ismethod(getattr(obj_,attr)) or inspect.isfunction(getattr(obj_,attr)) :
              continue
          attributes[attr] = (getattr(obj_,attr))
      return attributes

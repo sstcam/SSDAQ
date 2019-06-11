@@ -58,6 +58,12 @@ class TriggerWriter(RawObjectWriterBase):
     def write(self, trigg):
         super().write(trigg.pack())
 
+class RawTriggerWriter(RawObjectWriterBase):
+    def __init__(self, filename: str, **kwargs):
+        super().__init__(filename, header_ext=_header.pack(1, 3), **kwargs)
+
+    def write(self,data:bytes):
+        super().write(data)
 
 class FrameWriter(RawObjectWriterBase):
     """
