@@ -66,6 +66,7 @@ setup(
             "chec-aslowsig-writer=ssdaq.bin.writers:aslowsignal",
             "chec-slowsig-viewer=ssdaq.bin.slowsignalviewer:slowsignalviewer",
             "chec-timestamp-viewer=ssdaq.bin.slowsignalviewer:timestampviewer",
+            "chec-triggerpattern-viewer=ssdaq.bin.slowsignalviewer:triggerpatternviewer",
             "chec-daq-dash=ssdaq.bin.dash:mondumper",
         ]
     },
