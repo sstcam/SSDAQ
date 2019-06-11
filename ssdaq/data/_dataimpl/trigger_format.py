@@ -3,6 +3,7 @@ from collections import namedtuple
 from ssdaq import sslogger
 from bitarray import bitarray
 import numpy as np
+from ssdaq.core.utils import get_attritbues
 
 log = sslogger.getChild("trigger_data")
 TriggerPacketHeader = struct.Struct("<H2B")
@@ -48,6 +49,7 @@ class TriggerPacket:
 
     @classmethod
     def unpack(cls, data):
+        print(len(data))
         magic_mark, mtype, mlen = TriggerPacketHeader.unpack(data[:4])
 
         if magic_mark != 0xCAFE:
@@ -61,6 +63,8 @@ class TriggerPacket:
     def deserialize(self, data):
         inst = TriggerPacket.unpack(data)
         self.__dict__.update(inst.__dict__)
+    def _asdict(self):
+        return get_attritbues(self)
 
 
 # Old version TriggerPatternPackets
@@ -148,7 +152,7 @@ of = 2
 class NominalTriggerPacketV2(TriggerPacket):
     _mtype = 0x2 - of
     _head_form = struct.Struct("<QB512H")
-    _tail_form = struct.Struct("<3I2H")
+    _tail_form = struct.Struct("<3IH")
 
     def __init__(
         self,
@@ -176,7 +180,6 @@ class NominalTriggerPacketV2(TriggerPacket):
 
     def _compute_trigg(self):
         trigg_phase_number = self.trigg_phase
-        print(trigg_phase_number)
         self._trigg = (trigg_phase_number == self._trigger_phases).astype(np.uint16)
         return self._trigg
 
@@ -237,7 +240,7 @@ class NominalTriggerPacketV2(TriggerPacket):
                 ]
             )
         )
-        tail = NominalTriggerPacket._tail_form.unpack(
+        tail = NominalTriggerPacketV2._tail_form.unpack(
             raw_packet[-NominalTriggerPacketV2._tail_form.size :]
         )
         return cls(
