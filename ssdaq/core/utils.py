@@ -1,7 +1,7 @@
 import math
 import asyncio
 import sys
-
+import inspect
 
 def get_si_prefix(value: float) -> tuple:
     prefixes = [
