@@ -12,16 +12,35 @@ from . import TriggerPacket
 from . import Frame
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 import struct
-
+from ssdaq import version as sversion
 _header = struct.Struct("2H")  # version:datatype
+_headers = {1:_header}
 
+class CHECFileHeader:
+    def __init__(self,unpacker:int,version:int=1, ssdaq_version:str=None):
+        self.unpacker = unpacker
+        self.ssdaq_version = ssdaq_version or str(sversion.get_version())
+        print(self.ssdaq_version)
+        self.version = version
+    def pack(self):
+        return struct.pack("2HB{}s".format(len(self.ssdaq_version)),
+                            self.version,
+                            self.unpacker,
+                            len(self.ssdaq_version),
+                            self.ssdaq_version)
+    @classmethod
+    def unpack(cls,data):
+        header = struct.Struct("2HB")
+        version,unpacker,n = header.unpack(data[:header.size])
+        ssdaq_version = struct.unpack("{}s".format(n),data[header.size:])
+        return version,unpacker,ssdaq_version#cls(version,unpacker,ssdaq_version)
 
 class LogWriter(RawObjectWriterBase):
     """
     """
 
     def __init__(self, filename: str, **kwargs):
-        super().__init__(filename, header_ext=_header.pack(1, 1), **kwargs)
+        super().__init__(filename, header_ext=CHECFileHeader(1).pack(), **kwargs)
 
     def write(self, log: LogData):
         super().write(log.SerializeToString())
@@ -37,7 +56,7 @@ class LogReader(RawObjectReaderBase):
 
 class TimestampWriter(RawObjectWriterBase):
     def __init__(self, filename: str, **kwargs):
-        super().__init__(filename, header_ext=_header.pack(1, 2), **kwargs)
+        super().__init__(filename, header_ext=CHECFileHeader(2).pack(), **kwargs)
 
     def write(self, timestamp):
         super().write(timestamp.SerializeToString())
@@ -53,14 +72,14 @@ class TimestampReader(RawObjectReaderBase):
 
 class TriggerWriter(RawObjectWriterBase):
     def __init__(self, filename: str, **kwargs):
-        super().__init__(filename, header_ext=_header.pack(1, 3), **kwargs)
+        super().__init__(filename, header_ext=CHECFileHeader(3).pack(), **kwargs)
 
     def write(self, trigg):
         super().write(trigg.pack())
 
 class RawTriggerWriter(RawObjectWriterBase):
     def __init__(self, filename: str, **kwargs):
-        super().__init__(filename, header_ext=_header.pack(1, 3), **kwargs)
+        super().__init__(filename, header_ext=CHECFileHeader(3).pack(), **kwargs)
 
     def write(self,data:bytes):
         super().write(data)
@@ -70,7 +89,7 @@ class FrameWriter(RawObjectWriterBase):
     """
 
     def __init__(self, filename: str, **kwargs):
-        super().__init__(filename, header_ext=_header.pack(1, 4), **kwargs)
+        super().__init__(filename, header_ext=CHECFileHeader(4).pack(), **kwargs)
 
     def write(self, frame):
         super().write(frame.serialize())
@@ -115,8 +134,12 @@ class DataReader(RawObjectReaderBase):
             self._unpack = _unpackers[self.fhead - 1]
             self.resetfp()
         else:
-            chec_file_version, datatype = _header.unpack(self._reader._headext)
+            chec_file_version, datatype, ssdaq_version = CHECFileHeader.unpack(self._reader._headext)
             self._unpack = _unpackers[datatype - 1]
+            self.metadata['ssdaq_version'] = ssdaq_version[0].decode()
+            self.metadata['chec_file_version'] = chec_file_version
+            self.metadata['data_type'] = self._unpack.__class__
+
 
     def read(self):
         return self._unpack(super().read())

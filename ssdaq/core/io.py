@@ -296,6 +296,7 @@ class RawObjectReaderBase:
         self.file = open(self.filename, "rb")
         self._fhead = self.file.read(12)  # _file_header.size)
         self.file.seek(0)
+        self.metadata = {}
 
         self.fhead, self.version = struct.unpack("QI", self._fhead)
 
@@ -395,8 +396,9 @@ class RawObjectReaderBase:
         s += "timestamp: {}\n".format(self.timestamp)
         s += "n_entries: {}\n".format(self._reader.n_entries)
         s += "file size: {} {}B\n".format(*get_si_prefix(self._reader.filesize))
+        for k,v in self.metadata.items():
+            s += "{}: {}\n".format(k,v)
         s += "file format version: {}".format(self.version)
-
         return s
 
 
@@ -553,7 +555,6 @@ class RawObjectReaderV0:
     _protocol_v = 0
 
     def __init__(self, file):
-
         self.file = file
         self._scan_file()
         self._timestamp = 0
