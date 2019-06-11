@@ -20,7 +20,6 @@ class CHECFileHeader:
     def __init__(self,unpacker:int,version:int=1, ssdaq_version:str=None):
         self.unpacker = unpacker
         self.ssdaq_version = ssdaq_version or str(sversion.get_version())
-        print(self.ssdaq_version)
         self.version = version
     def pack(self):
         return struct.pack("2HB{}s".format(len(self.ssdaq_version)),
