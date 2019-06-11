@@ -26,7 +26,7 @@ class CHECFileHeader:
                             self.version,
                             self.unpacker,
                             len(self.ssdaq_version),
-                            self.ssdaq_version)
+                            self.ssdaq_version.encode())
     @classmethod
     def unpack(cls,data):
         header = struct.Struct("2HB")
