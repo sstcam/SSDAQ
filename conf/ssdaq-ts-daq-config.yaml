@@ -1,0 +1,119 @@
+ReadoutAssembler:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/ssdaq.log'
+    stderr: '/tmp/ssdaq.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: ReadoutAssembler
+    listen_ip: 0.0.0.0
+    listen_port: 17000
+    relaxed_ip_range: false
+    buffer_length: 1000
+    readout_tw: !!float 5.1e7 #nano seconds
+    buffer_time: !!float 1e9
+    # packet_debug_stream_file: /tmp/ssdaq.debug.log
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9004
+    # Dumper: #name
+    #   class: RawWriter #class
+    #   file_name: 'bindump.dat'
+    # ZMQReadoutPublisherOutbound: #name
+    #   class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+    #   ip: 141.34.29.161
+    #   port: 9999
+    #   mode: outbound
+
+LogReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/logrec.log'
+    stderr: '/tmp/logrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: LogReceiver
+    ip: 0.0.0.0
+    port: 10001
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9001
+
+TriggerReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/triggrec.log'
+    stderr: '/tmp/triggrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: TriggerPacketReceiver
+    ip: 0.0.0.0
+    port: 8307
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9002
+
+TimestampReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/timerec.log'
+    stderr: '/tmp/timerec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: TimestampReceiver
+    ip: 192.168.4.73 # zen11
+    port: 6666
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9003
+#  ZMQReadoutPublisherOutbound: #name
+#    class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+#    ip: 141.34.69.118 
+#    port: 9998
+#    mode: outbound
+
+MonitorReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/monrec.log'
+    stderr: '/tmp/monrec.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: MonitorReceiver
+    ip: 0.0.0.0
+    port: 10002
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9005
+
+TelDataReceiver:
+  Daemon:
+    #redirection of output (should be /dev/null when logging is fully configurable)
+    stdout: '/tmp/teldata.log'
+    stderr: '/tmp/teldata.log'
+    set_taskset: true #Using task set to force kernel not to swap cores
+    core_id: 0 #which cpu core to use with taskset
+  Receiver:
+    class: TelDataReceiver
+    ip: 0.0.0.0
+    port: 10002
+  Publishers: #Listing publishers
+    ZMQReadoutPublisherLocal: #name
+      class: ZMQTCPPublisher #class defined in ssdaq.core.publishers
+      ip: 127.0.0.101
+      port: 9006

@@ -179,6 +179,25 @@ class TimestampWriter(WriterSubscriber):
         )
         print(locals())
 
+class ATimestampWriter(AsyncWriterSubscriber):
+    def __init__(
+        self,
+        file_prefix: str,
+        ip: str,
+        port: int,
+        folder: str = "",
+        file_enumerator: str = None,
+        filesize_lim: int = None,
+        loop=None,
+        name="ATimestampWriter",
+    ):
+        super().__init__(
+            subscriber=AsyncTimestampSubscriber,
+            writer=io.TimestampWriter,
+            file_ext=".prt",
+            **{k: v for k, v in locals().items() if k not in skip}
+        )
+
 
 class TriggerWriter(WriterSubscriber):
     def __init__(
@@ -279,7 +298,6 @@ class ASlowSignalWriter(AsyncWriterSubscriber):
         self.log = sslogger.getChild(name)
 
     def write_tel_data(self, data):
-
         self._writer.write_tel_data(
             ra=data.ra,
             dec=data.dec,
