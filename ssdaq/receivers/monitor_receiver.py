@@ -1,4 +1,3 @@
-import asyncio
 import zmq
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender

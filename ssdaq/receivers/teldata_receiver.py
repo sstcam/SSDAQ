@@ -1,11 +1,9 @@
 import asyncio
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
-from collections import deque
 from ssdaq.data import TelData
 from ssdaq.core.utils import get_utc_timestamp
 import MySQLdb
-from datetime import datetime
 import os
 
 
