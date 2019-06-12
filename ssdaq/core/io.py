@@ -679,7 +679,7 @@ class BaseFileWriter:
         """
         self.file_data_counter = 0
         if self.file_enumerator == "date":
-            suffix = datetime.utcnow().strftime("%Y-%m-%d.%H:%M")
+            suffix = datetime.utcnow().strftime("%Y-%m-%d_%H%M")
         elif self.file_enumerator == "order":
             suffix = "%0.3d" % self.file_counter
         else:

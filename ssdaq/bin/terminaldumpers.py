@@ -278,7 +278,7 @@ def triggerdump():
 
             print("#    Missed: {}".format(missed_counter))
             print("#    Frequency: {} {}Hz".format(*get_si_prefix(1.0 / ((now - last)*1e-9))))
-            print("#    dt: {} s".format(now - last))
+            print("#    dt: {} s".format((now - last)*1e-9))
             print("##################################")
             last = now
             last_uc_ev = trigger.uc_ev
