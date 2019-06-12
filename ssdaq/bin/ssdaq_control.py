@@ -1,10 +1,7 @@
-from ssdaq.receivers import ReadoutAssembler
-from ssdaq.core.publishers import ZMQTCPPublisher
 from ssdaq.utils import daemon
 import ssdaq
 from ssdaq.core import publishers
 from ssdaq import sslogger, subscribers
-from logging.handlers import SocketHandler
 
 from ssdaq import logging as handlers
 import os
@@ -14,49 +11,7 @@ sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 signal_counter = 0
 
 
-class FileWriterDaemonWrapper(daemon.Daemon):
-    def __init__(
-        self, name, writer_cls, stdout="/dev/null", stderr="/dev/null", **kwargs
-    ):
-        # Deamonizing the server
-        daemon.Daemon.__init__(
-            self, "/tmp/{}.pid".format(name), stdout=stdout, stderr=stderr
-        )
-        self.kwargs = kwargs
-        self.writer_cls = writer_cls
 
-    def run(self):
-        from ssdaq.subscribers import SSFileWriter
-        import signal
-        import sys
-
-        data_writer = self.writer_cls(**self.kwargs)
-
-        def signal_handler_fact(data_writer, self):
-            def signal_handler(sig, frame):
-                global signal_counter
-                signal.signal(signal.SIGINT, signal_handler_fact(data_writer, self))
-                signal_counter += 1
-                hard = False
-                if signal_counter > 1:
-                    hard = True
-                # print new line so that the next log message will
-                # have a fresh line to print to
-                if sig == signal.SIGINT:
-                    if signal_counter == 1:
-                        print(
-                            "\nAnother invocation of Ctrl-c will immediately close the file"
-                        )
-                    else:
-                        print()
-                data_writer.close(hard, non_block=True)
-
-            return signal_handler
-
-        s = signal_handler_fact(data_writer, self)
-        signal.signal(signal.SIGHUP, signal_handler_fact(data_writer, self))
-        signal.signal(signal.SIGINT, s)
-        data_writer.start()
 
 
 class FileWriterDaemonWrapper(daemon.Daemon):
@@ -72,10 +27,7 @@ class FileWriterDaemonWrapper(daemon.Daemon):
         self.name = name
 
     def run(self):
-        from ssdaq.subscribers import SSFileWriter
         import signal
-        import sys
-        import asyncio
 
         data_writer = self.writer_cls(name=self.name, **self.kwargs)
         signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
@@ -126,7 +78,6 @@ class RecieverDaemonWrapper(daemon.Daemon):
         self.kwargs = kwargs
         self.set_taskset = set_taskset
         self.core_id = str(core_id)
-        import logging
 
         eval("sslogger.setLevel(logging.%s)" % log_level)
         sslogger.info("Set logging level to {}".format(log_level))
@@ -186,7 +137,7 @@ def cli(ctx):
     """Start, stop and control receiver and writer daemons"""
     ctx.ensure_object(dict)
 
-    from pkg_resources import resource_stream, resource_string, resource_listdir
+    from pkg_resources import resource_stream#, resource_string, resource_listdir
 
     ctx.obj["CONFIG"] = yaml.safe_load(
         resource_stream("ssdaq.resources", "ssdaq-default-config.yaml")
@@ -267,7 +218,6 @@ def dw(ctx, filename_prefix, output_folder, daemon, components, config, ls):
             "Setting same file name prefix for multiple writers does not make sense...."
         )
         exit()
-    started = False
     for compt, comp_config in config.items():
         if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
             writer = getattr(subscribers, comp_config["Writer"]["class"])
@@ -284,7 +234,6 @@ def dw(ctx, filename_prefix, output_folder, daemon, components, config, ls):
                 compt, writer, **comp_config["Daemon"], **comp_config["Writer"]
             )
             writerdaemon.start(daemon)
-            started = True
     # if not started:
 
 
@@ -362,7 +311,6 @@ def dw(ctx, components):
         if cmptlen == 0 or (cmptlen > 0 and foundcmp(compt, components)):
             # for compt in components:
             writer = getattr(subscribers, comp_config["Writer"]["class"])
-            class_ = comp_config["Writer"]["class"]
             del comp_config["Writer"]["class"]
             print("Stopping {}...".format(compt))
             readout_writer = FileWriterDaemonWrapper(
