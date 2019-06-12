@@ -175,7 +175,7 @@ class NominalTriggerPacketV2(TriggerPacket):
         self._trigg_union = trigg_union
 
     def _compute_trigg(self):
-        trigg_phase_number = np.ones(self._trigger_phases.shape,dtype = np.uint16)*(self.trigg_phase)
+        trigg_phase_number = np.ones(self._trigger_phases.shape,dtype = np.uint16)*(128-self.trigg_phase)
 
         self._trigg = (np.bitwise_and(trigg_phase_number,self._trigger_phases)>0).astype(np.uint16)
         return self._trigg
