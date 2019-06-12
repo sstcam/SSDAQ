@@ -1,5 +1,4 @@
 import struct
-from collections import namedtuple
 from ssdaq import sslogger
 from bitarray import bitarray
 import numpy as np
@@ -62,6 +61,7 @@ class TriggerPacket:
     def deserialize(self, data):
         inst = TriggerPacket.unpack(data)
         self.__dict__.update(inst.__dict__)
+
     def _asdict(self):
         return get_attritbues(self)
 
@@ -144,6 +144,7 @@ class BusyTriggerPacket(NominalTriggerPacket):
 
 of = 2
 
+
 @TriggerPacket.register
 class NominalTriggerPacketV2(TriggerPacket):
     _mtype = 0x2 - of
@@ -175,9 +176,13 @@ class NominalTriggerPacketV2(TriggerPacket):
         self._trigg_union = trigg_union
 
     def _compute_trigg(self):
-        trigg_phase_number = np.ones(self._trigger_phases.shape,dtype = np.uint16)*(128-self.trigg_phase)
+        trigg_phase_number = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (
+            128 - self.trigg_phase
+        )
 
-        self._trigg = (np.bitwise_and(trigg_phase_number,self._trigger_phases)>0).astype(np.uint16)
+        self._trigg = (
+            np.bitwise_and(trigg_phase_number, self._trigger_phases) > 0
+        ).astype(np.uint16)
         return self._trigg
 
     @property
@@ -292,5 +297,5 @@ class BusyTriggerPacketV2(NominalTriggerPacketV2):
         super().__init__(
             TACK, trigg_phase, trigg_phases, trigg_union, uc_ev, uc_pps, uc_clock, type_
         )
-        self._busy = False
+        self._busy = True
         self._mtype = BusyTriggerPacketV2._mtype

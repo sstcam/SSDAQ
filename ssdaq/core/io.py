@@ -49,6 +49,7 @@ class RawObjectWriterBase:
     def _register(cls, scls):
         cls._protocols[scls._protocol_v] = scls
         return scls
+
     @property
     def data_counter(self):
         return self._writer.data_counter
@@ -221,16 +222,14 @@ class RawObjectWriterV1:
         """
 
         self._buffer.append(data)
-        self._cbunchindex.append(
-            (binascii.crc32(data), len(data))
-        )
+        self._cbunchindex.append((binascii.crc32(data), len(data)))
         self._cbunchoffset += len(data)
         self.data_counter += 1
         if self._cbunchoffset > self.bunchsize:
             self.flush()
 
     def flush(self):
-        if len(self._buffer)<1:
+        if len(self._buffer) < 1:
             return
         bunch_start_fp = self._fp
         # writing the data bunch
@@ -396,8 +395,8 @@ class RawObjectReaderBase:
         s += "timestamp: {}\n".format(self.timestamp)
         s += "n_entries: {}\n".format(self._reader.n_entries)
         s += "file size: {} {}B\n".format(*get_si_prefix(self._reader.filesize))
-        for k,v in self.metadata.items():
-            s += "{}: {}\n".format(k,v)
+        for k, v in self.metadata.items():
+            s += "{}: {}\n".format(k, v)
         s += "file format version: {}".format(self.version)
         return s
 

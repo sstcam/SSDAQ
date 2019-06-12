@@ -5,8 +5,7 @@ import argparse
 import signal
 from datetime import datetime
 from blessed import Terminal
-from ssdaq import subscribers, sslogger
-import logging
+from ssdaq import subscribers
 from ssdaq.core.utils import get_si_prefix
 
 

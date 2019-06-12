@@ -3,6 +3,7 @@ import asyncio
 import sys
 import inspect
 
+
 def get_si_prefix(value: float) -> tuple:
     prefixes = [
         "a",
@@ -34,8 +35,9 @@ def get_si_prefix(value: float) -> tuple:
     #     ind=14
     return s, prefixes[ind]
 
+
 def get_attritbues(obj_):
-     """Summary
+    """Summary
 
      Args:
          obj_ (TYPE): Description
@@ -43,14 +45,17 @@ def get_attritbues(obj_):
      Returns:
          TYPE: Description
      """
-     attributes = {}
-     for attr in dir(obj_):
-         if attr[0]=='_' or attr[:2] =='__' :
-             continue
-         if inspect.ismethod(getattr(obj_,attr)) or inspect.isfunction(getattr(obj_,attr)) :
-             continue
-         attributes[attr] = (getattr(obj_,attr))
-     return attributes
+    attributes = {}
+    for attr in dir(obj_):
+        if attr[0] == "_" or attr[:2] == "__":
+            continue
+        if inspect.ismethod(getattr(obj_, attr)) or inspect.isfunction(
+            getattr(obj_, attr)
+        ):
+            continue
+        attributes[attr] = getattr(obj_, attr)
+    return attributes
+
 
 def get_utc_timestamp():
     from datetime import datetime

@@ -267,22 +267,19 @@ class DynamicTSPlotter:
         self.win = pg.GraphicsWindow(size=size)
         self.win.setWindowTitle("Trigger and timestamp viewer")
         # data
-        self.ro_trig = 0 # readout trigger counter
-        self.ro_diff = 0 # test
-        self.ro_lts = ssdaq.data.TriggerMessage() # last readout timestamp
-        self.ro_cts = ssdaq.data.TriggerMessage() # current readout timestamp
+        self.ro_trig = 0  # readout trigger counter
+        self.ro_diff = 0  # test
+        self.ro_lts = ssdaq.data.TriggerMessage()  # last readout timestamp
+        self.ro_cts = ssdaq.data.TriggerMessage()  # current readout timestamp
         self.data = defaultdict(list)  # {'hv_current':list(),'hv_voltage':list()}
-        #self.data = list()
+        # self.data = list()
         self.time = list()
         self.plts = {}
         self.curve_names = list()
         self.plot_time_window = 10
         # self.win.addItem(pg.TextItem(text='HEJHEJHEJ', color=(200, 200, 200), html=None, anchor=(0, 0), border=None, fill=None, angle=0, rotateAxis=None),row=1 )
         self._add_plot(
-            "Readout Trigger",
-            ("Frequency", "Hz"),
-            ("Time", "min"),
-            ["readout trigger"],
+            "Readout Trigger", ("Frequency", "Hz"), ("Time", "min"), ["readout trigger"]
         )
         self._add_plot(
             "(fake) Busy Trigger",
@@ -301,7 +298,7 @@ class DynamicTSPlotter:
             "Detected Errors",
             ("", ""),
             ("Time", "min"),
-            ["invalid timestamp","busy counter error", "busy timestamp smaller"],
+            ["invalid timestamp", "busy counter error", "busy timestamp smaller"],
         )
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.updateplots)
@@ -315,31 +312,32 @@ class DynamicTSPlotter:
         self.ro_cts = ts
         if not self.isValidTS(self.ro_lts):
             self.ro_lts = ts
-        #self.ro_diff = self.ro_cts.event_counter - self.ro_lts.event_counter
+        # self.ro_diff = self.ro_cts.event_counter - self.ro_lts.event_counter
 
-    def isValidTS(self,ts):
-        if ts.time.HasField('seconds') and ts.time.HasField('pico_seconds'):
+    def isValidTS(self, ts):
+        if ts.time.HasField("seconds") and ts.time.HasField("pico_seconds"):
             return True
         else:
             return False
 
-    def get_deltat_in_ps(self,ts_last,ts_current):
-        tlast = (ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds)
-        tcurr = (ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds)
-        return (tcurr - tlast)
+    def get_deltat_in_ps(self, ts_last, ts_current):
+        tlast = ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds
+        tcurr = ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds
+        return tcurr - tlast
 
     def get_frequency_in_Hz(self):
-        if not ( self.ro_trig or self.isValidTS(self.ro_lts) or self.isValidTS(self.ro_cts) ):
+        if not (
+            self.ro_trig or self.isValidTS(self.ro_lts) or self.isValidTS(self.ro_cts)
+        ):
             return
-        delt = self.get_deltat_in_ps( self.ro_lts, self.ro_cts )*1e-12
-        trig = self.ro_trig #self.ro_diff
+        delt = self.get_deltat_in_ps(self.ro_lts, self.ro_cts) * 1e-12
+        trig = self.ro_trig  # self.ro_diff
         if delt <= 1e-12:
             return
         else:
             self.ro_trig = 0
             self.ro_lts = self.ro_cts
-            return trig/delt
-
+            return trig / delt
 
     def _add_plot(self, title, labely, labelx, curves):
         self.curve_names += curves
@@ -371,23 +369,24 @@ class DynamicTSPlotter:
                 tmsg = self.ts_listener.get_data(timeout=0.1)
                 if tmsg is not None:
                     if not self.isValidTS(tmsg):
-                        timestamp_error +=1
+                        timestamp_error += 1
 
-                    if tmsg.type == 1: # readout triggers only
+                    if tmsg.type == 1:  # readout triggers only
                         self.add_timestamp(tmsg)
-                    #print(tmsg.event_counter,'=?',self.ro_trig,'=?',self.ro_diff)
+                    # print(tmsg.event_counter,'=?',self.ro_trig,'=?',self.ro_diff)
             except:
                 ntries += 1
                 break
 
         ro_frequency = self.get_frequency_in_Hz()
-        print('freq =',ro_frequency)
+        print("freq =", ro_frequency)
 
         if ro_frequency is not None:
-            self.data["readout trigger"].append(ro_frequency) #= np.array(readout_freq)
-            self.data["busy trigger"].append(ro_frequency) #= np.array(readout_freq)
+            self.data["readout trigger"].append(
+                ro_frequency
+            )  # = np.array(readout_freq)
+            self.data["busy trigger"].append(ro_frequency)  # = np.array(readout_freq)
             self.time.append(datetime.now())
-
 
     def run(self):
         self.app.exec_()
@@ -441,7 +440,7 @@ class DynamicTRPlotter:
         self._interval = int(sampleinterval * 1000)
         self.app = QtGui.QApplication([])
         self.win = pg.GraphicsWindow()
-        self.win.setWindowTitle("Slow signal viewer")
+        self.win.setWindowTitle("Triggerpattern viewer")
         # data
         self.data = defaultdict(list)  # {'hv_current':list(),'hv_voltage':list()}
         self.time = list()
@@ -453,14 +452,14 @@ class DynamicTRPlotter:
             "Trigger rate",
             ("Rate Hz", ""),
             ("Time", "min"),
-            ["Nominal triggers", "Busy triggers"],
+            ["Nominal triggers"],  # , "Busy triggers"],
         )
-        self._add_plot(
-            "Slow signal amplitude",
-            ("Amplitude", "mV"),
-            ("Time", "min"),
-            ["total amplitude", "max amplitude X 10"],
-        )
+        # self._add_plot(
+        #     "Slow signal amplitude",
+        #     ("Amplitude", "mV"),
+        #     ("Time", "min"),
+        #     ["total amplitude", "max amplitude X 10"],
+        # )
         self.win.nextRow()
         self.img = pg.ImageItem(levels=(0, 400))
         self.p = self.win.addPlot()
@@ -468,20 +467,30 @@ class DynamicTRPlotter:
         self.c = CameraConfiguration("1.1.0")
         self.m = self.c.GetMapping()
         from CHECLabPy.plotting.camera import CameraImage, CameraImageImshow
-        from CHECLabPy.utils.mapping import get_clp_mapping_from_tc_mapping, \
-            get_superpixel_mapping, get_tm_mapping
-        self.sp_mapping = get_superpixel_mapping(get_clp_mapping_from_tc_mapping(self.m))
+        from CHECLabPy.utils.mapping import (
+            get_clp_mapping_from_tc_mapping,
+            get_superpixel_mapping,
+            get_tm_mapping,
+        )
+
+        self.sp_mapping = get_superpixel_mapping(
+            get_clp_mapping_from_tc_mapping(self.m)
+        )
 
         self.xpix = np.array(self.sp_mapping.xpix)
         self.ypix = np.array(self.sp_mapping.ypix)
         self.xmap = np.array(self.sp_mapping.row)
         self.ymap = np.array(self.sp_mapping.col)
+        print(self.xmap.shape, self.ymap.shape)
         self.map = np.zeros((24, 24), dtype=np.uint64)
         for i in range(512):
             self.map[self.xmap[i], self.ymap[i]] = i
 
         self.map = self.map.flatten()
-        from ssdaq.data._dataimpl.trigger_format import get_SP2bptrigg_mapping,get_bptrigg2SP_mapping
+        from ssdaq.data._dataimpl.trigger_format import (
+            get_SP2bptrigg_mapping,
+            get_bptrigg2SP_mapping,
+        )
 
         self.bptmap = get_bptrigg2SP_mapping()
         self.timer = QtCore.QTimer()
@@ -523,7 +532,7 @@ class DynamicTRPlotter:
         while ntries < 10:
             try:
                 ev = self.tr_listener.get_data(timeout=0.1)
-                evs.append(ev._get_asic_mapped())
+                evs.append(ev)
             except:
                 ntries += 1
                 break
@@ -538,7 +547,9 @@ class DynamicTRPlotter:
         imgdata[np.isnan(imgdata)] = 0
         self.img.setImage(imgdata.T, levels=(0, 1))
         trig0 = evs[0]
-        self.data["Nominal triggers"].append(len(evs)/((trigg.TACK-trig0.TACK)*1e-9))
+        self.data["Nominal triggers"].append(
+            len(evs) / ((trigg.TACK - trig0.TACK) * 1e-9)
+        )
         # self.data["max amplitude X 10"].append(np.nanmax(data) * 10)
         # self.data["current nTMs"].append(nparttms)
         # n = np.min([10, len(self.data["current nTMs"])])
@@ -591,6 +602,8 @@ def triggerpatternviewer():
 
     plt = DynamicTRPlotter(ip=args.sub_ip, port=args.sub_port)
     plt.run()
+
+
 if __name__ == "__main__":
     slowsignalviewer()
     timestampviewer()

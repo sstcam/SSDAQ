@@ -42,9 +42,7 @@ class AsyncSSReadoutSubscriber(AsyncSubscriber):
 
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
-        super().__init__(
-            ip=ip, port=port, logger=logger, unpack=TriggerPacket.unpack
-        )
+        super().__init__(ip=ip, port=port, logger=logger, unpack=TriggerPacket.unpack)
 
 
 class AsyncTriggerSubscriber(AsyncSubscriber):
@@ -178,6 +176,7 @@ class TimestampWriter(WriterSubscriber):
             **{k: v for k, v in locals().items() if k not in skip}
         )
         print(locals())
+
 
 class ATimestampWriter(AsyncWriterSubscriber):
     def __init__(

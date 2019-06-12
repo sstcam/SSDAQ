@@ -10,6 +10,7 @@ from datetime import datetime
 import time
 from statistics import mean
 
+
 def slowsignaldump():
 
     parser = argparse.ArgumentParser(
@@ -85,43 +86,47 @@ def slowsignaldump():
 
 
 def timestampdump():
-
     def isValidTS(ts):
-        if ts.time.HasField('seconds') and ts.time.HasField('pico_seconds'):
+        if ts.time.HasField("seconds") and ts.time.HasField("pico_seconds"):
             return True
         else:
             return False
 
-    def isSmaller(ts_last,ts_current):
-        if (ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds) <= (ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds):
+    def isSmaller(ts_last, ts_current):
+        if (ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds) <= (
+            ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds
+        ):
             return True
         else:
             return False
 
-    def get_deltat_in_ps(ts_last,ts_current):
-        tlast = (ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds)
-        tcurr = (ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds)
-        return (tcurr - tlast)
+    def get_deltat_in_ps(ts_last, ts_current):
+        tlast = ts_last.time.seconds * 1e12 + ts_last.time.pico_seconds
+        tcurr = ts_current.time.seconds * 1e12 + ts_current.time.pico_seconds
+        return tcurr - tlast
 
-    #myStats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
-    def add_timestamp(ts,myStats):
+    # myStats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
+    def add_timestamp(ts, myStats):
         myStats["fTrigger"] += 1
         myStats["fCurrent_ts"] = ts
         if not isValidTS(myStats["fLast_ts"]):
             myStats["fLast_ts"] = ts
 
     def get_frequency_in_Hz(myStats):
-        if not (myStats["fTrigger"] or isValidTS(myStats["fLast_ts"]) or isValidTS(myStats["fCurrent_ts"])):
+        if not (
+            myStats["fTrigger"]
+            or isValidTS(myStats["fLast_ts"])
+            or isValidTS(myStats["fCurrent_ts"])
+        ):
             return
-        delt = get_deltat_in_ps(myStats["fLast_ts"],myStats["fCurrent_ts"])*1e-12
+        delt = get_deltat_in_ps(myStats["fLast_ts"], myStats["fCurrent_ts"]) * 1e-12
         trig = myStats["fTrigger"]
         myStats["fTrigger"] = 0
         myStats["fLast_ts"] = myStats["fCurrent_ts"]
         if delt <= 1e-12:
             return
         else:
-            return trig/delt
-
+            return trig / delt
 
     parser = argparse.ArgumentParser(
         description="Subcribe to a published timestamp stream.",
@@ -141,13 +146,21 @@ def timestampdump():
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
 
-    readout_stats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
+    readout_stats = {
+        "fTrigger": 0,
+        "fCurrent_ts": data.TriggerMessage(),
+        "fLast_ts": data.TriggerMessage(),
+    }
     readout_counter_missed = 0
     readout_counter_last = 0
     readout_ts_smaller = 0
     readout_freq = []
 
-    busy_stats = {"fTrigger":0, "fCurrent_ts":data.TriggerMessage(), "fLast_ts":data.TriggerMessage()}
+    busy_stats = {
+        "fTrigger": 0,
+        "fCurrent_ts": data.TriggerMessage(),
+        "fLast_ts": data.TriggerMessage(),
+    }
     busy_counter_missed = 0
     busy_counter_last = 0
     busy_ts_smaller = 0
@@ -162,49 +175,63 @@ def timestampdump():
             break
 
         if tmsg is not None:
-            #print(tmsg.type,tmsg.event_counter)
-            #print(tmsg.time.seconds, tmsg.time.pico_seconds)
+            # print(tmsg.type,tmsg.event_counter)
+            # print(tmsg.time.seconds, tmsg.time.pico_seconds)
 
-            if tmsg.type == 1: # readout triggers only
-                add_timestamp(tmsg,readout_stats)
+            if tmsg.type == 1:  # readout triggers only
+                add_timestamp(tmsg, readout_stats)
 
                 # check if events count up properly
                 current_readout_counter = tmsg.event_counter
-                if readout_counter_last != 0 and readout_counter_last + 1 != current_readout_counter:
+                if (
+                    readout_counter_last != 0
+                    and readout_counter_last + 1 != current_readout_counter
+                ):
                     readout_counter_missed += 1
-                    print('# of missed readout events',readout_counter_missed)
+                    print("# of missed readout events", readout_counter_missed)
                 readout_counter_last = current_readout_counter
 
                 # check for timing issues within the time stamps
-                if isSmaller(readout_stats["fLast_ts"],readout_stats["fCurrent_ts"]):
+                if isSmaller(readout_stats["fLast_ts"], readout_stats["fCurrent_ts"]):
                     readout_ts_smaller += 1
-                    print('# of readout timestamps smaller',readout_ts_smaller)
+                    print("# of readout timestamps smaller", readout_ts_smaller)
 
                 # try something useful
-                updatetime = 1 # how other do we want to calculate the frequency
-                if (get_deltat_in_ps(readout_stats["fLast_ts"], readout_stats["fCurrent_ts"])*1e12) > updatetime:
+                updatetime = 1  # how other do we want to calculate the frequency
+                if (
+                    get_deltat_in_ps(
+                        readout_stats["fLast_ts"], readout_stats["fCurrent_ts"]
+                    )
+                    * 1e12
+                ) > updatetime:
                     readout_frequency = get_frequency_in_Hz(readout_stats)
                     readout_freq.append(readout_frequency)
-                    print('> Readout Frequency [Hz] =',readout_frequency)
+                    print("> Readout Frequency [Hz] =", readout_frequency)
 
-            if tmsg.type == 2: # busy triggers (same logic as readout stuff)
-                add_timestamp(tmsg,busy_stats)
+            if tmsg.type == 2:  # busy triggers (same logic as readout stuff)
+                add_timestamp(tmsg, busy_stats)
 
                 current_busy_counter = tmsg.event_counter
-                if busy_counter_last != 0 and busy_counter_last + 1 != current_busy_counter:
+                if (
+                    busy_counter_last != 0
+                    and busy_counter_last + 1 != current_busy_counter
+                ):
                     busy_counter_missed += 1
-                    print('# of missed busy events',busy_counter_missed)
+                    print("# of missed busy events", busy_counter_missed)
                 busy_counter_last = current_busy_counter
 
-                if isSmaller(busy_stats["fLast_ts"],busy_stats["fCurrent_ts"]):
+                if isSmaller(busy_stats["fLast_ts"], busy_stats["fCurrent_ts"]):
                     busy_ts_smaller += 1
-                    print('# of busy timestamps smaller',busy_ts_smaller)
+                    print("# of busy timestamps smaller", busy_ts_smaller)
 
                 updatetime = 1
-                if (get_deltat_in_ps(busy_stats["fLast_ts"], busy_stats["fCurrent_ts"])*1e12) > updatetime:
+                if (
+                    get_deltat_in_ps(busy_stats["fLast_ts"], busy_stats["fCurrent_ts"])
+                    * 1e12
+                ) > updatetime:
                     busy_frequency = get_frequency_in_Hz(busy_stats)
                     busy_freq.append(busy_frequency)
-                    print('> Busy Frequency [Hz] =',busy_frequency)
+                    print("> Busy Frequency [Hz] =", busy_frequency)
 
     """
     try:
@@ -221,7 +248,10 @@ def timestampdump():
     sub.close()
     sub.join()
 
+
 from ssdaq.core.utils import get_si_prefix
+
+
 def triggerdump():
 
     parser = argparse.ArgumentParser(
@@ -260,9 +290,9 @@ def triggerdump():
             print("#Data: {}".format(trigger.__class__.__name__))
             for name, value in trigger._asdict().items():
 
-                if name == 'trigg_union': #or name == 'trigg'
+                if name == "trigg_union":  # or name == 'trigg'
                     print("#    {}: {}".format(name, np.where(value)[0]))
-                elif name == 'trigg':
+                elif name == "trigg":
                     # tr = trigger._trigger_phases
                     # for i, t in enumerate(tr):
                     #     print(i,hex(t))
@@ -271,14 +301,17 @@ def triggerdump():
                     print("#    {}: {}".format(name, np.where(value)[0]))
                     # print("#    {}: {}".format(name, value))
                 elif name == "trigg_phase":
-                    print("#    {}: {}".format(name, 7-int(np.log2(value))))
+                    print("#    {}: {}".format(name, 7 - int(np.log2(value))))
                 else:
                     print("#    {}: {}".format(name, value))
 
-
             print("#    Missed: {}".format(missed_counter))
-            print("#    Frequency: {} {}Hz".format(*get_si_prefix(1.0 / ((now - last)*1e-9))))
-            print("#    dt: {} s".format((now - last)*1e-9))
+            print(
+                "#    Frequency: {} {}Hz".format(
+                    *get_si_prefix(1.0 / ((now - last) * 1e-9))
+                )
+            )
+            print("#    dt: {} s".format((now - last) * 1e-9))
             print("##################################")
             last = now
             last_uc_ev = trigger.uc_ev

@@ -3,7 +3,6 @@ import zmq
 import zmq.asyncio
 from queue import Queue
 import logging
-from .utils import get_si_prefix
 from ssdaq import sslogger
 import asyncio
 from .io import BaseFileWriter
