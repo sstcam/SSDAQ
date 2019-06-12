@@ -297,5 +297,5 @@ class BusyTriggerPacketV2(NominalTriggerPacketV2):
         super().__init__(
             TACK, trigg_phase, trigg_phases, trigg_union, uc_ev, uc_pps, uc_clock, type_
         )
-        self._busy = False
+        self._busy = True
         self._mtype = BusyTriggerPacketV2._mtype
