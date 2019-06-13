@@ -7,7 +7,7 @@ from datetime import datetime
 from blessed import Terminal
 from ssdaq import subscribers
 from ssdaq.core.utils import get_si_prefix
-
+from ssdaq import sslogger
 
 class ReceiverStatusDash:
     def __init__(self, terminal, name, loc):
