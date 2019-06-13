@@ -151,6 +151,7 @@ of = 2
 class NominalTriggerPacketV2(TriggerPacket):
     _mtype = 0x2 - of
     _head_form = struct.Struct("<QB512H")
+    _head_form2 = struct.Struct("<QB")
     _tail_form = struct.Struct("<3IH")
 
     def __init__(
@@ -231,16 +232,20 @@ class NominalTriggerPacketV2(TriggerPacket):
 
     @classmethod
     def unpack(cls, raw_packet: bytearray):
-        data_part1 = NominalTriggerPacketV2._head_form.unpack(
-            raw_packet[: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size]
+        data_part1 = NominalTriggerPacketV2._head_form2.unpack(
+            # raw_packet[: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size]
+            raw_packet[:NominalTriggerPacketV2._head_form2.size]
         )  # int.from_bytes(raw_packet[:8], "little")
         tack, phase = data_part1[0], data_part1[1]
+        trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV2._head_form2.size: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size],dtype=np.uint16)
+        # trigg_phases = np.array(data_part1[2:], dtype=np.uint16)
 
+        # print(trigg_phases.shape)
         tbits = bitarray(0, endian="little")
         tbits.frombytes(
             bytes(
                 raw_packet[
-                    NominalTriggerPacketV2._head_form.size : -NominalTriggerPacketV2._tail_form.size
+                    NominalTriggerPacketV2._head_form.size: -NominalTriggerPacketV2._tail_form.size
                 ]
             )
         )
@@ -248,8 +253,8 @@ class NominalTriggerPacketV2(TriggerPacket):
             raw_packet[-NominalTriggerPacketV2._tail_form.size :]
         )
         return cls(
-            *[tack, phase, np.array(data_part1[2:], dtype=np.uint16), tbits]
-            + list(tail[:-1])
+            *[tack, phase,trigg_phases , tbits]
+            + list(tail)
         )
 
     def pack(self):
