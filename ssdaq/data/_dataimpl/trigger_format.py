@@ -56,7 +56,9 @@ class TriggerPacket:
                 % (magic_mark, 0xCAFE)
             )
             return None
-        return TriggerPacket._message_types[mtype].unpack(data[4:])
+        instance =TriggerPacket._message_types[mtype].unpack(data[4:])
+        instance._raw_packet = data
+        return instance
 
     def deserialize(self, data):
         inst = TriggerPacket.unpack(data)
@@ -161,6 +163,7 @@ class NominalTriggerPacketV2(TriggerPacket):
         uc_pps: int = 1,
         uc_clock: int = 1,
         type_: int = 0,
+
     ):
         super().__init__()
         self._TACK = TACK
@@ -174,7 +177,6 @@ class NominalTriggerPacketV2(TriggerPacket):
         self._trigger_phases = np.array(trigg_phases, dtype=np.uint16)
         self._trigg = None
         self._trigg_union = trigg_union
-
     def _compute_trigg(self):
         trigg_phase_number = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (
             128 - self.trigg_phase

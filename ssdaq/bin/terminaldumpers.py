@@ -258,10 +258,19 @@ def triggerdump():
         description="Subcribe to a published trigger packet stream.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+
     cargs.subport(parser, default=9002)
     cargs.subaddr(parser)
     cargs.verbosity(parser)
     cargs.version(parser)
+    parser.add_argument('-r,--raw',
+                        dest = 'raw',
+                        action='store_true',
+                        help="if set then raw payloads are shown")
+    parser.add_argument('-p,--payload',
+                        dest = 'payload',
+                        action='store_false',
+                        help="if set no deserialized payloads are shown")
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
@@ -283,38 +292,43 @@ def triggerdump():
             break
 
         if trigger is not None:
-            if last_uc_ev != 0 and last_uc_ev + 1 != trigger.uc_ev:
-                missed_counter += 1
-            now = trigger.TACK
-            print("##################################")
-            print("#Data: {}".format(trigger.__class__.__name__))
-            for name, value in trigger._asdict().items():
+            if args.raw:
+                print("###############RAW################")
+                print(trigger._raw_packet)
+                print("###############RAW################")
+            if args.payload:
+                if last_uc_ev != 0 and last_uc_ev + 1 != trigger.uc_ev:
+                    missed_counter += 1
+                now = trigger.TACK
+                print("##################################")
+                print("#Data: {}".format(trigger.__class__.__name__))
+                for name, value in trigger._asdict().items():
 
-                if name == "trigg_union":  # or name == 'trigg'
-                    print("#    {}: {}".format(name, np.where(value)[0]))
-                elif name == "trigg":
-                    # tr = trigger._trigger_phases
-                    # for i, t in enumerate(tr):
-                    #     print(i,hex(t))
-                    # print("#    {}: {}".format(name, tr[tr>0]))
-                    # print("#    {}: {}".format(name, np.where(tr>0)[0]))
-                    print("#    {}: {}".format(name, np.where(value)[0]))
-                    # print("#    {}: {}".format(name, value))
-                elif name == "trigg_phase":
-                    print("#    {}: {}".format(name, 7 - int(np.log2(value))))
-                else:
-                    print("#    {}: {}".format(name, value))
+                    if name == "trigg_union":  # or name == 'trigg'
+                        print("#    {}: {}".format(name, np.where(value)[0]))
+                    elif name == "trigg":
+                        # tr = trigger._trigger_phases
+                        # for i, t in enumerate(tr):
+                        #     print(i,hex(t))
+                        # print("#    {}: {}".format(name, tr[tr>0]))
+                        # print("#    {}: {}".format(name, np.where(tr>0)[0]))
+                        print("#    {}: {}".format(name, np.where(value)[0]))
+                        # print("#    {}: {}".format(name, value))
+                    elif name == "trigg_phase":
+                        print("#    {}: {}".format(name, 7 - int(np.log2(value))))
+                    else:
+                        print("#    {}: {}".format(name, value))
 
-            print("#    Missed: {}".format(missed_counter))
-            print(
-                "#    Frequency: {} {}Hz".format(
-                    *get_si_prefix(1.0 / ((now - last) * 1e-9))
+                print("#    Missed: {}".format(missed_counter))
+                print(
+                    "#    Frequency: {} {}Hz".format(
+                        *get_si_prefix(1.0 / ((now - last) * 1e-9))
+                    )
                 )
-            )
-            print("#    dt: {} s".format((now - last) * 1e-9))
-            print("##################################")
-            last = now
-            last_uc_ev = trigger.uc_ev
+                print("#    dt: {} s".format((now - last) * 1e-9))
+                print("##################################")
+                last = now
+                last_uc_ev = trigger.uc_ev
     sub.close()
     sub.join()
 
