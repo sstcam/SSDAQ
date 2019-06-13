@@ -6,6 +6,7 @@ from ssdaq import sslogger, subscribers
 from ssdaq import logging as handlers
 import os
 from pathlib import Path
+import logging
 
 sslogger.addHandler(handlers.ChecSocketLogHandler("127.0.0.1", 10001))
 signal_counter = 0
