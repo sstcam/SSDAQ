@@ -183,7 +183,6 @@ class DynamicPlotter:
     def get_data(self):
         evs = []
         ntries = 0
-        self.lastframeindicator.setText("time since last received frame: {} ".format(datetime.now()-self.lastframe))
         self.counter +=1
         while ntries < 10:
             try:
@@ -238,6 +237,7 @@ class DynamicPlotter:
         else:
             stat = ('red','disconnected')
         self.gotdataindicator.setText('<font color=\"{}\">{}</font>'.format(*stat))
+        self.lastframeindicator.setText("time since last received frame: {} ".format(datetime.now()-self.lastframe))
 
         time = list()
         now = datetime.now()
@@ -466,6 +466,20 @@ class DynamicTRPlotter:
         self.curve_names = list()
         self.plot_time_window = 10
         # self.win.addItem(pg.TextItem(text='HEJHEJHEJ', color=(200, 200, 200), html=None, anchor=(0, 0), border=None, fill=None, angle=0, rotateAxis=None),row=1 )
+        self.lastframeindicator = pg.LabelItem(text='')
+        self.lastframe = datetime.now()
+        self.win.addItem(self.lastframeindicator)
+        self.gotdataindicator = pg.LabelItem(text='<font color=\"{}\">{}</font>'.format('green','connected'))
+        self.win.addItem(self.gotdataindicator)
+        self.win.nextRow()
+        self.countersindicator = pg.LabelItem(text='')
+        self.win.addItem(self.countersindicator)
+        self.win.nextRow()
+        self.last_uc_ev = 0
+        self.missed_counter = 0
+        self.readout_counter = 0
+
+
 
         self._add_plot(
             "Trigger rate",
@@ -546,20 +560,32 @@ class DynamicTRPlotter:
         # self.plts[title][2][i].setClickable()
 
     def get_data(self):
-        evs = []
+        trs = []
         ntries = 0
         while ntries < 10:
             try:
-                ev = self.tr_listener.get_data(timeout=0.1)
-                evs.append(ev)
+                t = self.tr_listener.get_data(timeout=0.1)
+                trs.append(t)
+                if t.uc_ev == 0 or t.uc_ev<self.last_uc_ev:
+                    self.missed_counter = 0
+                    self.readout_counter = 0
+                    self.last_uc_ev = 0
+                if self.last_uc_ev != 0 and self.last_uc_ev + 1 != t.uc_ev:
+                    self.missed_counter += t.uc_ev-self.last_uc_ev-1
+                self.readout_counter +=1
+                self.last_uc_ev = t.uc_ev
+
             except:
                 ntries += 1
                 break
-        if len(evs) == 0:
+        if len(trs) == 0:
             return
         else:
-            trigg = evs[-1]
-        imgdata = np.zeros((48, 48))
+            trigg = trs[-1]
+
+
+        self.lastframe = datetime.now()
+        imgdata = np.zeros((24, 24))
 
         imgdata[self.xmap, self.ymap] = trigg.trigg_union[self.bptmap]
 
@@ -584,7 +610,16 @@ class DynamicTRPlotter:
             plot[2][i].setData(time, self.data[plot[1][i]][::-1], fillLevel=0.5)
 
     def updateplots(self):
+        self.gotdata = False
         self.get_data()
+        self.countersindicator.setText("Readout Triggers: {}, Lost packets: {}".format(self.readout_counter,self.missed_counter))
+
+        if self.gotdata:
+            stat = ('green','connected')
+        else:
+            stat = ('red','disconnected')
+        self.gotdataindicator.setText('<font color=\"{}\">{}</font>'.format(*stat))
+        self.lastframeindicator.setText("time since last received frame: {} ".format(datetime.now()-self.lastframe))
         time = list()
         now = datetime.now()
         for t in self.time:
