@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
@@ -66,6 +65,13 @@ class DynamicPlotter:
         self.plts = {}
         self.curve_names = list()
         self.plot_time_window = 10
+        self.lastframeindicator = pg.LabelItem(text='')
+        self.lastframe = datetime.now()
+        self.win.addItem(self.lastframeindicator)
+        self.gotdataindicator = pg.LabelItem(text='<font color=\"{}\">{}</font>'.format('green','connected'))
+        self.win.addItem(self.gotdataindicator)
+        self.counter = 0
+        self.win.nextRow()
         # self.win.addItem(pg.TextItem(text='HEJHEJHEJ', color=(200, 200, 200), html=None, anchor=(0, 0), border=None, fill=None, angle=0, rotateAxis=None),row=1 )
         self._add_plot(
             "TMs per readout",
@@ -177,6 +183,8 @@ class DynamicPlotter:
     def get_data(self):
         evs = []
         ntries = 0
+        self.lastframeindicator.setText("time since last received frame: {} ".format(datetime.now()-self.lastframe))
+        self.counter +=1
         while ntries < 10:
             try:
                 ev = self.ss_listener.get_data(timeout=0.1)
@@ -188,6 +196,8 @@ class DynamicPlotter:
             return
         else:
             data = evs[-1]
+        self.gotdata = True
+        self.lastframe = datetime.now()
         imgdata = np.zeros((48, 48))
         m = ~np.isnan(data)
         parttms = set(np.where(m)[0])
@@ -220,7 +230,15 @@ class DynamicPlotter:
             plot[2][i].setData(time, self.data[plot[1][i]][::-1], fillLevel=0.5)
 
     def updateplots(self):
+        self.gotdata = False
         self.get_data()
+
+        if self.gotdata:
+            stat = ('green','connected')
+        else:
+            stat = ('red','disconnected')
+        self.gotdataindicator.setText('<font color=\"{}\">{}</font>'.format(*stat))
+
         time = list()
         now = datetime.now()
         for t in self.time:
@@ -448,6 +466,7 @@ class DynamicTRPlotter:
         self.curve_names = list()
         self.plot_time_window = 10
         # self.win.addItem(pg.TextItem(text='HEJHEJHEJ', color=(200, 200, 200), html=None, anchor=(0, 0), border=None, fill=None, angle=0, rotateAxis=None),row=1 )
+
         self._add_plot(
             "Trigger rate",
             ("Rate Hz", ""),
