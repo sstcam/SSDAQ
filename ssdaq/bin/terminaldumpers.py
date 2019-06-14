@@ -304,16 +304,8 @@ def triggerdump():
                 print("#Data: {}".format(trigger.__class__.__name__))
                 for name, value in trigger._asdict().items():
 
-                    if name == "trigg_union":  # or name == 'trigg'
+                    if name == "trigg_union" or name == 'trigg':
                         print("#    {}: {}".format(name, np.where(value)[0]))
-                    elif name == "trigg":
-                        # tr = trigger._trigger_phases
-                        # for i, t in enumerate(tr):
-                        #     print(i,hex(t))
-                        # print("#    {}: {}".format(name, tr[tr>0]))
-                        # print("#    {}: {}".format(name, np.where(tr>0)[0]))
-                        print("#    {}: {}".format(name, np.where(value)[0]))
-                        # print("#    {}: {}".format(name, value))
                     elif name == "trigg_phase":
                         print("#    {}: {}".format(name, int(np.log2(value))))
                     else:
