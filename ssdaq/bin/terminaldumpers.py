@@ -315,7 +315,7 @@ def triggerdump():
                         print("#    {}: {}".format(name, np.where(value)[0]))
                         # print("#    {}: {}".format(name, value))
                     elif name == "trigg_phase":
-                        print("#    {}: {}".format(name, 7 - int(np.log2(value))))
+                        print("#    {}: {}".format(name, int(np.log2(value))))
                     else:
                         print("#    {}: {}".format(name, value))
 

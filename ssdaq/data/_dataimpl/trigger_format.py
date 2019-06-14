@@ -153,7 +153,8 @@ class NominalTriggerPacketV2(TriggerPacket):
     _head_form = struct.Struct("<QB512H")
     _head_form2 = struct.Struct("<QB")
     _tail_form = struct.Struct("<3IH")
-
+    #used for reversing the bits of the phase byte
+    _reverse_bits = dict([(2**i,2**(7-i)) for i in range(7,-1,-1)])
     def __init__(
         self,
         TACK: int = 0,
@@ -178,14 +179,14 @@ class NominalTriggerPacketV2(TriggerPacket):
         self._trigger_phases = np.array(trigg_phases, dtype=np.uint16)
         self._trigg = None
         self._trigg_union = trigg_union
+
     def _compute_trigg(self):
-        trigg_phase_number = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (
-            128 - self.trigg_phase
-        )
+        trigg_phase_array = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (self.trigg_phase)
 
         self._trigg = (
-            np.bitwise_and(trigg_phase_number, self._trigger_phases) > 0
+            np.bitwise_and(trigg_phase_array, self._trigger_phases) > 0
         ).astype(np.uint16)
+
         return self._trigg
 
     @property
@@ -233,14 +234,14 @@ class NominalTriggerPacketV2(TriggerPacket):
     @classmethod
     def unpack(cls, raw_packet: bytearray):
         data_part1 = NominalTriggerPacketV2._head_form2.unpack(
-            # raw_packet[: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size]
             raw_packet[:NominalTriggerPacketV2._head_form2.size]
-        )  # int.from_bytes(raw_packet[:8], "little")
+        )
         tack, phase = data_part1[0], data_part1[1]
-        trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV2._head_form2.size: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size],dtype=np.uint16)
-        # trigg_phases = np.array(data_part1[2:], dtype=np.uint16)
+        phase = NominalTriggerPacketV2._reverse_bits[phase]
 
-        # print(trigg_phases.shape)
+        trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV2._head_form2.size: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size],dtype=np.uint16)
+
+
         tbits = bitarray(0, endian="little")
         tbits.frombytes(
             bytes(
