@@ -1,0 +1,6 @@
+__pycache__/
+_version_cache.py
+docs/build/
+*egg-info/
+*.ipynb*
+.started_tms.txt
