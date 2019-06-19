@@ -1,32 +1,28 @@
 ### Specialization to different protobuf protocols#####
-from . import LogData
-from . import TriggerMessage
-
 from . import (
-    NominalTriggerPacket,
-    BusyTriggerPacket,
-    NominalTriggerPacketV2,
-    BusyTriggerPacketV2,
+    LogData,
+    TriggerMessage,
+    TriggerPacket,
+    Frame,
 )
-from . import TriggerPacket
-from . import Frame
-from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
-import struct
-from ssdaq import version as sversion
 
-_header = struct.Struct("2H")  # version:datatype
+from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
+from ssdaq import version as checvers
+import struct
+
+_header = struct.Struct("<2H")  # version:datatype
 _headers = {1: _header}
 
 
 class CHECFileHeader:
     def __init__(self, unpacker: int, version: int = 1, ssdaq_version: str =None):
         self.unpacker = unpacker
-        self.ssdaq_version = ssdaq_version or str(sversion.get_version())
+        self.ssdaq_version = ssdaq_version or str(checvers.get_version())
         self.version = version
 
     def pack(self):
         return struct.pack(
-            "2HB{}s".format(len(self.ssdaq_version)),
+            "<2HB{}s".format(len(self.ssdaq_version)),
             self.version,
             self.unpacker,
             len(self.ssdaq_version),
@@ -35,7 +31,7 @@ class CHECFileHeader:
 
     @classmethod
     def unpack(cls, data):
-        header = struct.Struct("2HB")
+        header = struct.Struct("<2HB")
         version, unpacker, n = header.unpack(data[: header.size])
         ssdaq_version = struct.unpack("{}s".format(n), data[header.size :])
         return version, unpacker, ssdaq_version  # cls(version,unpacker,ssdaq_version)
