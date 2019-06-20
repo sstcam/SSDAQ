@@ -7,6 +7,13 @@ import asyncio
 
 class ReceiverMonSender:
     def __init__(self, name, loop, zmqcontext):
+        """Summary
+
+        Args:
+            name (TYPE): Description
+            loop (TYPE): Description
+            zmqcontext (TYPE): Description
+        """
         # monitoring socket
         self._context = zmqcontext
         self._monitor_sock = self._context.socket(zmq.PUSH)
@@ -22,11 +29,18 @@ class ReceiverMonSender:
         self.loop = loop
 
     def register_data_packet(self):
+        """Summary
+        """
         self.total_data_counter += 1
         self.current_data_counter += 1
         self.got_data = True
 
     def _compute_rates(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
         now = datetime.datetime.now().timestamp()
 
         if self.past is None:
@@ -41,6 +55,8 @@ class ReceiverMonSender:
         return rate
 
     async def sendmon(self):
+        """Summary
+        """
         while True:
             await asyncio.sleep(self.mon_wait)
 

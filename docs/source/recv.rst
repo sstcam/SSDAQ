@@ -2,13 +2,16 @@
 Receivers
 #########
 
+Receivers are intended to be the core part of server applications running as daemons in the background
+to receive data from devices (such as the CHECS-Camera). Optionally these data can be lightly processed and lastly relayed
+forward usually on a zmq TCP socket that is subscriptable.
 
 *************************
 ssdaq.core.ReceiverServer
 *************************
 Receivers should inherit from the ``ReceiverServer`` class in order to be started with
 the `control-ssdaq` application. The class contains functionality to open a TCP or UDP
-listenting sockets using asyncio. Methods prefixed with ``ct_`` must be coroutines and will
+listening sockets using asyncio. Methods prefixed with ``ct_`` must be coroutines and will
 be added once to the event loop when the ``run()`` method is called. The ``ReceiverServer``
 class also implements a command receiver server. Callbacks methods for the commands are prefixed
 with ``cmd_``.
@@ -21,6 +24,7 @@ Example of a receiver listening to a UDP socket
 The following code example shows the typical way to set up
 a receiver in SSDAQ that listens to a UDP socket and later
 publishes the received packets::
+
     import asyncio
     from ssdaq.core.receiver_server import ReceiverServer
     from ssdaq.receivers.mon_sender import ReceiverMonSender
@@ -57,10 +61,15 @@ publishes the received packets::
                 self.mon.register_data_packet()
                 await self.publish(packet[0])
 
+Furthermore, nothing prevents from calling ``self.setup_udp`` several times in the ``__init__()``
+and have a ``ct_relay`` method for each connection to listen and handle data from several ports at
+the same time.
+
 Using zmq sockets
 -----------------
 It is also possible to use a ``zmq`` socket instead of the asyncio TCP and UDP sockets.
 The code actually gets even shorter::
+
     import asyncio
     import zmq
     from ssdaq.core.receiver_server import ReceiverServer
@@ -85,16 +94,34 @@ The code actually gets even shorter::
                 packet = await self.receiver.recv()
                 self.mon.register_data_packet()
                 await self.publish(packet)
+
 Note the line ``self._setup = True`` in the ``__init__`` which is needed to overide a check that there is at least one listening socket added.
 
 *********************
 ssdaq.core.publishers
 *********************
+
 .. autoclass:: ssdaq.core.publishers.ZMQTCPPublisher
     :members:
 
-***************
-ssdaq.receivers
-***************
-.. automodule:: ssdaq.receivers.ReadoutAssembler
+*************************
+Listing derived Receivers
+*************************
+
+.. automodule:: ssdaq.receivers.log_receiver
+    :members:
+
+.. automodule:: ssdaq.receivers.monitor_receiver
+    :members:
+
+.. automodule:: ssdaq.receivers.teldata_receiver
+    :members:
+
+.. automodule:: ssdaq.receivers.timestamp_receiver
+    :members:
+
+.. automodule:: ssdaq.receivers.trigger_receiver
+    :members:
+
+.. automodule:: ssdaq.receivers.readout_assembler
     :members:

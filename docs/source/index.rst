@@ -2,6 +2,7 @@
    sphinx-quickstart on Tue May 14 16:52:36 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+
 =================================
 Welcome to SSDAQ's documentation!
 =================================
@@ -30,14 +31,15 @@ instead and adding the ``--user`` option if not installing in a conda env. This 
    Data
 
    :caption: Contents:
+
 Table of contents
 =================
 .. toctree::
     intro
+    using
     data
     recv
     subs
-    ref/ssdaq
     :maxdepth: 2
 
 Indices and tables
