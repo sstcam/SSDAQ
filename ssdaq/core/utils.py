@@ -5,6 +5,14 @@ import inspect
 
 
 def get_si_prefix(value: float) -> tuple:
+    """Summary
+
+    Args:
+        value (float): Description
+
+    Returns:
+        tuple: Description
+    """
     prefixes = [
         "a",
         "f",
@@ -57,7 +65,12 @@ def get_attritbues(obj_):
     return attributes
 
 
-def get_utc_timestamp():
+def get_utc_timestamp()->(int,int):
+    """Summary
+
+    Returns:
+        int, int
+    """
     from datetime import datetime
 
     # from collections import namedtuple

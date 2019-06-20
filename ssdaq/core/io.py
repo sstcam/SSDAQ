@@ -120,34 +120,7 @@ class RawObjectWriterV0:
 
 @RawObjectWriterBase._register
 class RawObjectWriterV1:
-    """ Acts as a file object for writing chunks of serialized data
-        to file. Prepends each chunk with:
-        chunk length in bytes (4 bytes)
-        and a crc32 hash      (4 bytes)
-
-        The file header is 24 bytes long and has the following layout
-
-            bytes:      field:
-            0-7         Custom field for file format specifications (set by the header parameter)
-            8-11        Protocol version
-            12-15       Not used
-            16-19       Not used
-            20-23       Not used
-
-        General file structure:
-            +-------------+
-            | File Header |
-            +-------------+
-            | Chunk Header|
-            +-------------+
-            |     Data    |
-            +-------------+
-            | Chunk Header|
-            +-------------+
-            |     Data    |
-            +-------------+
-                  ...
-                  ...
+    """ An Indexed container file.
 
     """
 
@@ -155,7 +128,6 @@ class RawObjectWriterV1:
     _file_header = struct.Struct("<4s4sIQ2H")
     _bunch_trailer_header = struct.Struct("<3Q2IH")
     _compressors = {"bz2": (bz2, 1)}
-    # _file_trailer = struct.Struct("<4s4sIQ")
 
     def __init__(
         self,

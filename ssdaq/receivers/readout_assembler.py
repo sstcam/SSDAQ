@@ -116,6 +116,18 @@ class ReadoutAssembler(ReceiverServer):
         publishers: list = None,
         packet_debug_stream_file: str = None,
     ):
+        """Summary
+
+        Args:
+            relaxed_ip_range (bool, optional): Description
+            readout_tw (float, optional): Description
+            listen_ip (str, optional): Description
+            listen_port (int, optional): Description
+            buffer_length (int, optional): Description
+            buffer_time (float, optional): Description
+            publishers (list, optional): Description
+            packet_debug_stream_file (str, optional): Description
+        """
         super().__init__(listen_ip, listen_port, publishers, "ReadoutAssembler")
         self.relaxed_ip_range = relaxed_ip_range
         self.transport, self.ss_data_protocol = self.setup_udp(
@@ -291,6 +303,14 @@ class ReadoutAssembler(ReceiverServer):
                 await self.publish(readout.pack())
 
     def assemble_readout(self, pro):
+        """Summary
+
+        Args:
+            pro (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
         # construct readout
         r_cpu_time = np.min(pro.cpu_time)
         cpu_time_s = int(r_cpu_time.timestamp())

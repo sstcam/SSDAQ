@@ -21,3 +21,9 @@ ssdaq.data.io
 .. autoclass:: ssdaq.data.io.DataReader
     :members:
     :inherited-members:
+
+
+
+
+.. inheritance-diagram:: ssdaq.data._ioimpl
+   :parts: 1

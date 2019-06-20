@@ -3,7 +3,14 @@ from ssdaq import subscribers
 
 # A writer-exectutable factory containing boilerplate code for the
 # executable
-def writerfactory(descr, defaultport, writer_cls):
+def writerfactory(descr:str, defaultport:int, writer_cls):
+    """Summary
+
+    Args:
+        descr (str): Executable description
+        defaultport (int): The default port to listen on
+        writer_cls (WriterSubscriberClass): A class WriterSubscriber instance
+    """
     def writer():
         import argparse
 
@@ -54,6 +61,13 @@ triggerwriter = writerfactory(
 # A factory for an async writer-exectutable containing boilerplate code for the
 # executable
 def asyncwriterfactory(descr, defaultport, writer_cls):
+    """Summary
+
+    Args:
+        descr (str): Executable description
+        defaultport (int): The default port to listen on
+        writer_cls (WriterSubscriberClass): A class WriterSubscriber instance
+    """
     def writer():
         import argparse
         import asyncio

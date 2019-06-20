@@ -22,7 +22,17 @@ from ssdaq.core.utils import get_si_prefix
 
 
 class SSReadoutSubscriber(BasicSubscriber):
+    """A slow signal subscriber
+    """
+
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
+        """ Init of a SSReadoutSubscriber
+
+        Args:
+            ip (str): The ip/interface where the data is published
+            port (int): The port on which the data is published
+            logger (logging.Logger, optional): A logger instance
+        """
         super().__init__(ip=ip, port=port, logger=logger, unpack=SSReadout.from_bytes)
 
 
@@ -42,6 +52,14 @@ class AsyncSSReadoutSubscriber(AsyncSubscriber):
 
 class BasicTriggerSubscriber(BasicSubscriber):
     def __init__(self, ip: str, port: int, logger: logging.Logger = None):
+        """ Init of a BasicTriggerSubscriber
+
+        Args:
+            ip (str): The ip/interface where the data is published
+            port (int): The port on which the data is published
+            logger (logging.Logger, optional): A logger instance
+        """
+
         super().__init__(ip=ip, port=port, logger=logger, unpack=TriggerPacket.unpack)
 
 
