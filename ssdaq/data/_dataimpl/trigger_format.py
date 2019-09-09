@@ -9,6 +9,11 @@ TriggerPacketHeader = struct.Struct("<H2B")
 
 
 def get_SP2bptrigg_mapping():
+    """ Returns the mapping of SPs to back plane triggers
+
+    Returns:
+        np.array: array containing the mapping
+    """
     fMask2SPA = np.array([6, 7, 14, 12, 4, 5, 15, 13, 3, 2, 8, 11, 1, 0, 10, 9])
     fMask2SPB = np.array([9, 10, 0, 1, 11, 8, 2, 3, 13, 15, 5, 4, 12, 14, 7, 6])
     masks = [fMask2SPA, fMask2SPB]
@@ -20,6 +25,11 @@ def get_SP2bptrigg_mapping():
 
 
 def get_bptrigg2SP_mapping():
+    """ Returns the mapping of backplane triggers to SPs
+
+    Returns:
+        TYPE: array containing the mapping
+    """
     fSP2MaskA = np.array([13, 12, 9, 8, 4, 5, 0, 1, 10, 15, 14, 11, 3, 7, 2, 6])
     fSP2MaskB = np.array([2, 3, 6, 7, 11, 10, 15, 14, 5, 0, 1, 4, 12, 8, 13, 9])
     masks = [fSP2MaskA, fSP2MaskB]
@@ -31,6 +41,14 @@ def get_bptrigg2SP_mapping():
 
 
 class TriggerPacket:
+
+    """ Base class for trigger packets. All trigger packet classes should
+        derive from this class and register. This class knows how to pack
+        and unpack the first bytes of the trigger payload. Using the information
+        in the first bytes it will in the unpack method instantiate the correct
+        version and type of trigger packet.
+    """
+
     _message_types = {}
 
     def __init__(self):
@@ -42,12 +60,31 @@ class TriggerPacket:
         return scls
 
     @staticmethod
-    def pack_header(mtype: int, mlength: int, magic_mark: int = 0xCAFE):
+    def pack_header(mtype: int, mlength: int, magic_mark: int = 0xCAFE)->bytearray:
+        """Packs a trigger packet header into a byte array
+
+        Args:
+            mtype (int): Description
+            mlength (int): Description
+            magic_mark (int, optional): Description
+
+        Returns:
+            bytearray: packet trigger packet header
+        """
         raw_header = bytearray(TriggerPacketHeader.pack(magic_mark, mtype, mlength))
         return raw_header
 
     @classmethod
-    def unpack(cls, data):
+    def unpack(cls, data:bytearray):
+        """Unpacks a bytestream into the appropriate trigger packet type
+            and version.
+
+        Args:
+            data (bytearray): Description
+
+        Returns:
+            TYPE:  Instance of a descendant to TriggerPacket
+        """
         magic_mark, mtype, mlen = TriggerPacketHeader.unpack(data[:4])
 
         if magic_mark != 0xCAFE:
@@ -60,7 +97,13 @@ class TriggerPacket:
         instance._raw_packet = data
         return instance
 
-    def deserialize(self, data):
+    def deserialize(self, data:bytearray):
+        """ A convenience method to support "unpacking" for instances
+            of the class.
+
+        Args:
+            data (bytearray): Description
+        """
         inst = TriggerPacket.unpack(data)
         self.__dict__.update(inst.__dict__)
 
@@ -71,6 +114,13 @@ class TriggerPacket:
 
 @TriggerPacket.register
 class NominalTriggerPacketV1(TriggerPacket):
+
+    """ Nominal Trigger packet V1. Contains triggered phases
+        from the first two blocks, which corresponds to a trigger
+        pattern readout window of 9-16 ns depending on which
+        phase was triggered.
+    """
+
     _mtype = 0x0
     _head_form = struct.Struct("<QB512H")
     _head_form2 = struct.Struct("<QB")
@@ -89,6 +139,18 @@ class NominalTriggerPacketV1(TriggerPacket):
         type_: int = 0,
 
     ):
+        """
+
+        Args:
+            TACK (int, optional): TACK time stamp
+            trigg_phase (int, optional): The trigger phase i (i=[0,7]) in the form 2^i
+            trigg_phases (np.ndarray, optional): Triggered phases for the first two trigger blocks (up to 16 phases)
+            trigg_union (bitarray, optional): The union of all triggers during readout
+            uc_ev (int, optional): UC event counter
+            uc_pps (int, optional): UC pps (pulse per second) counter
+            uc_clock (int, optional): UC clock counter
+            type_ (int, optional): Trigger type
+        """
         super().__init__()
         self._TACK = TACK
         self._trigg_phase = trigg_phase
@@ -155,15 +217,17 @@ class NominalTriggerPacketV1(TriggerPacket):
 
     @classmethod
     def unpack(cls, raw_packet: bytearray):
+        #Extracting tack and trigger phase
         data_part1 = NominalTriggerPacketV1._head_form2.unpack(
             raw_packet[:NominalTriggerPacketV1._head_form2.size]
         )
         tack, phase = data_part1[0], data_part1[1]
         phase = NominalTriggerPacketV1._reverse_bits[phase]
 
+        #Extracting the triggered phases
         trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV1._head_form2.size: -int(512 / 8) - NominalTriggerPacketV1._tail_form.size],dtype=np.uint16)
 
-
+        #Extracting the trigger union
         tbits = bitarray(0, endian="little")
         tbits.frombytes(
             bytes(
@@ -172,6 +236,7 @@ class NominalTriggerPacketV1(TriggerPacket):
                 ]
             )
         )
+        #extracting counters
         tail = NominalTriggerPacketV1._tail_form.unpack(
             raw_packet[-NominalTriggerPacketV1._tail_form.size :]
         )
@@ -184,6 +249,7 @@ class NominalTriggerPacketV1(TriggerPacket):
 
         raw_packet = super().pack_header(self._mtype, 22)
         raw_packet.extend(self.TACK.to_bytes(8, "little"))
+        #The phase is stored backwards
         phase = NominalTriggerPacketV1._reverse_bits[self.trigg_phase]
         raw_packet.extend(phase.to_bytes(1, "little"))
         raw_packet.extend(self._trigger_phases.tobytes())
@@ -213,6 +279,12 @@ class NominalTriggerPacketV1(TriggerPacket):
 
 @TriggerPacket.register
 class BusyTriggerPacketV1(NominalTriggerPacketV1):
+
+    """ Busy trigger packet V1. Has the same layot as the nominal
+        trigger packet V1 but represents a busy trigger, i.e a trigger
+        that did not cause a readout.
+    """
+
     _mtype = 0x1
 
     def __init__(
@@ -226,6 +298,18 @@ class BusyTriggerPacketV1(NominalTriggerPacketV1):
         uc_clock: int = 1,
         type_: int = 0,
     ):
+        """
+
+        Args:
+            TACK (int, optional): TACK time stamp
+            trigg_phase (int, optional): The trigger phase i (i=[0,7]) in the form 2^i
+            trigg_phases (np.ndarray, optional): Triggered phases for the first two trigger blocks (up to 16 phases)
+            trigg_union (bitarray, optional): The union of all triggers during readout
+            uc_ev (int, optional): UC event counter
+            uc_pps (int, optional): UC pps (pulse per second) counter
+            uc_clock (int, optional): UC clock counter
+            type_ (int, optional): Trigger type
+        """
         super().__init__(
             TACK, trigg_phase, trigg_phases, trigg_union, uc_ev, uc_pps, uc_clock, type_
         )
