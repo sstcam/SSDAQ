@@ -5,7 +5,7 @@ import numpy as np
 from ssdaq.core.utils import get_attritbues
 
 log = sslogger.getChild("trigger_data")
-TriggerPacketHeader = struct.Struct("<H2B")
+TriggerPacketHeader = struct.Struct("<HB")
 
 
 def get_SP2bptrigg_mapping():
@@ -60,7 +60,7 @@ class TriggerPacket:
         return scls
 
     @staticmethod
-    def pack_header(mtype: int, mlength: int, magic_mark: int = 0xCAFE)->bytearray:
+    def pack_header(mtype: int, magic_mark: int = 0xCAFE)->bytearray:
         """Packs a trigger packet header into a byte array
 
         Args:
@@ -71,7 +71,7 @@ class TriggerPacket:
         Returns:
             bytearray: packet trigger packet header
         """
-        raw_header = bytearray(TriggerPacketHeader.pack(magic_mark, mtype, mlength))
+        raw_header = bytearray(TriggerPacketHeader.pack(magic_mark, mtype))
         return raw_header
 
     @classmethod
@@ -85,7 +85,7 @@ class TriggerPacket:
         Returns:
             TYPE:  Instance of a descendant to TriggerPacket
         """
-        magic_mark, mtype, mlen = TriggerPacketHeader.unpack(data[:4])
+        magic_mark, mtype = TriggerPacketHeader.unpack(data[:3])
 
         if magic_mark != 0xCAFE:
             log.error(
@@ -93,7 +93,7 @@ class TriggerPacket:
                 % (magic_mark, 0xCAFE)
             )
             return None
-        instance =TriggerPacket._message_types[mtype].unpack(data[4:])
+        instance =TriggerPacket._message_types[mtype].unpack(data[3:])
         instance._raw_packet = data
         return instance
 
@@ -122,8 +122,8 @@ class NominalTriggerPacketV1(TriggerPacket):
     """
 
     _mtype = 0x0
-    _head_form = struct.Struct("<QB512H")
-    _head_form2 = struct.Struct("<QB")
+    _head_form = struct.Struct("<BQB512H")
+    _head_form2 = struct.Struct("<BQB")
     _tail_form = struct.Struct("<3IH")
     #used for reversing the bits of the phase byte
     _reverse_bits = dict([(2**i,2**(7-i)) for i in range(7,-1,-1)])
@@ -221,7 +221,7 @@ class NominalTriggerPacketV1(TriggerPacket):
         data_part1 = NominalTriggerPacketV1._head_form2.unpack(
             raw_packet[:NominalTriggerPacketV1._head_form2.size]
         )
-        tack, phase = data_part1[0], data_part1[1]
+        _, tack, phase = data_part1[0], data_part1[1], data_part1[2]
         phase = NominalTriggerPacketV1._reverse_bits[phase]
 
         #Extracting the triggered phases
@@ -247,11 +247,10 @@ class NominalTriggerPacketV1(TriggerPacket):
 
     def pack(self):
 
-        raw_packet = super().pack_header(self._mtype, 22)
-        raw_packet.extend(self.TACK.to_bytes(8, "little"))
-        #The phase is stored backwards
+        raw_packet = super().pack_header(self._mtype)
+        # #The phase is stored backwards
         phase = NominalTriggerPacketV1._reverse_bits[self.trigg_phase]
-        raw_packet.extend(phase.to_bytes(1, "little"))
+        raw_packet.extend(NominalTriggerPacketV1._head_form2.pack(22,self.TACK,phase))
         raw_packet.extend(self._trigger_phases.tobytes())
         raw_packet.extend(self._trigg_union.tobytes())
         raw_packet.extend(
@@ -315,3 +314,23 @@ class BusyTriggerPacketV1(NominalTriggerPacketV1):
         )
         self._busy = True
         self._mtype = BusyTriggerPacketV1._mtype
+
+
+
+@TriggerPacket.register
+class NominalTriggerPacketV2(TriggerPacket):
+    _mtype = 0x2
+    _reverse_bits = dict([(2**i,2**(7-i)) for i in range(7,-1,-1)])
+    def __init__(
+        self,
+        TACK: int = 0,
+        trigg_phase: int = 0,
+        trigg_phases: np.ndarray = np.zeros(512, dtype=np.uint16),
+        trigg_union: bitarray = bitarray("0" * 512),
+        uc_ev: int = 1,
+        uc_pps: int = 1,
+        uc_clock: int = 1,
+        type_: int = 0,
+
+    ):
+        pass
