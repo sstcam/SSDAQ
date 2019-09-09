@@ -1,8 +1,8 @@
 import pytest
 from ssdaq.data import (
     SSReadout,
-    BusyTriggerPacketV2,
-    NominalTriggerPacketV2,
+    BusyTriggerPacketV1,
+    NominalTriggerPacketV1,
     TriggerPacket,
 )
 import numpy as np
@@ -30,12 +30,13 @@ def test_pack_unpack():
 
 
 def test_trigger_packet_pack_unpack():
-    trigg = BusyTriggerPacketV2(
+    trigg = BusyTriggerPacketV1(
         trigg_phases=2 ** np.random.uniform(0, 15, 512),
         trigg_phase=2 ** int(np.random.uniform(0, 7)),
     )
 
     triggun = TriggerPacket.unpack(trigg.pack())
+    assert triggun.trigg_phase == trigg.trigg_phase, "correct phase"
     assert np.all(triggun.trigg == trigg.trigg), "correct trigger pattern"
     assert triggun.busy == trigg.busy, "correct busy flag"
     assert np.all(triggun.trigg_union == trigg.trigg_union), "correct union of triggers"

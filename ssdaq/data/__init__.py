@@ -12,10 +12,8 @@ from ._dataimpl.frame import Frame, FrameObject
 from ._dataimpl import SSReadout
 from ._dataimpl.trigger_format import (
     TriggerPacket,
-    NominalTriggerPacket,
-    BusyTriggerPacket,
-    NominalTriggerPacketV2,
-    BusyTriggerPacketV2,
+    NominalTriggerPacketV1,
+    BusyTriggerPacketV1,
 )
 
 

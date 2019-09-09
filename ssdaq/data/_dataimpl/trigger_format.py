@@ -68,88 +68,10 @@ class TriggerPacket:
         return get_attritbues(self)
 
 
-# Old version TriggerPatternPackets
+
 @TriggerPacket.register
-class NominalTriggerPacket(TriggerPacket):
-    _tail_form = struct.Struct("<3I2H")
+class NominalTriggerPacketV1(TriggerPacket):
     _mtype = 0x0
-
-    def __init__(
-        self,
-        TACK: int = None,
-        trigg: bitarray = None,
-        uc_ev: int = None,
-        uc_pps: int = None,
-        uc_clock: int = None,
-        type_: int = None,
-    ):
-        super().__init__()
-        self.TACK = TACK
-        self.trigg = trigg
-        self.uc_ev = uc_ev
-        self.uc_pps = uc_pps
-        self.uc_clock = uc_clock
-        self.type = type_
-        self.busy = False
-        self._mtype = NominalTriggerPacket._mtype
-
-    @classmethod
-    def unpack(cls, raw_packet: bytearray):
-        tack = int.from_bytes(raw_packet[:8], "little")
-        tbits = bitarray(0, endian="little")
-        tbits.frombytes(bytes(raw_packet[8:72]))
-        tail = NominalTriggerPacket._tail_form.unpack(raw_packet[72:])
-        return cls(*[tack, tbits] + list(tail[:-1]))
-
-    def pack(self):
-        raw_packet = super().pack_header(self._mtype, 22)
-        raw_packet.extend(self.TACK.to_bytes(8, "little"))
-        raw_packet.extend(self.trigg.tobytes())
-        raw_packet.extend(
-            NominalTriggerPacket._tail_form.pack(
-                self.uc_ev, self.uc_pps, self.uc_clock, self.type, 0
-            )
-        )
-        return raw_packet
-
-    def serialize(self):
-        return self.pack()
-
-    def __str__(self):
-        s = ""
-        s += "TACK: {}, ".format(self.TACK)
-        s += "uc_ev: {}, ".format(self.uc_ev)
-        s += "uc_pps: {}, ".format(self.uc_pps)
-        s += "uc_clock: {}, ".format(self.uc_clock)
-        s += "type: {}, \n".format(self.type)
-        s += "trigg: {}".format(self.trigg)
-        return s
-
-
-@TriggerPacket.register
-class BusyTriggerPacket(NominalTriggerPacket):
-    _mtype = 0x1
-
-    def __init__(
-        self,
-        TACK: int = None,
-        trigg: bitarray = None,
-        uc_ev: int = None,
-        uc_pps: int = None,
-        uc_clock: int = None,
-        type_: int = None,
-    ):
-        super().__init__(TACK, trigg, uc_ev, uc_pps, uc_clock, type_)
-        self.busy = True
-        self._mtype = BusyTriggerPacket._mtype
-
-
-of = 2
-
-
-@TriggerPacket.register
-class NominalTriggerPacketV2(TriggerPacket):
-    _mtype = 0x2 - of
     _head_form = struct.Struct("<QB512H")
     _head_form2 = struct.Struct("<QB")
     _tail_form = struct.Struct("<3IH")
@@ -175,7 +97,7 @@ class NominalTriggerPacketV2(TriggerPacket):
         self._uc_clock = uc_clock
         self._type = type_
         self._busy = False
-        self._mtype = NominalTriggerPacketV2._mtype
+        self._mtype = NominalTriggerPacketV1._mtype
         self._trigger_phases = np.array(trigg_phases, dtype=np.uint16)
         self._trigg = None
         self._trigg_union = trigg_union
@@ -233,25 +155,25 @@ class NominalTriggerPacketV2(TriggerPacket):
 
     @classmethod
     def unpack(cls, raw_packet: bytearray):
-        data_part1 = NominalTriggerPacketV2._head_form2.unpack(
-            raw_packet[:NominalTriggerPacketV2._head_form2.size]
+        data_part1 = NominalTriggerPacketV1._head_form2.unpack(
+            raw_packet[:NominalTriggerPacketV1._head_form2.size]
         )
         tack, phase = data_part1[0], data_part1[1]
-        phase = NominalTriggerPacketV2._reverse_bits[phase]
+        phase = NominalTriggerPacketV1._reverse_bits[phase]
 
-        trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV2._head_form2.size: -int(512 / 8) - NominalTriggerPacketV2._tail_form.size],dtype=np.uint16)
+        trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV1._head_form2.size: -int(512 / 8) - NominalTriggerPacketV1._tail_form.size],dtype=np.uint16)
 
 
         tbits = bitarray(0, endian="little")
         tbits.frombytes(
             bytes(
                 raw_packet[
-                    NominalTriggerPacketV2._head_form.size: -NominalTriggerPacketV2._tail_form.size
+                    NominalTriggerPacketV1._head_form.size: -NominalTriggerPacketV1._tail_form.size
                 ]
             )
         )
-        tail = NominalTriggerPacketV2._tail_form.unpack(
-            raw_packet[-NominalTriggerPacketV2._tail_form.size :]
+        tail = NominalTriggerPacketV1._tail_form.unpack(
+            raw_packet[-NominalTriggerPacketV1._tail_form.size :]
         )
         return cls(
             *[tack, phase,trigg_phases , tbits]
@@ -259,14 +181,16 @@ class NominalTriggerPacketV2(TriggerPacket):
         )
 
     def pack(self):
+
         raw_packet = super().pack_header(self._mtype, 22)
         raw_packet.extend(self.TACK.to_bytes(8, "little"))
-        raw_packet.extend(self.trigg_phase.to_bytes(1, "little"))
+        phase = NominalTriggerPacketV1._reverse_bits[self.trigg_phase]
+        raw_packet.extend(phase.to_bytes(1, "little"))
         raw_packet.extend(self._trigger_phases.tobytes())
         raw_packet.extend(self._trigg_union.tobytes())
         raw_packet.extend(
-            NominalTriggerPacket._tail_form.pack(
-                self.uc_ev, self.uc_pps, self.uc_clock, self.type, 0
+            NominalTriggerPacketV1._tail_form.pack(
+                self.uc_ev, self.uc_pps, self.uc_clock, self.type
             )
         )
         return raw_packet
@@ -288,8 +212,8 @@ class NominalTriggerPacketV2(TriggerPacket):
 
 
 @TriggerPacket.register
-class BusyTriggerPacketV2(NominalTriggerPacketV2):
-    _mtype = 0x3 - of
+class BusyTriggerPacketV1(NominalTriggerPacketV1):
+    _mtype = 0x1
 
     def __init__(
         self,
@@ -306,4 +230,4 @@ class BusyTriggerPacketV2(NominalTriggerPacketV2):
             TACK, trigg_phase, trigg_phases, trigg_union, uc_ev, uc_pps, uc_clock, type_
         )
         self._busy = True
-        self._mtype = BusyTriggerPacketV2._mtype
+        self._mtype = BusyTriggerPacketV1._mtype
