@@ -13,6 +13,8 @@ from ._dataimpl import SSReadout
 from ._dataimpl.trigger_format import (
     TriggerPacket,
     NominalTriggerPacketV1,
+    TriggerPacketV2,
+    TriggerPacketV3,
     BusyTriggerPacketV1,
 )
 

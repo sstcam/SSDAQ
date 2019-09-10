@@ -3,6 +3,8 @@ from ssdaq.data import (
     SSReadout,
     BusyTriggerPacketV1,
     NominalTriggerPacketV1,
+    TriggerPacketV2,
+    TriggerPacketV3,
     TriggerPacket,
 )
 import numpy as np
@@ -37,6 +39,25 @@ def test_trigger_packet_pack_unpack():
 
     triggun = TriggerPacket.unpack(trigg.pack())
     assert triggun.trigg_phase == trigg.trigg_phase, "correct phase"
-    assert np.all(triggun.trigg == trigg.trigg), "correct trigger pattern"
+    assert np.all(triggun.trigg == trigg.trigg), "correct trigger pattern V1"
     assert triggun.busy == trigg.busy, "correct busy flag"
     assert np.all(triggun.trigg_union == trigg.trigg_union), "correct union of triggers"
+
+    triggV2 = TriggerPacketV2(
+        # trigg_union = 2 ** np.random.uniform(0, 15, 512)
+        trigg_pattrns=2 ** np.random.uniform(0, 15, (1,512)),
+        phase=2 ** int(np.random.uniform(0, 7)),
+    )
+
+    triggunV2 = TriggerPacket.unpack(triggV2.pack())
+    assert triggunV2.phase == triggV2.phase, "correct phase"
+    assert np.all(triggunV2.trigg_pattrns == triggV2.trigg_pattrns), "correct trigger pattern V2"
+    triggV3 = TriggerPacketV3(
+        # trigg_union = 2 ** np.random.uniform(0, 15, 512)
+        trigg_pattrns=2 ** np.random.uniform(0, 15, (1,512)),
+        phase=2 ** int(np.random.uniform(0, 7)),
+    )
+
+    triggunV3 = TriggerPacket.unpack(triggV3.pack())
+    assert triggunV3.phase == triggV3.phase, "correct phase V3"
+    assert np.all(triggunV3.trigg_pattrns == triggV3.trigg_pattrns), "correct trigger pattern V3"

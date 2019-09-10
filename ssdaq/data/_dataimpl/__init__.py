@@ -13,6 +13,7 @@ from .trigger_format import TriggerPacket
 from .trigger_format import (
     NominalTriggerPacketV1,
     BusyTriggerPacketV1,
+    TriggerPacketV2,
 )
 from .slowsignal_format import SSReadout
 
