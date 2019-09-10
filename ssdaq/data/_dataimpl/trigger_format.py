@@ -321,16 +321,80 @@ class BusyTriggerPacketV1(NominalTriggerPacketV1):
 class NominalTriggerPacketV2(TriggerPacket):
     _mtype = 0x2
     _reverse_bits = dict([(2**i,2**(7-i)) for i in range(7,-1,-1)])
+    _head_form = struct.Struct("<2BHBQB3I")
     def __init__(
         self,
-        TACK: int = 0,
-        trigg_phase: int = 0,
-        trigg_phases: np.ndarray = np.zeros(512, dtype=np.uint16),
-        trigg_union: bitarray = bitarray("0" * 512),
-        uc_ev: int = 1,
-        uc_pps: int = 1,
-        uc_clock: int = 1,
-        type_: int = 0,
+        message_type: int = 0,
+        error_flags:int = 0,
+        source:int = 0,
+        readout_length:int = 128,
+        tack_time:int = 0,
+        phase:int = 0,
+        ro_count:int =0,
+        pps_count:int = 0,
+        clock_count:int = 0,
+        trigg_union:bitarray = bitarray("0" * 512),
+        trigg_pattrn:np.array = np.array([])
 
     ):
-        pass
+
+        self._message_type = message_type
+        self._error_flags = error_flags
+        self._source = source
+        self._readout_length = readout_length
+        self._tack_time = tack_time
+        self._phase = phase
+        self._ro_count = ro_count
+        self._pps_count = pps_count
+        self._clock_count = clock_count
+        self._trigg_union = trigg_union
+        self._trigg_pattrn = trigg_pattrn
+
+
+    @property
+    def message_type(self):
+        return self._message_type
+    @property
+    def error_flags(self):
+        return self._error_flags
+    @property
+    def source(self):
+        return self._source
+    @property
+    def readout_length(self):
+        return self._readout_length
+    @property
+    def tack_time(self):
+        return self._tack_time
+    @property
+    def phase(self):
+        return self._phase
+    @property
+    def ro_count(self):
+        return self._ro_count
+    @property
+    def pps_count(self):
+        return self._pps_count
+    @property
+    def clock_count(self):
+        return self._clock_count
+
+    @classmethod
+    def unpack(cls, raw_packet: bytearray):
+        head_form = NominalTriggerPacketV2._head_form
+        static_header = head_form.unpack(raw_packet[:head_form.size])
+
+        # The phase bits are backwards in the trigger packet
+        static_header[5] = NominalTriggerPacketV2._reverse_bits[static_header[5]]
+        #Extracting the trigger union
+        tunion = bitarray(0, endian="little")
+        tunion.frombytes(
+            bytes(
+                raw_packet[
+                    head_form.size: head_form.size+512/8
+                ]
+            )
+        )
+
+        ro_len = static_header[3]
+        trigg_pattrn = np.zeros()
