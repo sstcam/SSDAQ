@@ -52,7 +52,7 @@ class TriggerPacket:
     _message_types = {}
 
     def __init__(self):
-        pass
+        self._raw_packet = None
 
     @classmethod
     def register(cls, scls):
@@ -75,17 +75,17 @@ class TriggerPacket:
         return raw_header
 
     @classmethod
-    def unpack(cls, data:bytearray):
+    def unpack(cls, raw_packet:bytearray):
         """Unpacks a bytestream into the appropriate trigger packet type
             and version.
 
         Args:
-            data (bytearray): Description
+            raw_packet (bytearray): Description
 
         Returns:
             TYPE:  Instance of a descendant to TriggerPacket
         """
-        magic_mark, mtype = TriggerPacketHeader.unpack(data[:3])
+        magic_mark, mtype = TriggerPacketHeader.unpack(raw_packet[:3])
 
         if magic_mark != 0xCAFE:
             log.error(
@@ -93,18 +93,18 @@ class TriggerPacket:
                 % (magic_mark, 0xCAFE)
             )
             return None
-        instance =TriggerPacket._message_types[mtype].unpack(data[3:])
-        instance._raw_packet = data
+        instance =TriggerPacket._message_types[mtype].unpack(raw_packet[3:])
+        instance._raw_packet = raw_packet
         return instance
 
-    def deserialize(self, data:bytearray):
+    def deserialize(self, raw_packet:bytearray):
         """ A convenience method to support "unpacking" for instances
             of the class.
 
         Args:
-            data (bytearray): Description
+            raw_packet (bytearray): Description
         """
-        inst = TriggerPacket.unpack(data)
+        inst = TriggerPacket.unpack(raw_packet)
         self.__dict__.update(inst.__dict__)
 
     def _asdict(self):
