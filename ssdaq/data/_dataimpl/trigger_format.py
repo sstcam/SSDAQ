@@ -343,8 +343,7 @@ class TriggerPacketV2(TriggerPacket):
         trigg_pattrns:np.array = np.zeros((1,512))
 
     ):
-        """Summary
-
+        """
         Args:
             message_type (int, optional): Type of trigger packet (first bit indicates busy)
             error_flags (int, optional): Debug error flags (non-zero indicates error)
@@ -354,7 +353,7 @@ class TriggerPacketV2(TriggerPacket):
             ro_count (int, optional): readout count
             pps_count (int, optional): pulse per second count
             clock_count (int, optional): clock count
-            trigg_pattrns (np.array, optional): Trigger patterns of `n` readouts. numpy array of shape (n,512)
+            trigg_pattrns (np.array type uint8, optional): Trigger patterns of `n` readouts. numpy array of shape (n,512)
 
         """
         self._message_type = message_type
@@ -366,20 +365,20 @@ class TriggerPacketV2(TriggerPacket):
         self._pps_count = pps_count
         self._clock_count = clock_count
         self._trigg_pattrns = trigg_pattrns
-        print(np.where(trigg_pattrns))
         self._readout_length = self._trigg_pattrns.shape[0]
         trigg_SPs = np.any(self._trigg_pattrns,axis=0)
         self._trigg_union = bitarray(trigg_SPs.data, endian="little")
         self._trigg = None
 
     def _compute_trigg(self):
-        trigg_phase_array = np.ones(self._trigg_pattrns.shape, dtype=np.uint16) * (self.phase)
+        self._trigg = self._trigg_pattrns[self.phase_index,:]
+        # trigg_phase_array = np.ones(self._trigg_pattrns[2,:], dtype=np.uint16) * (self.phase)
 
-        self._trigg = (
-            np.bitwise_and(trigg_phase_array, self._trigg_pattrns) > 0
-        ).astype(np.uint16)
+        # self._trigg = (
+        #     np.bitwise_and(trigg_phase_array, self._trigg_pattrns) > 0
+        # ).astype(np.uint16)
 
-        return self._trigg
+        # return self._trigg
 
     @property
     def message_type(self):
@@ -462,10 +461,10 @@ class TriggerPacketV2(TriggerPacket):
         # The readout length is not needed for the class instantiation
         del static_header[3]
 
-        #Extracting the triggered phases (trigger pattern readout)
+        #Extracting the triggered phases (trigger pattern readout) in chunks of 8 bits
+        trigg_pattrns = np.frombuffer(raw_packet[head_form.size+int(512/8):],dtype=np.uint8)
+        trigg_pattrns = (np.unpackbits(trigg_pattrns).reshape((512,ro_len))).T #we want the rows to be the time axis
 
-        trigg_pattrns = np.frombuffer(raw_packet[head_form.size+int(512/8):])
-        trigg_pattrns = trigg_pattrns.reshape((ro_len,512))
         return cls(*static_header+[trigg_pattrns])
 
 
@@ -483,7 +482,7 @@ class TriggerPacketV2(TriggerPacket):
             self._clock_count)
         )
         raw_packet.extend(self._trigg_union.tobytes())
-        raw_packet.extend(self._trigg_pattrns.tobytes())
+        raw_packet.extend(np.packbits((self._trigg_pattrns.T)).tobytes())
         return raw_packet
 
 
@@ -524,8 +523,8 @@ class TriggerPacketV3(TriggerPacketV2):
 
         #Extracting the triggered phases (trigger pattern readout)
 
-        triggered_pattrns = np.frombuffer(raw_packet[head_form.size+int(512/8):])
-        triggered_pattrns = triggered_pattrns.reshape((ro_len,np.sum(union)))
+        triggered_pattrns = np.frombuffer(raw_packet[head_form.size+int(512/8):],dtype=np.uint8)
+        triggered_pattrns = (np.unpackbits(triggered_pattrns).reshape((512,ro_len))).T #we want the rows to be the time axis
         trigg_pattrns = np.zeros((ro_len,512))
         trigg_pattrns[:,np.where(union)[0]] = triggered_pattrns
 
@@ -547,7 +546,7 @@ class TriggerPacketV3(TriggerPacketV2):
         )
         raw_packet.extend(self._trigg_union.tobytes())
         trigg_SPs = np.where(np.any(self._trigg_pattrns,axis=0))[0]
-        triggered_pattrns = self._trigg_pattrns[:,trigg_SPs]
+        triggered_pattrns = np.packbits(self._trigg_pattrns[:,trigg_SPs].T)
         raw_packet.extend(triggered_pattrns.tobytes())
         return raw_packet
 
