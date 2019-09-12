@@ -96,7 +96,13 @@ class TriggerPacket:
         instance =TriggerPacket._message_types[mtype].unpack(raw_packet[3:])
         instance._raw_packet = raw_packet
         return instance
-    def serialize(self):
+    def serialize(self)->bytearray:
+        """A convenience method to conform with the serialization api for instances
+            of the class.
+
+        Returns:
+            bytearray: bytearray of the serialized (packed) trigger packet
+        """
         return self.pack()
 
     def deserialize(self, raw_packet:bytearray):
@@ -372,13 +378,7 @@ class TriggerPacketV2(TriggerPacket):
 
     def _compute_trigg(self):
         self._trigg = self._trigg_pattrns[self.phase_index,:]
-        # trigg_phase_array = np.ones(self._trigg_pattrns[2,:], dtype=np.uint16) * (self.phase)
 
-        # self._trigg = (
-        #     np.bitwise_and(trigg_phase_array, self._trigg_pattrns) > 0
-        # ).astype(np.uint16)
-
-        # return self._trigg
 
     @property
     def message_type(self):
@@ -447,17 +447,17 @@ class TriggerPacketV2(TriggerPacket):
         return s
     @classmethod
     def unpack(cls, raw_packet: bytearray):
-        """Summary
+        """ Unpacks a V2 trigger packet
 
         Args:
-            raw_packet (bytearray): Description
+            raw_packet (bytearray): the raw payload not including the 3 first bytes
         """
         head_form = cls._head_form
         static_header = list(head_form.unpack(raw_packet[:head_form.size]))
 
         # The phase bits are backwards in the trigger packet
         static_header[5] = cls._reverse_bits[static_header[5]]
-        ro_len = static_header[3]
+        ro_len = static_header[3]*8
         # The readout length is not needed for the class instantiation
         del static_header[3]
 
@@ -474,7 +474,7 @@ class TriggerPacketV2(TriggerPacket):
         raw_packet.extend(self._head_form.pack(self._message_type,
             self._error_flags,
             self._source,
-            self._readout_length,
+            int(self._readout_length//8),
             self._tack_time,
             self._reverse_bits[self._phase],
             self._ro_count,
@@ -489,17 +489,20 @@ class TriggerPacketV2(TriggerPacket):
 @TriggerPacket.register
 class TriggerPacketV3(TriggerPacketV2):
 
-    """Summary
+    """ Similar to V2 in containing trigger patterns
+        for the complete readout. The readout data is,
+        however, zero-point suppressed to reduce droped
+        packets at high trigger rates.
     """
     _mtype = 0x3
 
 
     @classmethod
     def unpack(cls, raw_packet: bytearray):
-        """Summary
+        """ Unpacks a V3 trigger packet
 
         Args:
-            raw_packet (bytearray): Description
+            raw_packet (bytearray): the raw payload not including the 3 first bytes
         """
         head_form = cls._head_form
         static_header = list(head_form.unpack(raw_packet[:head_form.size]))
@@ -517,7 +520,7 @@ class TriggerPacketV3(TriggerPacketV2):
         )
 
         union = np.frombuffer(tunion.unpack(), dtype=bool)
-        ro_len = static_header[3]
+        ro_len = static_header[3]*8
         # The readout length is not needed for the class instantiation
         del static_header[3]
 
@@ -537,7 +540,7 @@ class TriggerPacketV3(TriggerPacketV2):
         raw_packet.extend(self._head_form.pack(self._message_type,
             self._error_flags,
             self._source,
-            self._readout_length,
+            int(self._readout_length//8),
             self._tack_time,
             self._reverse_bits[self._phase],
             self._ro_count,
