@@ -30,25 +30,6 @@ class ZMQTCPPublisher(Publisher):
     """ A generic zmq tcp publisher
 
         Publishes on a TCP/IP socket using the zmq PUB-SUB protocol.
-
-        Args:
-            ip (str):   the name (ip) interface which the readouts are published on
-            port (int): the port number of the interface which the readouts are published on
-        Kwargs:
-            name (str): The name of this instance (usefull for logging)
-            logger:     An instance of a logger to inherit from
-            mode (str): The mode of publishing. Possible modes ('local','outbound', 'remote')
-
-        The three different modes defines how the socket is setup for different use cases.
-
-            * 'local' this is the normal use case where readouts are published on localhost
-                and ip should be '127.x.x.x'
-            * 'outbound' is when the readouts are published on an outbound network interface of
-                the machine so that remote clients can connect to the machine to receive the readouts.
-                In this case ip is the ip address of the interface on which the readouts should be published
-            * 'remote' specifies that the given ip is of a remote machine to which the readouts should be sent to.
-
-
     """
 
     def __init__(
@@ -60,6 +41,23 @@ class ZMQTCPPublisher(Publisher):
         mode: str = "local",
     ):
         """A generic zmq tcp publisher
+
+        Args:
+            ip (str): the name (ip) interface which the readouts are published on
+            port (int): the port number of the interface which the readouts are published on
+            name (str, optional): The name of this instance (usefull for logging)
+            logger (None, optional): An instance of a logger to inherit from
+            mode (str, optional): The mode of publishing. Possible modes ('local','outbound', 'remote')
+
+        The three different modes defines how the socket is setup for different use cases.
+
+            * 'local' this is the normal use case where readouts are published on localhost
+                and ip should be '127.x.x.x'
+            * 'outbound' is when the readouts are published on an outbound network interface of
+                the machine so that remote clients can connect to the machine to receive the readouts.
+                In this case ip is the ip address of the interface on which the readouts should be published
+            * 'remote' specifies that the given ip is of a remote machine to which the readouts should be sent to.
+
         """
 
         super().__init__(name)
