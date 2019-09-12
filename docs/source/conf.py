@@ -23,8 +23,9 @@ project = 'SSDAQ'
 copyright = '2019, Samuel Flis'
 author = 'Samuel Flis'
 from ssdaq import version as v
+import ssdaq
 # The short X.Y version
-version = ''
+version = ssdaq.__version__
 # The full version, including alpha/beta/rc tags
 release = v.get_version(True)
 
