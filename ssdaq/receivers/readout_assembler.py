@@ -208,16 +208,19 @@ class ReadoutAssembler(ReceiverServer):
                         "No matching packets found for packet with timestamp %d and tm id %d"
                         % (tack,module)
                     )
-
-            if abs(
-                float(self.partial_ro_buff[-1].tack)
-                - float(self.partial_ro_buff[0].tack)
-            ) > (self.buffer_time):
-                self.log.info("Assemble readout {}".format(self.readout_count))
-                # self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ro_buff[0].timestamp*1e-9,self.partial_ro_buff[-1].timestamp*1e-9))
-                readouts = self.assemble_readouts(self.partial_ro_buff.popleft())
-                for readout in readouts:
-                    await self.publish(readout.pack())
+            assembling = True
+            while assembling:
+                if abs(
+                    float(self.partial_ro_buff[-1].tack)
+                    - float(self.partial_ro_buff[0].tack)
+                ) > (self.buffer_time):
+                    self.log.info("Assemble readout {}".format(self.readout_count))
+                    # self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ro_buff[0].timestamp*1e-9,self.partial_ro_buff[-1].timestamp*1e-9))
+                    readouts = self.assemble_readouts(self.partial_ro_buff.popleft())
+                    for readout in readouts:
+                        await self.publish(readout.pack())
+                else:
+                    assembling = False
             self.log.info("Buffer length {}".format(len(self.partial_ro_buff)))
     def assemble_readouts(self, matched):
         """Summary
