@@ -42,6 +42,7 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.log.info("Bad package came from %s:%d" % tuple(data[0]))
             return
         nreadouts = int(len(data) / (READOUT_LENGTH))
+        self.log.info("Number of readouts in packet {}".format(nreadouts))
 
         # getting the module number from the last two digits of the ip
         ip = addr[0]
