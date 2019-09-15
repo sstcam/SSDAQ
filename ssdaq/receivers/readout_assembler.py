@@ -182,11 +182,9 @@ class ReadoutAssembler(ReceiverServer):
         self.partial_ro_buff.append(MatchedPacket(module,data,tack,cpu_time,nreadouts))
         self.log.info("Starting readout build loop")
         while True:
-            self.log.info("1Assemble readout {}".format(self.readout_count))
             module,data,cpu_time = await self.ss_data_protocol._buffer.get()
             tack =first_tack.unpack_from(data,0)[0]
             nreadouts = int(len(data) / (READOUT_LENGTH))
-            self.log.info("2Assemble readout {}".format(self.readout_count))
             # self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
             pro = self.partial_ro_buff[-1]
             dt = pro.tack - tack
@@ -214,35 +212,36 @@ class ReadoutAssembler(ReceiverServer):
                     float(self.partial_ro_buff[-1].tack)
                     - float(self.partial_ro_buff[0].tack)
                 ) > (self.buffer_time):
-                    self.log.info("Assemble readout {}".format(self.readout_count))
-                    # self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ro_buff[0].timestamp*1e-9,self.partial_ro_buff[-1].timestamp*1e-9))
                     readouts = self.assemble_readouts(self.partial_ro_buff.popleft())
                     for readout in readouts:
                         await self.publish(readout.pack())
                 else:
                     assembling = False
-            self.log.info("Buffer length {}".format(len(self.partial_ro_buff)))
+            # self.log.info("Buffer length {}".format(len(self.partial_ro_buff)))
     def assemble_readouts(self, matched):
         """Summary
 
         Args:
-            pro (TYPE): Description
+            matched (TYPE): Description
 
         Returns:
             TYPE: Description
+
         """
         # construct readout
         r_cpu_time_0 = np.min(matched.cpu_t)
         readouts = []
         tms = sorted(matched.tms)
-
         tack0 = matched.tack
+        dts = []
+
         for i in range(matched.nreadouts):
 
             tack =first_tack.unpack_from(matched.data[tms[0]], i * (READOUT_LENGTH))[0]
             dt = tack-tack0
-            if dt==0:
-                self.log.warn("Subsequent readouts with the same tack {}".format(tack))
+            dts.append(dt)
+            if i>0 and dt==0:
+                self.log.warn("Subsequent readouts with the same tack {}, {}".format(tack,i))
             r_cpu_time = r_cpu_time_0+timedelta(microseconds=dt*1e-3)
             cpu_time_s = int(r_cpu_time.timestamp())
             cpu_time_ns = int((r_cpu_time.timestamp() - cpu_time_s) * 1e9)
