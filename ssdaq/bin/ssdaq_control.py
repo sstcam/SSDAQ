@@ -300,7 +300,7 @@ def daq(ctx, config, components):
             which stops the MonitorReceiver and ReadoutAssembler
     """
     config = load_config(ctx,config)
-    daq(config,list(components))
+    daq_stop(config,list(components))
 
 @click.group()
 @click.pass_context
