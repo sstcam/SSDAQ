@@ -7,11 +7,13 @@ from ssdaq.data import SSReadout
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
 from collections import defaultdict
+
 READOUT_LENGTH = (
     dc.N_TM_PIX * 2 + 2 * 8
 )  # 64 2-byte channel amplitudes and 2 8-byte timestamps
 packet_format = struct.Struct(">Q32HQ32H")
 first_tack = struct.Struct(">Q")
+
 
 class SlowSignalDataProtocol(asyncio.Protocol):
     def __init__(self, loop, log, relaxed_ip_range, mon, packet_debug_stream_file=None):
@@ -48,12 +50,11 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.log.error("   %s" % ip)
             self.log.error("This can be supressed if relaxed_ip_range=True")
             raise RuntimeError
-        self.loop.create_task(
-                 self._buffer.put((module_nr,data, cpu_time))
-             )
+        self.loop.create_task(self._buffer.put((module_nr, data, cpu_time)))
+
 
 class MatchedPacket:
-    def __init__(self,tm_num,data,tack,cpu_t,nreadouts):
+    def __init__(self, tm_num, data, tack, cpu_t, nreadouts):
         self.data = [None] * dc.N_TM
         self.data[tm_num] = data
         self.tm_parts = [0] * dc.N_TM
@@ -62,6 +63,7 @@ class MatchedPacket:
         self.tack = tack
         self.cpu_t = [cpu_t]
         self.nreadouts = nreadouts
+
     def add_part(self, tm_num, data, cpu_t):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
@@ -122,7 +124,7 @@ class ReadoutAssembler(ReceiverServer):
         self.nconstructed_readouts = 0
         self.readout_count = 1
         self.packet_counter = {}
-        self.readout_counter = defaultdict(lambda:1)
+        self.readout_counter = defaultdict(lambda: 1)
 
         # controlers
         self.publish_readouts = True
@@ -131,6 +133,7 @@ class ReadoutAssembler(ReceiverServer):
         self.inter_buff = []
         self.partial_ro_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
         self.ro_part_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
+
     def cmd_reset_ro_count(self, arg):
         self.log.info("Readout count has been reset")
         self.readout_count = 1
@@ -154,7 +157,6 @@ class ReadoutAssembler(ReceiverServer):
                 % arg[0]
             ).encode("ascii")
 
-
     async def ct_assembler(self):
         n_packets = 0
         self.log.info("Empty socket buffer before starting readout building")
@@ -175,36 +177,40 @@ class ReadoutAssembler(ReceiverServer):
         self.log.info("Thrown away %d packets in buffer before start" % n_packets)
         self.log.info("Fetching first packet")
 
-        module,data,cpu_time = await self.ss_data_protocol._buffer.get()
-        tack =first_tack.unpack_from(data,0)[0]
+        module, data, cpu_time = await self.ss_data_protocol._buffer.get()
+        tack = first_tack.unpack_from(data, 0)[0]
         nreadouts = int(len(data) / (READOUT_LENGTH))
 
-        self.partial_ro_buff.append(MatchedPacket(module,data,tack,cpu_time,nreadouts))
+        self.partial_ro_buff.append(
+            MatchedPacket(module, data, tack, cpu_time, nreadouts)
+        )
         self.log.info("Starting readout build loop")
         while True:
-            module,data,cpu_time = await self.ss_data_protocol._buffer.get()
-            tack =first_tack.unpack_from(data,0)[0]
+            module, data, cpu_time = await self.ss_data_protocol._buffer.get()
+            tack = first_tack.unpack_from(data, 0)[0]
             nreadouts = int(len(data) / (READOUT_LENGTH))
             # self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
             pro = self.partial_ro_buff[-1]
             dt = pro.tack - tack
-            if( abs(dt) < self.readout_tw):
-                self.partial_ro_buff[-1].add_part(module,data,cpu_time)
-            elif dt < 0 :
-                self.partial_ro_buff.append(MatchedPacket(module,data,tack,cpu_time,nreadouts))
+            if abs(dt) < self.readout_tw:
+                self.partial_ro_buff[-1].add_part(module, data, cpu_time)
+            elif dt < 0:
+                self.partial_ro_buff.append(
+                    MatchedPacket(module, data, tack, cpu_time, nreadouts)
+                )
             else:
                 found = False
                 for i in range(len(self.partial_ro_buff) - 1, 0, -1):
                     pro = self.partial_ro_buff[i]
                     dt = pro.timestamp - tack
-                    if( abs(dt) < self.readout_tw):
-                        self.partial_ro_buff[-1].add_part(module,data,cpu_time)
+                    if abs(dt) < self.readout_tw:
+                        self.partial_ro_buff[-1].add_part(module, data, cpu_time)
                         found = True
                         break
                 if not found:
                     self.log.warning(
                         "No matching packets found for packet with timestamp %d and tm id %d"
-                        % (tack,module)
+                        % (tack, module)
                     )
             assembling = True
             while assembling:
@@ -218,6 +224,7 @@ class ReadoutAssembler(ReceiverServer):
                 else:
                     assembling = False
             # self.log.info("Buffer length {}".format(len(self.partial_ro_buff)))
+
     def assemble_readouts(self, matched):
         """Summary
 
@@ -237,20 +244,22 @@ class ReadoutAssembler(ReceiverServer):
 
         for i in range(matched.nreadouts):
 
-            tack =first_tack.unpack_from(matched.data[tms[0]], i * (READOUT_LENGTH))[0]
-            dt = tack-tack0
+            tack = first_tack.unpack_from(matched.data[tms[0]], i * (READOUT_LENGTH))[0]
+            dt = tack - tack0
             dts.append(dt)
-            if i>0 and dt==0:
-                self.log.warn("Subsequent readouts with the same tack {}, {}".format(tack,i))
-            r_cpu_time = r_cpu_time_0+timedelta(microseconds=dt*1e-3)
+            if i > 0 and dt == 0:
+                self.log.warn(
+                    "Subsequent readouts with the same tack {}, {}".format(tack, i)
+                )
+            r_cpu_time = r_cpu_time_0 + timedelta(microseconds=dt * 1e-3)
             cpu_time_s = int(r_cpu_time.timestamp())
             cpu_time_ns = int((r_cpu_time.timestamp() - cpu_time_s) * 1e9)
-            readout = SSReadout(
-                tack, self.readout_count, cpu_time_s, cpu_time_ns
-            )
+            readout = SSReadout(tack, self.readout_count, cpu_time_s, cpu_time_ns)
 
             for tm in tms:
-                tmp_data = packet_format.unpack_from(matched.data[tm], i * (READOUT_LENGTH))
+                tmp_data = packet_format.unpack_from(
+                    matched.data[tm], i * (READOUT_LENGTH)
+                )
                 self.readout_counter[tm] += 1
                 # put data into a temporary array of uint type
                 tmp_array = np.empty(dc.N_TM_PIX, dtype=np.uint64)
@@ -267,8 +276,6 @@ class ReadoutAssembler(ReceiverServer):
             self.readout_count += 1
             readouts.append(readout)
         return readouts
-
-
 
 
 if __name__ == "__main__":

@@ -65,10 +65,12 @@ class DynamicPlotter:
         self.plts = {}
         self.curve_names = list()
         self.plot_time_window = 10
-        self.lastframeindicator = pg.LabelItem(text='')
+        self.lastframeindicator = pg.LabelItem(text="")
         self.lastframe = datetime.now()
         self.win.addItem(self.lastframeindicator)
-        self.gotdataindicator = pg.LabelItem(text='<font color=\"{}\">{}</font>'.format('green','connected'))
+        self.gotdataindicator = pg.LabelItem(
+            text='<font color="{}">{}</font>'.format("green", "connected")
+        )
         self.win.addItem(self.gotdataindicator)
         self.counter = 0
         self.win.nextRow()
@@ -183,7 +185,7 @@ class DynamicPlotter:
     def get_data(self):
         evs = []
         ntries = 0
-        self.counter +=1
+        self.counter += 1
         while ntries < 10:
             try:
                 ev = self.ss_listener.get_data(timeout=0.1)
@@ -233,11 +235,15 @@ class DynamicPlotter:
         self.get_data()
 
         if self.gotdata:
-            stat = ('green','connected')
+            stat = ("green", "connected")
         else:
-            stat = ('red','disconnected')
-        self.gotdataindicator.setText('<font color=\"{}\">{}</font>'.format(*stat))
-        self.lastframeindicator.setText("time since last received frame: {} ".format(datetime.now()-self.lastframe))
+            stat = ("red", "disconnected")
+        self.gotdataindicator.setText('<font color="{}">{}</font>'.format(*stat))
+        self.lastframeindicator.setText(
+            "time since last received frame: {} ".format(
+                datetime.now() - self.lastframe
+            )
+        )
 
         time = list()
         now = datetime.now()
@@ -466,20 +472,20 @@ class DynamicTRPlotter:
         self.curve_names = list()
         self.plot_time_window = 10
         # self.win.addItem(pg.TextItem(text='HEJHEJHEJ', color=(200, 200, 200), html=None, anchor=(0, 0), border=None, fill=None, angle=0, rotateAxis=None),row=1 )
-        self.lastframeindicator = pg.LabelItem(text='')
+        self.lastframeindicator = pg.LabelItem(text="")
         self.lastframe = datetime.now()
         self.win.addItem(self.lastframeindicator)
-        self.gotdataindicator = pg.LabelItem(text='<font color=\"{}\">{}</font>'.format('green','connected'))
+        self.gotdataindicator = pg.LabelItem(
+            text='<font color="{}">{}</font>'.format("green", "connected")
+        )
         self.win.addItem(self.gotdataindicator)
         self.win.nextRow()
-        self.countersindicator = pg.LabelItem(text='')
+        self.countersindicator = pg.LabelItem(text="")
         self.win.addItem(self.countersindicator)
         self.win.nextRow()
         self.last_uc_ev = 0
         self.missed_counter = 0
         self.readout_counter = 0
-
-
 
         self._add_plot(
             "Trigger rate",
@@ -566,13 +572,13 @@ class DynamicTRPlotter:
             try:
                 t = self.tr_listener.get_data(timeout=0.1)
                 trs.append(t)
-                if t.uc_ev == 0 or t.uc_ev<self.last_uc_ev:
+                if t.uc_ev == 0 or t.uc_ev < self.last_uc_ev:
                     self.missed_counter = 0
                     self.readout_counter = 0
                     self.last_uc_ev = 0
                 if self.last_uc_ev != 0 and self.last_uc_ev + 1 != t.uc_ev:
-                    self.missed_counter += t.uc_ev-self.last_uc_ev-1
-                self.readout_counter +=1
+                    self.missed_counter += t.uc_ev - self.last_uc_ev - 1
+                self.readout_counter += 1
                 self.last_uc_ev = t.uc_ev
 
             except:
@@ -582,7 +588,6 @@ class DynamicTRPlotter:
             return
         else:
             trigg = trs[-1]
-
 
         self.lastframe = datetime.now()
         imgdata = np.zeros((24, 24))
@@ -612,14 +617,22 @@ class DynamicTRPlotter:
     def updateplots(self):
         self.gotdata = False
         self.get_data()
-        self.countersindicator.setText("Readout Triggers: {}, Lost packets: {}".format(self.readout_counter,self.missed_counter))
+        self.countersindicator.setText(
+            "Readout Triggers: {}, Lost packets: {}".format(
+                self.readout_counter, self.missed_counter
+            )
+        )
 
         if self.gotdata:
-            stat = ('green','connected')
+            stat = ("green", "connected")
         else:
-            stat = ('red','disconnected')
-        self.gotdataindicator.setText('<font color=\"{}\">{}</font>'.format(*stat))
-        self.lastframeindicator.setText("time since last received frame: {} ".format(datetime.now()-self.lastframe))
+            stat = ("red", "disconnected")
+        self.gotdataindicator.setText('<font color="{}">{}</font>'.format(*stat))
+        self.lastframeindicator.setText(
+            "time since last received frame: {} ".format(
+                datetime.now() - self.lastframe
+            )
+        )
         time = list()
         now = datetime.now()
         for t in self.time:
