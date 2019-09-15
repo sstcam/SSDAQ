@@ -9,7 +9,7 @@ import signal
 from datetime import datetime
 import time
 from statistics import mean
-
+from ssdaq.core.utils import get_si_prefix
 
 def slowsignaldump():
 
@@ -42,6 +42,7 @@ def slowsignaldump():
     n = 0
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
+    last_tack = 0
     while True:
         try:
             readout = rsub.get_data()
@@ -62,6 +63,11 @@ def slowsignaldump():
         print("Participating TMs: ", set(np.where(m)[0]))
         print("Number of participating TMs: ", len(set(np.where(m)[0])))
         print("Amplitude sum: {} mV".format(np.nansum(readout.data.flatten())))
+        if(readout.time-last_tack!=0):
+            print("Rate {}{} Hz".format(*get_si_prefix(1.0/(readout.time-last_tack)*1e9)))
+        else:
+            print(readout.time,last_tack)
+        last_tack = readout.time
         # print(readout.data)
         # n_modules_per_readout.append(np.sum(m))
         # readout_counter[m] += 1
