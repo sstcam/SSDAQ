@@ -65,7 +65,7 @@ def get_attritbues(obj_):
     return attributes
 
 
-def get_utc_timestamp()->(int,int):
+def get_utc_timestamp() -> (int, int):
     """Summary
 
     Returns:

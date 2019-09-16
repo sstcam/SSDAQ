@@ -9,6 +9,7 @@ import signal
 from datetime import datetime
 import time
 from statistics import mean
+from ssdaq.core.utils import get_si_prefix
 
 
 def slowsignaldump():
@@ -42,6 +43,7 @@ def slowsignaldump():
     n = 0
     signal.alarm(0)
     print("Press `ctrl-C` to stop")
+    last_tack = 0
     while True:
         try:
             readout = rsub.get_data()
@@ -62,6 +64,15 @@ def slowsignaldump():
         print("Participating TMs: ", set(np.where(m)[0]))
         print("Number of participating TMs: ", len(set(np.where(m)[0])))
         print("Amplitude sum: {} mV".format(np.nansum(readout.data.flatten())))
+        if readout.time - last_tack != 0:
+            print(
+                "Rate {}{} Hz".format(
+                    *get_si_prefix(1.0 / (readout.time - last_tack) * 1e9)
+                )
+            )
+        else:
+            print(readout.time, last_tack)
+        last_tack = readout.time
         # print(readout.data)
         # n_modules_per_readout.append(np.sum(m))
         # readout_counter[m] += 1
@@ -263,14 +274,18 @@ def triggerdump():
     cargs.subaddr(parser)
     cargs.verbosity(parser)
     cargs.version(parser)
-    parser.add_argument('-r,--raw',
-                        dest = 'raw',
-                        action='store_true',
-                        help="if set then raw payloads are shown")
-    parser.add_argument('-p,--payload',
-                        dest = 'payload',
-                        action='store_false',
-                        help="if set no deserialized payloads are shown")
+    parser.add_argument(
+        "-r,--raw",
+        dest="raw",
+        action="store_true",
+        help="if set then raw payloads are shown",
+    )
+    parser.add_argument(
+        "-p,--payload",
+        dest="payload",
+        action="store_false",
+        help="if set no deserialized payloads are shown",
+    )
 
     args = parser.parse_args()
     eval("sslogger.setLevel(logging.%s)" % args.verbose)
@@ -304,7 +319,7 @@ def triggerdump():
                 print("#Data: {}".format(trigger.__class__.__name__))
                 for name, value in trigger._asdict().items():
 
-                    if name == "trigg_union" or name == 'trigg':
+                    if name == "trigg_union" or name == "trigg":
                         print("#    {}: {}".format(name, np.where(value)[0]))
                     elif name == "trigg_phase":
                         print("#    {}: {}".format(name, int(np.log2(value))))

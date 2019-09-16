@@ -9,6 +9,8 @@ from ssdaq import subscribers
 from ssdaq.core.utils import get_si_prefix
 from ssdaq import sslogger
 import logging
+
+
 class ReceiverStatusDash:
     def __init__(self, terminal, name, loc):
         self.terminal = terminal

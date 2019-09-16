@@ -1,10 +1,5 @@
 ### Specialization to different protobuf protocols#####
-from . import (
-    LogData,
-    TriggerMessage,
-    TriggerPacket,
-    Frame,
-)
+from . import LogData, TriggerMessage, TriggerPacket, Frame
 
 from ssdaq.core.io import RawObjectWriterBase, RawObjectReaderBase
 from ssdaq import version as checvers
@@ -15,7 +10,7 @@ _headers = {1: _header}
 
 
 class CHECFileHeader:
-    def __init__(self, unpacker: int, version: int = 1, ssdaq_version: str =None):
+    def __init__(self, unpacker: int, version: int = 1, ssdaq_version: str = None):
         self.unpacker = unpacker
         self.ssdaq_version = ssdaq_version or str(checvers.get_version())
         self.version = version

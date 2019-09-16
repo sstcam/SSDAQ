@@ -21,7 +21,7 @@ class RawObjectWriterBase:
 
     _protocols = {}
 
-    def __init__(self, filename: str, protocol:int=1, compressor="bz2", **kwargs):
+    def __init__(self, filename: str, protocol: int = 1, compressor="bz2", **kwargs):
         """Summary
 
         Args:
@@ -60,7 +60,7 @@ class RawObjectWriterBase:
         return scls
 
     @property
-    def data_counter(self)->int:
+    def data_counter(self) -> int:
         """Counter of the number of objects written to file
 
         Returns:
@@ -370,7 +370,7 @@ class RawObjectReaderBase:
         self.file.close()
 
     @property
-    def n_entries(self)->int:
+    def n_entries(self) -> int:
         """ number of objects in file.
 
         Returns:
@@ -379,7 +379,7 @@ class RawObjectReaderBase:
         return self._reader.n_entries
 
     @property
-    def filesize(self)->int:
+    def filesize(self) -> int:
         """ the file size on disk in bytes
 
         Returns:
@@ -388,7 +388,7 @@ class RawObjectReaderBase:
         return self._reader.filesize
 
     @property
-    def timestamp(self)->datetime:
+    def timestamp(self) -> datetime:
         """ unix timestamp of the file creation time
 
         Returns:

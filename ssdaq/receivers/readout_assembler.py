@@ -6,10 +6,13 @@ from ssdaq.data._dataimpl import slowsignal_format as dc
 from ssdaq.data import SSReadout
 from ssdaq.core.receiver_server import ReceiverServer
 from .mon_sender import ReceiverMonSender
+from collections import defaultdict
 
 READOUT_LENGTH = (
     dc.N_TM_PIX * 2 + 2 * 8
 )  # 64 2-byte channel amplitudes and 2 8-byte timestamps
+packet_format = struct.Struct(">Q32HQ32H")
+first_tack = struct.Struct(">Q")
 
 
 class SlowSignalDataProtocol(asyncio.Protocol):
@@ -19,16 +22,6 @@ class SlowSignalDataProtocol(asyncio.Protocol):
         self.log = log.getChild("SlowSignalDataProtocol")
         self.relaxed_ip_range = relaxed_ip_range
         self.mon = mon
-        if packet_debug_stream_file != None:
-            self.log.info(
-                "Opening a packet_debug_stream_file at %s" % packet_debug_stream_file
-            )
-            self.packet_debug_stream_file = open(packet_debug_stream_file, "w")
-            self.packet_debug_stream = True
-        else:
-            self.packet_debug_stream = False
-        self.dt = timedelta(seconds=0.1)
-        self.packet_format = struct.Struct(">Q32HQ32H")
 
     def connection_made(self, transport):
         self.log.info("Connected to port")
@@ -41,11 +34,12 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.log.warn("Got unsuported packet size, skipping packet")
             self.log.info("Bad package came from %s:%d" % tuple(data[0]))
             return
-        nreadouts = int(len(data) / (READOUT_LENGTH))
 
         # getting the module number from the last two digits of the ip
         ip = addr[0]
         module_nr = int(ip[-ip[::-1].find(".") :]) % 100
+        # self.log.info("Got packet from module {}".format(module_nr))
+
         if module_nr > dc.N_TM - 1 and self.relaxed_ip_range:
             # ensure that the module number is in the allowed range
             # (mostly important for local or standalone setups simulations)
@@ -56,46 +50,25 @@ class SlowSignalDataProtocol(asyncio.Protocol):
             self.log.error("   %s" % ip)
             self.log.error("This can be supressed if relaxed_ip_range=True")
             raise RuntimeError
-
-        # self.log.debug("Got data from %s assigned to module %d"%(str(ip),module_nr))
-        for i in range(nreadouts):
-            unpacked_data = self.packet_format.unpack_from(data, i * (READOUT_LENGTH))
-            self.loop.create_task(
-                self._buffer.put((module_nr, unpacked_data[0], unpacked_data, cpu_time))
-            )
-            cpu_time += self.dt
-
-            if self.packet_debug_stream:
-                self.packet_debug_stream_file.write(
-                    "%d  %d  %d\n"
-                    % (
-                        unpacked_data[0],
-                        int(datetime.utcnow().timestamp() * 1e9),
-                        module_nr,
-                    )
-                )
-        # self.log.debug('Front buffer length %d'%(self._buffer.qsize()))
-        if self._buffer.qsize() > 1000:
-            self.log.warning("Front buffer length %d" % (self._buffer.qsize()))
+        self.loop.create_task(self._buffer.put((module_nr, data, cpu_time)))
 
 
-class PartialReadout:
-    int_counter = 0
-
-    def __init__(self, tm_num, data, cpu_t):
+class MatchedPacket:
+    def __init__(self, tm_num, data, tack, cpu_t, nreadouts):
         self.data = [None] * dc.N_TM
         self.data[tm_num] = data
-        self.timestamp = data[0]
-        self.cpu_time = [cpu_t]
         self.tm_parts = [0] * dc.N_TM
         self.tm_parts[tm_num] = 1
-        PartialReadout.int_counter += 1
-        self.readout_number = PartialReadout.int_counter
+        self.tms = [tm_num]
+        self.tack = tack
+        self.cpu_t = [cpu_t]
+        self.nreadouts = nreadouts
 
     def add_part(self, tm_num, data, cpu_t):
         self.data[tm_num] = data
         self.tm_parts[tm_num] = 1
-        self.cpu_time.append(cpu_t)
+        self.tms.append(tm_num)
+        self.cpu_t.append(cpu_t)
 
 
 class ReadoutAssembler(ReceiverServer):
@@ -151,7 +124,7 @@ class ReadoutAssembler(ReceiverServer):
         self.nconstructed_readouts = 0
         self.readout_count = 1
         self.packet_counter = {}
-        self.readout_counter = {}
+        self.readout_counter = defaultdict(lambda: 1)
 
         # controlers
         self.publish_readouts = True
@@ -159,6 +132,7 @@ class ReadoutAssembler(ReceiverServer):
         # buffers
         self.inter_buff = []
         self.partial_ro_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
+        self.ro_part_buff = asyncio.queues.collections.deque(maxlen=self.buffer_len)
 
     def cmd_reset_ro_count(self, arg):
         self.log.info("Readout count has been reset")
@@ -186,7 +160,7 @@ class ReadoutAssembler(ReceiverServer):
     async def ct_assembler(self):
         n_packets = 0
         self.log.info("Empty socket buffer before starting readout building")
-        packet = await self.ss_data_protocol._buffer.get()
+        # _ = await self.ss_data_protocol._buffer.get()
         got_packet = True
         while got_packet:
             got_packet = False
@@ -201,144 +175,107 @@ class ReadoutAssembler(ReceiverServer):
             except:
                 pass
         self.log.info("Thrown away %d packets in buffer before start" % n_packets)
+        self.log.info("Fetching first packet")
+
+        module, data, cpu_time = await self.ss_data_protocol._buffer.get()
+        tack = first_tack.unpack_from(data, 0)[0]
+        nreadouts = int(len(data) / (READOUT_LENGTH))
+
+        self.partial_ro_buff.append(
+            MatchedPacket(module, data, tack, cpu_time, nreadouts)
+        )
         self.log.info("Starting readout build loop")
-        packet = await self.ss_data_protocol._buffer.get()
-        self.partial_ro_buff.append(PartialReadout(packet[0], packet[2], packet[3]))
         while True:
-            packet = await self.ss_data_protocol._buffer.get()
+            module, data, cpu_time = await self.ss_data_protocol._buffer.get()
+            tack = first_tack.unpack_from(data, 0)[0]
+            nreadouts = int(len(data) / (READOUT_LENGTH))
             # self.log.debug('Got packet from front buffer with timestamp %f and tm id %d'%(packet[1]*1e-9,packet[0]))
             pro = self.partial_ro_buff[-1]
-            dt = pro.timestamp - packet[1]
-
-            if abs(dt) < self.readout_tw and pro.tm_parts[packet[0]] == 0:  #
-                self.partial_ro_buff[-1].add_part(packet[0], packet[2], packet[3])
-                # self.log.debug('Packet added to the tail of the buffer')
-
+            dt = pro.tack - tack
+            if abs(dt) < self.readout_tw:
+                self.partial_ro_buff[-1].add_part(module, data, cpu_time)
             elif dt < 0:
                 self.partial_ro_buff.append(
-                    PartialReadout(packet[0], packet[2], packet[3])
+                    MatchedPacket(module, data, tack, cpu_time, nreadouts)
                 )
-                # self.log.debug('Packet added to a new readout at the tail of the buffer')
-
             else:
-                if self.partial_ro_buff[0].timestamp - packet[1] > 0:
-                    self.partial_ro_buff.appendleft(
-                        PartialReadout(packet[0], packet[2], packet[3])
+                found = False
+                for i in range(len(self.partial_ro_buff) - 1, 0, -1):
+                    pro = self.partial_ro_buff[i]
+                    dt = pro.timestamp - tack
+                    if abs(dt) < self.readout_tw:
+                        self.partial_ro_buff[-1].add_part(module, data, cpu_time)
+                        found = True
+                        break
+                if not found:
+                    self.log.warning(
+                        "No matching packets found for packet with timestamp %d and tm id %d"
+                        % (tack, module)
                     )
-                    # self.log.debug('Packet added to a new readout at the head of the buffer')
+            assembling = True
+            while assembling:
+                if abs(
+                    float(self.partial_ro_buff[-1].tack)
+                    - float(self.partial_ro_buff[0].tack)
+                ) > (self.buffer_time):
+                    readouts = self.assemble_readouts(self.partial_ro_buff.popleft())
+                    for readout in readouts:
+                        await self.publish(readout.pack())
                 else:
-                    # self.log.debug('Finding right readout in buffer')
-                    found = False
-                    for i in range(len(self.partial_ro_buff) - 1, 0, -1):
-                        pro = self.partial_ro_buff[i]
-                        dt = pro.timestamp - packet[1]
+                    assembling = False
+            # self.log.info("Buffer length {}".format(len(self.partial_ro_buff)))
 
-                        if abs(dt) < self.readout_tw:  #
-                            if pro.tm_parts[packet[0]] == 1:
-                                self.log.warning(
-                                    "Doublette packet with timestamp %f and tm id %d with cpu timestamp %f"
-                                    % (
-                                        packet[1] * 1e-9,
-                                        packet[0],
-                                        packet[3].timestamp() * 1e-9,
-                                    )
-                                )
-                            self.partial_ro_buff[i].add_part(
-                                packet[0], packet[2], packet[3]
-                            )
-                            # self.log.debug('Packet added to %d:th readout in buffer'%i)
-                            found = True
-                            break
-                        elif dt < 0:
-                            self.partial_ro_buff.insert(
-                                i + 1, PartialReadout(packet[0], packet[2], packet[3])
-                            )
-                            found = True
-                            break
-
-                    if not found:
-                        self.log.warning(
-                            "No partial readout found for packet with timestamp %f and tm id %d"
-                            % (packet[1] * 1e-9, packet[0])
-                        )
-                        self.log.info(
-                            "Newest readout timestamp %f"
-                            % (self.partial_ro_buff[-1].timestamp * 1e-9)
-                        )
-                        self.log.info(
-                            "Next readout timestamp %f"
-                            % (self.partial_ro_buff[0].timestamp * 1e-9)
-                        )
-            if abs(
-                float(self.partial_ro_buff[-1].timestamp)
-                - float(self.partial_ro_buff[0].timestamp)
-            ) > (self.buffer_time):
-                # self.log.debug('First %f and last %f timestamp in buffer '%(self.partial_ro_buff[0].timestamp*1e-9,self.partial_ro_buff[-1].timestamp*1e-9))
-                readout = self.assemble_readout(self.partial_ro_buff.popleft())
-                if self.nconstructed_readouts % 10 == 0:
-                    # for d in self.partial_ro_buff:
-                    # print(d.timestamp*1e-9,d.timestamp,d.readout_number, d.tm_parts)
-                    self.log.debug("Built readout %d" % self.nconstructed_readouts)
-                    self.log.debug(
-                        "Newest readout timestamp %f"
-                        % (self.partial_ro_buff[-1].timestamp * 1e-9)
-                    )
-                    self.log.debug(
-                        "Next readout timestamp %f"
-                        % (self.partial_ro_buff[0].timestamp * 1e-9)
-                    )
-                    self.log.debug(
-                        "Last timestamp dt %f"
-                        % (
-                            (
-                                self.partial_ro_buff[-1].timestamp
-                                - self.partial_ro_buff[0].timestamp
-                            )
-                            * 1e-9
-                        )
-                    )
-                    # self.log.debug('Number of TMs participating %d'%(sum(readout.timestamps[:,0]>0)))
-                    self.log.debug("Buffer lenght %d" % (len(self.partial_ro_buff)))
-                # self.log.debug('Built readout %d'%self.nconstructed_readouts)
-                await self.publish(readout.pack())
-
-    def assemble_readout(self, pro):
+    def assemble_readouts(self, matched):
         """Summary
 
         Args:
-            pro (TYPE): Description
+            matched (TYPE): Description
 
         Returns:
             TYPE: Description
+
         """
         # construct readout
-        r_cpu_time = np.min(pro.cpu_time)
-        cpu_time_s = int(r_cpu_time.timestamp())
-        cpu_time_ns = int((r_cpu_time.timestamp() - cpu_time_s) * 1e9)
-        readout = SSReadout(
-            int(pro.timestamp), self.readout_count, cpu_time_s, cpu_time_ns
-        )
-        for i, tmp_data in enumerate(pro.data):
-            if tmp_data == None:
-                continue
-            if i in self.readout_counter:
-                self.readout_counter[i] += 1
-            else:
-                self.readout_counter[i] = 1
-            # put data into a temporary array of uint type
-            tmp_array = np.empty(dc.N_TM_PIX, dtype=np.uint64)
-            tmp_array[: dc.N_TM] = tmp_data[1 : dc.N_TM + 1]
-            tmp_array[dc.N_TM :] = tmp_data[dc.N_TM + 2 :]
+        r_cpu_time_0 = np.min(matched.cpu_t)
+        readouts = []
+        tms = sorted(matched.tms)
+        tack0 = matched.tack
+        dts = []
 
-            # converting counts to mV
-            m = tmp_array < 0x8000
-            tmp_array[m] += 0x8000
-            tmp_array[~m] = tmp_array[~m] & 0x7FFF
-            readout.data[i] = tmp_array * 0.03815 * 2.0
+        for i in range(matched.nreadouts):
 
-        self.nconstructed_readouts += 1
-        self.readout_count += 1
-        return readout
+            tack = first_tack.unpack_from(matched.data[tms[0]], i * (READOUT_LENGTH))[0]
+            dt = tack - tack0
+            dts.append(dt)
+            if i > 0 and dt == 0:
+                self.log.warn(
+                    "Subsequent readouts with the same tack {}, {}".format(tack, i)
+                )
+            r_cpu_time = r_cpu_time_0 + timedelta(microseconds=dt * 1e-3)
+            cpu_time_s = int(r_cpu_time.timestamp())
+            cpu_time_ns = int((r_cpu_time.timestamp() - cpu_time_s) * 1e9)
+            readout = SSReadout(tack, self.readout_count, cpu_time_s, cpu_time_ns)
+
+            for tm in tms:
+                tmp_data = packet_format.unpack_from(
+                    matched.data[tm], i * (READOUT_LENGTH)
+                )
+                self.readout_counter[tm] += 1
+                # put data into a temporary array of uint type
+                tmp_array = np.empty(dc.N_TM_PIX, dtype=np.uint64)
+                tmp_array[: dc.N_TM] = tmp_data[1 : dc.N_TM + 1]
+                tmp_array[dc.N_TM :] = tmp_data[dc.N_TM + 2 :]
+
+                # converting counts to mV
+                m = tmp_array < 0x8000
+                tmp_array[m] += 0x8000
+                tmp_array[~m] = tmp_array[~m] & 0x7FFF
+                readout.data[tm] = tmp_array * 0.03815 * 2.0
+
+            self.nconstructed_readouts += 1
+            self.readout_count += 1
+            readouts.append(readout)
+        return readouts
 
 
 if __name__ == "__main__":

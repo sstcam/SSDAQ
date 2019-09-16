@@ -4,3 +4,7 @@ docs/build/
 *egg-info/
 *.ipynb*
 .started_tms.txt
+*.prt
+*.sof
+*.hdf5
+*.hdf

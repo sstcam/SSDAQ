@@ -95,6 +95,7 @@ class TriggerPacket:
             return None
         instance =TriggerPacket._message_types[mtype].unpack(raw_packet[3:])
         instance._raw_packet = raw_packet
+
         return instance
     def serialize(self)->bytearray:
         """A convenience method to conform with the serialization api for instances
@@ -133,8 +134,9 @@ class NominalTriggerPacketV1(TriggerPacket):
     _head_form = struct.Struct("<BQB512H")
     _head_form2 = struct.Struct("<BQB")
     _tail_form = struct.Struct("<3IH")
-    #used for reversing the bits of the phase byte
-    _reverse_bits = dict([(2**i,2**(7-i)) for i in range(7,-1,-1)])
+    # used for reversing the bits of the phase byte
+    _reverse_bits = dict([(2 ** i, 2 ** (7 - i)) for i in range(7, -1, -1)])
+
     def __init__(
         self,
         TACK: int = 0,
@@ -145,7 +147,6 @@ class NominalTriggerPacketV1(TriggerPacket):
         uc_pps: int = 1,
         uc_clock: int = 1,
         type_: int = 0,
-
     ):
         """
 
@@ -173,7 +174,9 @@ class NominalTriggerPacketV1(TriggerPacket):
         self._trigg_union = trigg_union
 
     def _compute_trigg(self):
-        trigg_phase_array = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (self.trigg_phase)
+        trigg_phase_array = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (
+            self.trigg_phase
+        )
 
         self._trigg = (
             np.bitwise_and(trigg_phase_array, self._trigger_phases) > 0
@@ -235,6 +238,7 @@ class NominalTriggerPacketV1(TriggerPacket):
         #Extracting the triggered phases
         trigg_phases = np.frombuffer(raw_packet[NominalTriggerPacketV1._head_form2.size: -int(512 / 8) - NominalTriggerPacketV1._tail_form.size],dtype=np.uint16)
 
+
         #Extracting the trigger union
         tbits = bitarray(0, endian="little")
         tbits.frombytes(
@@ -248,10 +252,7 @@ class NominalTriggerPacketV1(TriggerPacket):
         tail = NominalTriggerPacketV1._tail_form.unpack(
             raw_packet[-NominalTriggerPacketV1._tail_form.size :]
         )
-        return cls(
-            *[tack, phase,trigg_phases , tbits]
-            + list(tail)
-        )
+        return cls(*[tack, phase, trigg_phases, tbits] + list(tail))
 
     def pack(self):
 

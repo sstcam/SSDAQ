@@ -22,7 +22,14 @@ class BasicSubscriber(Thread):
 
     _id_counter = 0
 
-    def __init__(self, ip: str, port: int, unpack=None, logger: logging.Logger = None, zmqcontext =None):
+    def __init__(
+        self,
+        ip: str,
+        port: int,
+        unpack=None,
+        logger: logging.Logger = None,
+        zmqcontext=None,
+    ):
         """ The init of a BasicSubscriber
 
                 Args:
@@ -237,6 +244,7 @@ class AsyncSubscriber:
         log (logging.logger): logger instance
 
     """
+
     def __init__(
         self,
         ip: str,
