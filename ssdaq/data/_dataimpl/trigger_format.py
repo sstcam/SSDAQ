@@ -175,7 +175,7 @@ class NominalTriggerPacketV1(TriggerPacket):
 
     def _compute_trigg(self):
         trigg_phase_array = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (
-            self.trigg_phase
+            self.phase
         )
 
         self._trigg = (
@@ -189,27 +189,27 @@ class NominalTriggerPacketV1(TriggerPacket):
         return self._busy
 
     @property
-    def TACK(self):
+    def tack_time(self):
         return self._TACK
 
     @property
-    def trigg_phase(self):
+    def phase(self):
         return self._trigg_phase
 
     @property
-    def uc_ev(self):
+    def ro_count(self):
         return self._uc_ev
 
     @property
-    def uc_pps(self):
+    def pps_count(self):
         return self._uc_pps
 
     @property
-    def uc_clock(self):
+    def clock_count(self):
         return self._uc_clock
 
     @property
-    def type(self):
+    def source(self):
         return self._type
 
     @property
@@ -263,13 +263,13 @@ class NominalTriggerPacketV1(TriggerPacket):
 
         raw_packet = super().pack_header(self._mtype)
         # #The phase is stored backwards
-        phase = NominalTriggerPacketV1._reverse_bits[self.trigg_phase]
-        raw_packet.extend(NominalTriggerPacketV1._head_form2.pack(22, self.TACK, phase))
+        phase = NominalTriggerPacketV1._reverse_bits[self.phase]
+        raw_packet.extend(NominalTriggerPacketV1._head_form2.pack(22, self.tack_time, phase))
         raw_packet.extend(self._trigger_phases.tobytes())
         raw_packet.extend(self._trigg_union.tobytes())
         raw_packet.extend(
             NominalTriggerPacketV1._tail_form.pack(
-                self.uc_ev, self.uc_pps, self.uc_clock, self.type
+                self.ro_count, self.pps_count, self.clock_count, self.source
             )
         )
         return raw_packet
@@ -448,6 +448,10 @@ class TriggerPacketV2(TriggerPacket):
     @property
     def trigg_pattrns(self):
         return self._trigg_pattrns
+
+    @property
+    def busy(self):
+        return self.message_type&1 == 1
 
     def __str__(self):
         s = "<{}>   ".format(self.__class__.__name__)
