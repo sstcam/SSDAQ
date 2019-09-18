@@ -60,18 +60,23 @@ class TriggerPacket:
         return scls
 
     @staticmethod
-    def pack_header(mtype: int, magic_mark: int = 0xCAFE) -> bytearray:
+    def pack_header(version: int, magic_mark: int = 0xCAFE) -> bytearray:
         """Packs a trigger packet header into a byte array
 
         Args:
-            mtype (int): Description
-            mlength (int): Description
-            magic_mark (int, optional): Description
+            version (int): Payload version
+            magic_mark (int, optional): magic marker (for trigger packets
+                it is set to 0xCAFE)
 
         Returns:
             bytearray: packet trigger packet header
+
+        Payload version 0 and 1 are in fact the same version and the version
+        number encodes whether the trigger i nominal (0) or busy (1). Newer payload
+        versions have this information encoded in a seperate field.
+
         """
-        raw_header = bytearray(TriggerPacketHeader.pack(magic_mark, mtype))
+        raw_header = bytearray(TriggerPacketHeader.pack(magic_mark, version))
         return raw_header
 
     @classmethod
@@ -80,10 +85,10 @@ class TriggerPacket:
             and version.
 
         Args:
-            raw_packet (bytearray): Description
+            raw_packet (bytearray): UDP payload
 
         Returns:
-            TYPE:  Instance of a descendant to TriggerPacket
+            TriggerPacket:  Instance of a descendant to TriggerPacket
         """
         magic_mark, mtype = TriggerPacketHeader.unpack(raw_packet[:3])
 
@@ -131,7 +136,7 @@ class NominalTriggerPacketV1(TriggerPacket):
     """
 
     _mtype = 0x0
-    _head_form = struct.Struct("<BQB512H")
+    _head_form = struct.Struct("<BQB")#512H")
     _head_form2 = struct.Struct("<BQB")
     _tail_form = struct.Struct("<3IH")
     # used for reversing the bits of the phase byte
@@ -141,8 +146,8 @@ class NominalTriggerPacketV1(TriggerPacket):
         self,
         TACK: int = 0,
         trigg_phase: int = 0,
-        trigg_phases: np.ndarray = np.zeros(512, dtype=np.uint16),
-        trigg_union: bitarray = bitarray("0" * 512),
+        trigg_phases: np.ndarray = np.zeros((16,512), dtype=np.uint8),
+        trigg_union: bitarray = np.zeros(512, dtype=np.uint8),
         uc_ev: int = 1,
         uc_pps: int = 1,
         uc_clock: int = 1,
@@ -169,20 +174,12 @@ class NominalTriggerPacketV1(TriggerPacket):
         self._type = type_
         self._busy = False
         self._mtype = NominalTriggerPacketV1._mtype
-        self._trigger_phases = np.array(trigg_phases, dtype=np.uint16)
+        self._trigg_pattrns = trigg_phases
         self._trigg = None
         self._trigg_union = trigg_union
 
     def _compute_trigg(self):
-        trigg_phase_array = np.ones(self._trigger_phases.shape, dtype=np.uint16) * (
-            self.phase
-        )
-
-        self._trigg = (
-            np.bitwise_and(trigg_phase_array, self._trigger_phases) > 0
-        ).astype(np.uint16)
-
-        return self._trigg
+        self._trigg = self._trigg_pattrns[self.phase_index, :]
 
     @property
     def busy(self):
@@ -223,52 +220,65 @@ class NominalTriggerPacketV1(TriggerPacket):
         return self._trigg
 
     @property
+    def phase_index(self):
+        """ Trigger phase index
+            (an integer number between 0-8)
+            corresponding to the position of
+            phase bit
+
+        Returns:
+            int : phase index
+        """
+        return int(np.log2(self.phase + 1))
+
+    @property
     def trigg_union(self):
-        return np.frombuffer(self._trigg_union.unpack(), dtype=bool)
+        return self._trigg_union
 
     @classmethod
     def unpack(cls, raw_packet: bytearray):
+        readout_length = 16
         # Extracting tack and trigger phase
-        data_part1 = NominalTriggerPacketV1._head_form2.unpack(
-            raw_packet[: NominalTriggerPacketV1._head_form2.size]
+        data_part1 = cls._head_form2.unpack(
+            raw_packet[: cls._head_form2.size]
         )
         _, tack, phase = data_part1[0], data_part1[1], data_part1[2]
-        phase = NominalTriggerPacketV1._reverse_bits[phase]
+        phase = cls._reverse_bits[phase]
 
         # Extracting the triggered phases
-        trigg_phases = np.frombuffer(
+        trigg_pattrns = np.unpackbits(np.frombuffer(
             raw_packet[
-                NominalTriggerPacketV1._head_form2.size : -int(512 / 8)
-                - NominalTriggerPacketV1._tail_form.size
+                cls._head_form.size : -int(512 / 8)
+                - cls._tail_form.size
             ],
-            dtype=np.uint16,
-        )
-
+            dtype=np.uint8,
+        ))
+        trigg_pattrns = trigg_pattrns.reshape(512,readout_length).T
         # Extracting the trigger union
-        tbits = bitarray(0, endian="little")
-        tbits.frombytes(
-            bytes(
-                raw_packet[
-                    NominalTriggerPacketV1._head_form.size : -NominalTriggerPacketV1._tail_form.size
-                ]
+        union = np.unpackbits(
+            np.frombuffer(
+                raw_packet[cls._head_form.size +readout_length*int(512 / 8): -cls._tail_form.size],
+                dtype=np.uint8,
             )
         )
+
         # extracting counters
-        tail = NominalTriggerPacketV1._tail_form.unpack(
-            raw_packet[-NominalTriggerPacketV1._tail_form.size :]
+
+        tail = cls._tail_form.unpack(
+            raw_packet[-cls._tail_form.size :]
         )
-        return cls(*[tack, phase, trigg_phases, tbits] + list(tail))
+        return cls(*[tack, phase, trigg_pattrns, union] + list(tail))
 
     def pack(self):
 
         raw_packet = super().pack_header(self._mtype)
         # #The phase is stored backwards
-        phase = NominalTriggerPacketV1._reverse_bits[self.phase]
-        raw_packet.extend(NominalTriggerPacketV1._head_form2.pack(22, self.tack_time, phase))
-        raw_packet.extend(self._trigger_phases.tobytes())
-        raw_packet.extend(self._trigg_union.tobytes())
+        phase = self._reverse_bits[self.phase]
+        raw_packet.extend(self._head_form2.pack     (22, self.tack_time, phase))
+        raw_packet.extend(np.packbits(self._trigg_pattrns.T).tobytes())
+        raw_packet.extend(np.packbits(self._trigg_union).tobytes())
         raw_packet.extend(
-            NominalTriggerPacketV1._tail_form.pack(
+            self._tail_form.pack(
                 self.ro_count, self.pps_count, self.clock_count, self.source
             )
         )
@@ -301,8 +311,8 @@ class BusyTriggerPacketV1(NominalTriggerPacketV1):
         self,
         TACK: int = 0,
         trigg_phase: int = 0,
-        trigg_phases: np.ndarray = np.zeros(512, dtype=np.uint16),
-        trigg_union: bitarray = bitarray("0" * 512),
+        trigg_phases: np.ndarray = np.zeros((16,512), dtype=np.uint16),
+        trigg_union: bitarray = np.zeros(512, dtype=np.uint16),
         uc_ev: int = 1,
         uc_pps: int = 1,
         uc_clock: int = 1,

@@ -33,7 +33,7 @@ def test_pack_unpack():
 
 def test_trigger_packet_pack_unpack():
     trigg = BusyTriggerPacketV1(
-        trigg_phases=2 ** np.random.uniform(0, 15, 512),
+        trigg_phases= np.array(np.random.uniform(0, 2, (16, 512)), dtype=np.uint8),
         trigg_phase=2 ** int(np.random.uniform(0, 7)),
     )
 
