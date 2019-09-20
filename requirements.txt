@@ -1,0 +1,12 @@
+    zmq
+    numpy
+    tables
+    pyparsing
+    matplotlib
+    pyyaml
+    click
+    bitarray
+    protobuf
+    blessed
+    pyqtgraph
+    mysqlclient
