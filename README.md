@@ -1,4 +1,6 @@
 # SSDAQ
+[![Actions Status](https://github.com/sflis/SSDAQ/workflows/Python%20application/badge.svg)](https://github.com/sflis/SSDAQ/actions)
+
 Data acquisition and distribution for CHEC-S TARGET-C modules.
 
 This project contains a set of modules and applications to receive and handle pushed data from the CHEC camera. The data is then published on TCP sockets that are subscribable. Subscribers for printing out the data or writing it to disk are provided as well.
