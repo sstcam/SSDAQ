@@ -1,6 +1,4 @@
 # SSDAQ
-[![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
-
 Data acquisition and distribution for CHEC-S TARGET-C modules.
 
 This project contains a set of modules and applications to receive and handle pushed data from the CHEC camera. The data is then published on TCP sockets that are subscribable. Subscribers for printing out the data or writing it to disk are provided as well.
