@@ -10,12 +10,7 @@ from .teldata_pb2 import TelData as _TelData
 # from .trigger_format import TriggerPacketData
 # from .trigger_format import NominalTriggerDataEncode
 from .trigger_format import TriggerPacket
-from .trigger_format import (
-    NominalTriggerPacket,
-    BusyTriggerPacket,
-    NominalTriggerPacketV2,
-    BusyTriggerPacketV2,
-)
+from .trigger_format import NominalTriggerPacketV1, BusyTriggerPacketV1, TriggerPacketV2
 from .slowsignal_format import SSReadout
 
 # from .frame import Frame, FrameObject
