@@ -564,7 +564,7 @@ class TriggerPacketV3(TriggerPacketV2):
         triggered_pattrns = (
             np.unpackbits(triggered_pattrns).reshape((512, ro_len))
         ).T  # we want the rows to be the time axis
-        trigg_pattrns = np.zeros((ro_len, 512))
+        trigg_pattrns = np.zeros((ro_len, 512),dtype=np.uint8)
         trigg_pattrns[:, np.where(union)[0]] = triggered_pattrns
 
         return cls(*header + [trigg_pattrns])

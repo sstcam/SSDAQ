@@ -113,7 +113,7 @@ def timestamp_unpack(data):
     return timestamp
 
 
-_unpackers = [log_unpack, timestamp_unpack, TriggerPacket.unpack, Frame.from_bytes]
+_unpackers = [log_unpack, timestamp_unpack, TriggerPacket.unpack, Frame.unpack]
 
 
 class DataReader(RawObjectReaderBase):

@@ -756,7 +756,6 @@ class BaseFileWriter:
                 self._close_file()
                 self.file_counter += 1
                 self._open_file()
-
         self._writer.write(data)
         self.data_counter += 1
 

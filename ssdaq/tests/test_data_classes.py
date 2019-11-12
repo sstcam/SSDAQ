@@ -54,6 +54,7 @@ def test_trigger_packet_pack_unpack():
     assert np.all(
         triggunV2.trigg_pattrns == triggV2.trigg_pattrns
     ), "correct trigger pattern V2"
+
     triggV3 = TriggerPacketV3(
         # trigg_union = 2 ** np.random.uniform(0, 15, 512)
         trigg_pattrns=np.array(np.random.uniform(0, 2, (128, 512)), dtype=np.uint8),
@@ -66,4 +67,20 @@ def test_trigger_packet_pack_unpack():
     assert triggunV3.busy, "is busy"
     assert np.all(
         triggunV3.trigg_pattrns == triggV3.trigg_pattrns
+    ), "correct trigger pattern V3"
+
+def test_trigger_packet_unpack_from_pack_unpack():
+    triggV3 = TriggerPacketV3(
+        # trigg_union = 2 ** np.random.uniform(0, 15, 512)
+        trigg_pattrns=np.array(np.random.uniform(0, 2, (128, 512)), dtype=np.uint8),
+        phase=2 ** int(np.random.uniform(0, 7)),
+        message_type=5
+    )
+
+    triggunV3 = TriggerPacket.unpack(triggV3.pack())
+    triggununV3 = TriggerPacket.unpack(triggunV3.pack())
+    assert triggununV3.phase == triggV3.phase, "correct phase V3"
+    assert triggununV3.busy, "is busy"
+    assert np.all(
+        triggununV3.trigg_pattrns == triggV3.trigg_pattrns
     ), "correct trigger pattern V3"

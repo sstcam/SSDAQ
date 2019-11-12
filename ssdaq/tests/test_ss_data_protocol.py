@@ -13,7 +13,6 @@ def mock_data_protocol():
             pass
 
     from queue import Queue
-    import datetime
 
     mock_dp = Mock(SlowSignalDataProtocol)
     mock_dp._buffer = Queue()
