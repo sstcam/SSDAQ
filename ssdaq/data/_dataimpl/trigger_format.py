@@ -14,6 +14,7 @@ def get_SP2bptrigg_mapping():
     Returns:
         np.array: array containing the mapping
     """
+
     fMask2SPA = np.array([6, 7, 14, 12, 4, 5, 15, 13, 3, 2, 8, 11, 1, 0, 10, 9])
     fMask2SPB = np.array([9, 10, 0, 1, 11, 8, 2, 3, 13, 15, 5, 4, 12, 14, 7, 6])
     masks = [fMask2SPA, fMask2SPB]
@@ -112,15 +113,16 @@ class TriggerPacket:
         """
         return self.pack()
 
-    def deserialize(self, raw_packet: bytearray):
+    @classmethod
+    def deserialize(cls, raw_packet: bytearray):
         """ A convenience method to support "unpacking" for instances
             of the class.
 
         Args:
             raw_packet (bytearray): Description
         """
-        inst = TriggerPacket.unpack(raw_packet)
-        self.__dict__.update(inst.__dict__)
+        return TriggerPacket.unpack(raw_packet)
+
 
     def _asdict(self):
         return get_attritbues(self)
@@ -145,7 +147,7 @@ class NominalTriggerPacketV1(TriggerPacket):
     def __init__(
         self,
         TACK: int = 0,
-        trigg_phase: int = 0,
+        trigg_phase: int = 1,
         trigg_phases: np.ndarray = np.zeros((16,512), dtype=np.uint8),
         trigg_union: bitarray = np.zeros(512, dtype=np.uint8),
         uc_ev: int = 1,
@@ -360,7 +362,7 @@ class TriggerPacketV2(TriggerPacket):
         ro_count: int = 0,
         pps_count: int = 0,
         clock_count: int = 0,
-        trigg_pattrns: np.array = np.zeros((1, 512)),
+        trigg_pattrns=np.ones((128, 512), dtype=np.uint8),
     ):
         """
         Args:
