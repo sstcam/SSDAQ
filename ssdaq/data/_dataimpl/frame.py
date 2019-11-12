@@ -30,18 +30,20 @@ class Frame:
         self._serialized = {}
         self._log = logging.getLogger(__name__)
 
-    @classmethod
-    def from_bytes(cls, data):
-        inst = cls()
-        inst.deserialize(data)
-        return inst
-
     def add(self, key, obj):
         #add checks here to see if the object supports serialization
         self._objects[key] = obj
 
     def items(self):
-        return self._objects.items()
+        for k,v in self._objects.items():
+            yield k,v
+
+        for k,v in self._serialized.items():
+            if k in self._objects:
+
+                continue
+            self._deserialized_obj(k)
+            yield k, self._objects[k]
 
     def __setitem__(self,key,obj):
         self.add(key,obj)
@@ -85,7 +87,7 @@ class Frame:
         index = []
         classes = []
         pos = 0
-        for k, v in self._objects.items():
+        for k, v in self.items():
             if isinstance(v, np.ndarray) or isinstance(v, tuple):
                 v = PyArrowSerializer(v)
             classes.append(
@@ -152,9 +154,7 @@ class Frame:
 
     @classmethod
     def unpack(cls,data_stream:bytes):
-        frame = cls()
-        frame.deserialize(data_stream)
-        return frame
+        return cls.deserialize(data_stream)#frame
 
     def pack(self):
         return self.serialize()

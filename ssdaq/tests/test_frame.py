@@ -109,3 +109,20 @@ def test_nested_frame_serialization_and_deserialization():
     assert (
         frame1["trigg_pack"].tack_time == frame3['frame1']["trigg_pack"].tack_time
     ),"Correct trigg TACK"
+
+def test_serialization_after_deserialization():
+    trigger_packet = data.TriggerPacketV3(
+                        tack_time=100,
+                        )
+    frame1 = data.Frame()
+    frame1['trigg_pack'] = trigger_packet
+    frame2 = data.Frame.deserialize(frame1.serialize())
+    frame3 = data.Frame.deserialize(frame2.serialize())
+
+    assert (
+        list(frame2.keys()) == list(frame3.keys())
+    ), "correct keys in deserialized frame"
+
+    assert (
+        frame1["trigg_pack"].tack_time == frame3["trigg_pack"].tack_time
+    ),"Correct trigg TACK"
