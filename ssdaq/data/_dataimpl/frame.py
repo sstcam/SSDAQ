@@ -1,10 +1,8 @@
 import struct
 import numpy as np
-# from ssdaq import data
 from importlib import import_module
 import pyarrow
-# _index = struct.Struct()
-
+import logging
 
 class PyArrowSerializer:
     def __init__(self,obj):
@@ -29,6 +27,8 @@ class Frame:
     def __init__(self):
         self._objects = {}
         self._cache = {}
+        self._serialized = {}
+        self._log = logging.getLogger(__name__)
 
     @classmethod
     def from_bytes(cls, data):
@@ -37,22 +37,47 @@ class Frame:
         return inst
 
     def add(self, key, obj):
+        #add checks here to see if the object supports serialization
         self._objects[key] = obj
 
     def items(self):
         return self._objects.items()
 
+    def __setitem__(self,key,obj):
+        self.add(key,obj)
+
     def __getitem__(self, key):
+        if key not in self._objects and key in self._serialized:
+            self._deserialized_obj(key)
         return self._objects[key]
 
     def get(self,key):
+        """ Behaves like the dict version of `get`. Returns
+            the object if it exiest in the frame. If not
+            the return value is None.
+
+        Args:
+            key (str): the key string
+
+        Returns:
+            obj or None: the object stored at `key` or n
+        """
+        if key not in self._objects and key in self._serialized:
+            self._deserialized_obj(key)
         return self._objects.get(key)
 
     def keys(self):
-        return self._objects.keys()
+        """
+
+        Returns:
+            TYPE: Description
+        """
+        keys = set(list(self._objects.keys())+list(self._serialized.keys()))
+        return iter(list(keys))
 
     def serialize(self)->bytes:
         """Serializes the frame to a bytestream
+
         Returns:
             bytes: serialized frame
         """
@@ -84,8 +109,26 @@ class Frame:
         data_stream.extend(trailer)
         return data_stream
 
-    def deserialize(self, data_stream:bytes):
+    def _deserialized_obj(self,key):
+        class_,data = self._serialized[key]
+        if self._cache[class_] is not None:
+            cls = self._cache[class_]
+            try:
+                self._objects[key] = cls.deserialize(data)
+            except Exception as e:
+                self._log.error("And error occured while deserializing object {} of type {}:\n{}".format(key,class_,e))
+        else:
+            # If we don't know how to deserialize the object we just expose
+            # the raw byte stream
+            self._objects[key] = data
+    @classmethod
+    def deserialize(cls,data_stream:bytes):
+        inst = cls()
+        inst.deserialize_m(data_stream)
+        return inst
+    def deserialize_m(self, data_stream:bytes):
         """Deserializes a frame from byte buffer
+
         Args:
             data_stream (bytes): byte buffer to be deserialized
         """
@@ -103,14 +146,8 @@ class Frame:
                     self._cache[class_] = getattr(m, class_)
                 except AttributeError:
                     self._cache[class_] = None
-
-            if self._cache[class_] is not None:
-                cls = self._cache[class_]
-                self._objects[key] = cls.deserialize(data_stream[last_pos:i])
-            else:
-                # If we don't know how to deserialize the object we just expose
-                # the raw byte stream
-                self._objects[key] = data_stream[last_pos:i]
+                    self._log.warn(f"Failed to import class `{class_}` to deserialize object at key: `{key}`")
+            self._serialized[key] = (class_,data_stream[last_pos:i])
             last_pos = i
 
     @classmethod
@@ -118,6 +155,24 @@ class Frame:
         frame = cls()
         frame.deserialize(data_stream)
         return frame
+
+    def pack(self):
+        return self.serialize()
+
+    def __str__(self):
+        s ="{\n"
+        for k in set(list(self._objects.keys())+list(self._serialized.keys())):
+            if k not in self._objects:
+                class_,_ = self._serialized[k]
+                obj_str = "**serialized data**"
+            else:
+                class_ = type(self._objects[k])
+                obj_str = self._objects[k].__str__()
+            s+=f"`{k}` <{class_}>: {obj_str},\n"
+        s +="}"
+        return s
+    def __repr__(self):
+        return self.__str__()
 
 
 class FrameObject:
@@ -127,7 +182,7 @@ class FrameObject:
 
     def serialize(self):
         return self.pack()
-
+    # @classmethod
     def deserialize(self, data):
         return self.unpack(data)
 

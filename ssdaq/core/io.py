@@ -471,6 +471,9 @@ class RawObjectReaderV1:
             bunchoff, dataoff, fileoff, crc, ndata, bunch_n = RawObjectReaderV1._bunch_trailer_header.unpack(
                 last_bunch_trailer
             )
+            if(bunchoff>fileoff or dataoff>bunchoff):
+                raise RuntimeError("File offsets are corrupted, unable to read file index")
+
             # read bunch index
             self.file.seek(
                 self.file.tell()

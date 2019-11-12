@@ -193,7 +193,6 @@ class TimestampWriter(WriterSubscriber):
             name="TimestampWriter",
             **{k: v for k, v in locals().items() if k not in skip}
         )
-        print(locals())
 
 
 class ATimestampWriter(AsyncWriterSubscriber):
