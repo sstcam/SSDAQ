@@ -10,4 +10,7 @@
     blessed
     pyqtgraph
     mysqlclient
+<<<<<<< HEAD
     pyarrow
+=======
+>>>>>>> master
