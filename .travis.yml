@@ -11,6 +11,7 @@ python:
     # in anaconda as well (we don't support python less than 3.5)
     - 3.5
     - 3.6
+    - 3.7
 # # Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
 # matrix:
 #   include:
@@ -37,7 +38,7 @@ before_install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-
+- sudo apt-get install hdf5-serial-dev
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
 - pip install pytest
