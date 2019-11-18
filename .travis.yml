@@ -9,7 +9,6 @@ sudo: required
 python:
     # not used directly, but this sets TRAVIS_PYTHON_VERSION so we can use it
     # in anaconda as well (we don't support python less than 3.5)
-    - 3.5
     - 3.6
     - 3.7
 # # Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
@@ -40,7 +39,7 @@ before_install:
 - conda info -a
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
-- conda install -c anaconda hdf5
+
 - pip install pytest
 - pip install 'pytest-cov<2.6.0'
 - pip install python-coveralls
