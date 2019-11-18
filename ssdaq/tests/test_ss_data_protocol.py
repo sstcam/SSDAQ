@@ -13,7 +13,6 @@ def mock_data_protocol():
             pass
 
     from queue import Queue
-    import datetime
 
     mock_dp = Mock(SlowSignalDataProtocol)
     mock_dp._buffer = Queue()
@@ -61,13 +60,5 @@ def test_correct_cpu_timestamps(mock_data_protocol, make_datapacket):
     ros = []
     while not mock_data_protocol._buffer.empty():
         ros.append(mock_data_protocol._buffer.get())
-    assert len(ros) == n, "correct number of readouts"
-    cpu_times = []
-    for ro in ros:
-        cpu_times.append(ro[3])
-    dt = np.diff(cpu_times)
-    bin_length = datetime.timedelta(seconds=0.1)
-    dt -= bin_length
-    helper = np.vectorize(lambda x: x.total_seconds())
-    dt = helper(dt)
-    assert np.all(np.abs(dt) < 0.0001), "Correct cpu times"
+    assert len(ros) == 1, "Correct number of readouts"
+    assert ros[0][0] ==20, "Correct module number"

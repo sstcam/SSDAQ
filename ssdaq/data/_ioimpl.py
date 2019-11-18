@@ -113,7 +113,9 @@ def timestamp_unpack(data):
     return timestamp
 
 
-_unpackers = [log_unpack, timestamp_unpack, TriggerPacket.unpack, Frame.from_bytes]
+_unpackers = [(log_unpack,LogData),
+                (timestamp_unpack,TriggerMessage),
+                (TriggerPacket.unpack,TriggerPacket), (Frame.unpack,Frame)]
 
 
 class DataReader(RawObjectReaderBase):
@@ -130,16 +132,16 @@ class DataReader(RawObjectReaderBase):
         if self.version == 0:
             if self.fhead == 0 or self.fhead > len(_unpackers):
                 raise ValueError("No compatible reader found for this file...")
-            self._unpack = _unpackers[self.fhead - 1]
+            self._unpack,_ = _unpackers[self.fhead - 1]
             self.resetfp()
         else:
             chec_file_version, datatype, ssdaq_version = CHECFileHeader.unpack(
                 self._reader._headext
             )
-            self._unpack = _unpackers[datatype - 1]
+            self._unpack,cls = _unpackers[datatype - 1]
             self.metadata["ssdaq_version"] = ssdaq_version[0].decode()
             self.metadata["chec_file_version"] = chec_file_version
-            self.metadata["data_type"] = self._unpack.__class__
+            self.metadata["data_type"] = "<{}.{}>".format(cls.__module__,cls.__name__)
 
     def read(self):
         return self._unpack(super().read())

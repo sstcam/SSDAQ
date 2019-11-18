@@ -10,18 +10,13 @@ from .teldata_pb2 import TelData as _TelData
 # from .trigger_format import TriggerPacketData
 # from .trigger_format import NominalTriggerDataEncode
 from .trigger_format import TriggerPacket
-from .trigger_format import (
-    NominalTriggerPacket,
-    BusyTriggerPacket,
-    NominalTriggerPacketV2,
-    BusyTriggerPacketV2,
-)
+from .trigger_format import NominalTriggerPacketV1, BusyTriggerPacketV1, TriggerPacketV2
 from .slowsignal_format import SSReadout
 
 # from .frame import Frame, FrameObject
 
 
-class ProtoWrapper:
+class ProtoBWrapper:
     def __init__(self, cls):
         self._cls = cls
         for k, v in cls.DESCRIPTOR.fields_by_name.items():
@@ -39,49 +34,50 @@ class ProtoWrapper:
 
     def serialize(self):
         return self._cls.SerializeToString()
-
-    def deserialize(self, data):
-        self._cls.ParseFromString(data)
-
+    @classmethod
+    def deserialize(cls, data):
+        inst = cls()
+        inst.ParseFromString(data)
+        return inst
     def __repr__(self):
         return self._cls.__repr__()
 
 
-class LogData(ProtoWrapper):
+class LogData(ProtoBWrapper):
     def __init__(self):
         super().__init__(_LogData())
 
 
-class TimeUTC(ProtoWrapper):
+class TimeUTC(ProtoBWrapper):
     def __init__(self):
         super().__init__(_TimeUTC())
 
 
-class MonitorData(ProtoWrapper):
+class MonitorData(ProtoBWrapper):
     def __init__(self):
         super().__init__(_MonitorData())
 
 
-class MonitorFrame(ProtoWrapper):
+class MonitorFrame(ProtoBWrapper):
     def __init__(self):
         super().__init__(_MonitorFrame())
 
 
-class TimeStamp(ProtoWrapper):
+class TimeStamp(ProtoBWrapper):
     def __init__(self):
         super().__init__(_TimeStamp())
 
 
-class TriggerMessage(ProtoWrapper):
+class TriggerMessage(ProtoBWrapper):
     def __init__(self):
         super().__init__(_TriggerMessage())
 
 
-class TriggerBunch(ProtoWrapper):
+class TriggerBunch(ProtoBWrapper):
     def __init__(self):
         super().__init__(_TriggerBunch())
 
 
-class TelData(ProtoWrapper):
+class TelData(ProtoBWrapper):
     def __init__(self):
         super().__init__(_TelData())

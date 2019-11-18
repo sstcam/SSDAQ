@@ -61,6 +61,13 @@ class SSReadout(object):
         inst.unpack(data)
         return inst
 
+    @classmethod
+    def deserialize(cls,byte_stream):
+        return cls.from_bytes(byte_stream)
+
+    def serialize(self):
+        return self.pack()
+
     def pack(self):
         """
             Convinience method to pack the readout into a bytestream
