@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import os
 import sys
+from shutil import copyfile, rmtree
 
 install_requires = [
     "zmq",
@@ -15,10 +16,11 @@ install_requires = [
     "blessed",
     "pyqtgraph",
     "mysqlclient",
+    "pyarrow"
 ]
 
 #
-from shutil import copyfile, rmtree
+
 
 if not os.path.exists("tmps"):
     os.makedirs("tmps")
