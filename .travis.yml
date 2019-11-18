@@ -39,12 +39,11 @@ before_install:
 - conda info -a
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
-
 - pip install pytest
 - pip install 'pytest-cov<2.6.0'
 - pip install python-coveralls
 - echo `which pip`
-
+- pip install codecov
 install:
 - pip install .
 
@@ -54,3 +53,5 @@ script:
 
 after_success:
   - coveralls
+  - codecov
+  - codecov --token=3b87c835-9675-4329-963a-3f0b8a206a82
