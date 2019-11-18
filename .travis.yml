@@ -38,9 +38,9 @@ before_install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- sudo apt-get install hdf5-serial-dev
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
+- conda install -c anaconda hdf5
 - pip install pytest
 - pip install 'pytest-cov<2.6.0'
 - pip install python-coveralls
