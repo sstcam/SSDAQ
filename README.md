@@ -1,5 +1,5 @@
 # SSDAQ
-[![Actions Status](https://github.com/sflis/SSDAQ/workflows/Python%20application/badge.svg)](https://github.com/sflis/SSDAQ/actions)
+[![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
 
 Data acquisition and distribution for CHEC-S TARGET-C modules.
 
