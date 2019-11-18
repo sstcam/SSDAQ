@@ -1,5 +1,5 @@
 # SSDAQ
-[![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![Coverage Status](https://coveralls.io/repos/github/sflis/SSDAQ/badge.svg?branch=master)](https://coveralls.io/github/sflis/SSDAQ?branch=master)
+[![Build Status](https://travis-ci.org/cta-chec/SSDAQ.svg?branch=master)](https://travis-ci.org/cta-chec/SSDAQ) [![codecov](https://codecov.io/gh/cta-chec/SSDAQ/branch/master/graph/badge.svg)](https://codecov.io/gh/cta-chec/SSDAQ)
 
 Data acquisition and distribution for CHEC-S TARGET-C modules.
 
