@@ -9,8 +9,8 @@ sudo: required
 python:
     # not used directly, but this sets TRAVIS_PYTHON_VERSION so we can use it
     # in anaconda as well (we don't support python less than 3.5)
-    - 3.5
     - 3.6
+    - 3.7
 # # Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
 # matrix:
 #   include:
@@ -37,14 +37,13 @@ before_install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-
 - conda create --name ssdaq-env python=$TRAVIS_PYTHON_VERSION pip numpy
 - source activate ssdaq-env
 - pip install pytest
 - pip install 'pytest-cov<2.6.0'
 - pip install python-coveralls
 - echo `which pip`
-
+- pip install codecov
 install:
 - pip install .
 
@@ -54,3 +53,5 @@ script:
 
 after_success:
   - coveralls
+  - codecov
+  - codecov --token=3b87c835-9675-4329-963a-3f0b8a206a82

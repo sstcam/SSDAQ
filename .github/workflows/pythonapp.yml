@@ -41,5 +41,3 @@ jobs:
           pip install python-coveralls
           pip install pytest
           pytest --cov=ssdaq -v --cov coveralls --cov-report term-missing
-    # coveralls
-
