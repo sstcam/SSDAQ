@@ -14,15 +14,22 @@ _file_header = struct.Struct("<Q4I")
 
 
 class RawObjectWriterBase:
-    """ Acts as a file object for writing chunks of serialized data
-        to file. Prepends each chunk with:
-        chunk length in bytes (4 bytes)
-        and a crc32 hash      (4 bytes)
+    """ Base class of a file object for
+        writing indexable chunks of serialized data
+        to file.
     """
 
     _protocols = {}
 
-    def __init__(self, filename: str, protocol=1, compressor="bz2", **kwargs):
+    def __init__(self, filename: str, protocol: int = 1, compressor="bz2", **kwargs):
+        """Summary
+
+        Args:
+            filename (str): Description
+            protocol (int, optional): Description
+            compressor (str, optional): Description
+            **kwargs: Description
+        """
         self._writer = RawObjectWriterBase._protocols[protocol](
             filename, compressor=compressor, **kwargs
         )
@@ -43,6 +50,8 @@ class RawObjectWriterBase:
         self._writer.write(data)
 
     def close(self):
+        """ Closes the file handle
+        """
         self._writer.close()
 
     @classmethod
@@ -51,7 +60,12 @@ class RawObjectWriterBase:
         return scls
 
     @property
-    def data_counter(self):
+    def data_counter(self) -> int:
+        """Counter of the number of objects written to file
+
+        Returns:
+            int
+        """
         return self._writer.data_counter
 
 
@@ -249,6 +263,11 @@ class RawObjectWriterV1:
 
 class RawObjectReaderBase:
     """This class
+
+    Attributes:
+        file (TYPE): Description
+        filename (TYPE): Description
+        metadata (dict): Description
     """
 
     _protocols = {}
@@ -346,18 +365,35 @@ class RawObjectReaderBase:
         return self._reader.read()
 
     def close(self):
+        """ closes file handle
+        """
         self.file.close()
 
     @property
-    def n_entries(self):
+    def n_entries(self) -> int:
+        """ number of objects in file.
+
+        Returns:
+            int: file object count
+        """
         return self._reader.n_entries
 
     @property
-    def filesize(self):
+    def filesize(self) -> int:
+        """ the file size on disk in bytes
+
+        Returns:
+            int: file size
+        """
         return self._reader.filesize
 
     @property
-    def timestamp(self):
+    def timestamp(self) -> datetime:
+        """ unix timestamp of the file creation time
+
+        Returns:
+            datetime.datetime: creation datetime
+        """
         return datetime.fromtimestamp(self._reader._timestamp)
 
     def __str__(self):

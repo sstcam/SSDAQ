@@ -3,7 +3,7 @@ from ssdaq import subscribers
 
 # A writer-exectutable factory containing boilerplate code for the
 # executable
-def writerfactory(descr:str, defaultport:int, writer_cls):
+def writerfactory(descr: str, defaultport: int, writer_cls):
     """Summary
 
     Args:
@@ -11,6 +11,7 @@ def writerfactory(descr:str, defaultport:int, writer_cls):
         defaultport (int): The default port to listen on
         writer_cls (WriterSubscriberClass): A class WriterSubscriber instance
     """
+
     def writer():
         import argparse
 
@@ -68,6 +69,7 @@ def asyncwriterfactory(descr, defaultport, writer_cls):
         defaultport (int): The default port to listen on
         writer_cls (WriterSubscriberClass): A class WriterSubscriber instance
     """
+
     def writer():
         import argparse
         import asyncio
